@@ -38,8 +38,8 @@ import sys
 import plistlib
 
 #Define the version number and the release date as global variables.
-Version = "1.5"
-ReleaseDate = "29/1/2016"
+Version = "1.5.1"
+ReleaseDate = "17/6/2016"
 
 def usage():
     print("\nUsage: DDRescue-GUI.py [OPTION]\n\n")
@@ -2658,7 +2658,7 @@ class BackendThread(threading.Thread):
                 wx.CallAfter(self.ParentWindow.UpdateProgress, self.RecoveredData, self.DiskCapacity)
                 wx.CallAfter(self.ParentWindow.UpdateLine1Info, unicode(self.RecoveredData)+" "+self.RecoveredDataUnit, self.ErrorSize, self.CurrentReadRate)
 
-                #Time remaining.
+                #Elapsed time.
                 self.RunTimeSecs += 1
 
                 #Convert between Seconds, Minutes, Hours, and Days to make the value as understandable as possible.
