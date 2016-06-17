@@ -1,0 +1,13 @@
+I respect your privacy.
+
+Hence, DDRescue-GUI collects only information it requires to run, or is of significant importance to the user, and it won't report any information it collects at all, to anybody.
+
+It has never done, and it never will.
+
+In order to run, DDRescue-GUI needs to gain basic information about devices (Device names), and for debugging reasons this information is temporarily saved in a log file (/tmp/ddrescue-gui.log). It does NOT include any personal, or personally identifiable information such as serial numbers or IP addresses.
+
+If you attempt to mount a finished output file or disk, information will be collected about that file or disk too (Type, which is either a device or a partition, and Capacity of any volumes or partitions the file or disk contains), in order to be able to mount it.
+
+Additionally, DDRescue-GUI collects the Vendor names, Product names, Capacity and Description (if available), of devices on your system. This information is not required for DDRescue-GUI to run (with the exception of Size information for supporting the Reverse and Preallocate options on OS X), but instead collected to help you identify the disks you wish to recover data to and from, which helps avoid accidental data loss. All of this information can be viewed in the Disk Information Window, accessible from the Main Window (both as a button and in the view menu).
+
+When DDRescue-GUI is closed, all of this information (including the logfile itself) is completely deleted, unless you decide to save it somewhere else when prompted.
