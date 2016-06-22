@@ -2495,6 +2495,44 @@ class FinishedWindow(wx.Frame):
         self.Bind(wx.EVT_CLOSE, self.CloseFinished)
 
 #End Finished Window
+#Begin Elapsed Time Thread.
+class ElapsedTimeThread(threading.Thread):
+    def __init__(self, ParentWindow):
+        """Initialize and start the thread"""
+        self.ParentWindow = ParentWindow
+        self.RunTimeSecs = 0
+        threading.Thread.__init__(self)
+        self.start()
+
+    def run(self):
+        """Main body of the thread, started with self.start()"""
+        while RecoveringData:
+            #Elapsed time.
+            self.RunTimeSecs += 1
+
+            #Convert between Seconds, Minutes, Hours, and Days to make the value as understandable as possible.
+            if self.RunTimeSecs <= 60:
+                RunTime = self.RunTimeSecs
+                Unit = " seconds"
+
+            elif self.RunTimeSecs >= 60 and self.RunTimeSecs <= 3600: 
+                RunTime = self.RunTimeSecs//60
+                Unit = " minutes"
+
+            elif self.RunTimeSecs > 3600 and self.RunTimeSecs <= 86400:
+                RunTime = round(self.RunTimeSecs/3600,2)
+                Unit = " hours"
+
+            elif self.RunTimeSecs > 86400:
+                RunTime = round(self.RunTimeSecs/86400,2)
+                Unit = " days"
+
+            #Update the text.
+            wx.CallAfter(self.ParentWindow.UpdateTimeElapsed, "Time Elapsed: "+unicode(RunTime)+Unit)
+
+            #Wait for a second.
+            time.sleep(1)
+
 #Begin Backend Thread
 class BackendThread(threading.Thread):
     def __init__(self, ParentWindow):
@@ -2537,7 +2575,7 @@ class BackendThread(threading.Thread):
         #Start ddrescue.
         logger.debug("MainBackendThread(): Running ddrescue with: '"+' '.join(ExecList)+"'...")
 
-        #Ensure the exit sequence knows we are recovering data.
+        #Ensure the rest of the program knows we are recovering data.
         global RecoveringData
         RecoveringData = True
 
@@ -2545,10 +2583,12 @@ class BackendThread(threading.Thread):
         Line = ""
         LineList = []
         counter = 0
-        self.RunTimeSecs = -1
 
         #Give ddrescue plenty of time to start.
         time.sleep(2)
+
+        #Start time elapsed thread.
+        ElapsedTimeThread(self.ParentWindow)
 
         #Grab information from ddrescue. (After ddrescue exits, attempt to read an extra 1000 chars to grab any remaining output)
         while cmd.poll() == None or counter < 1000:
@@ -2657,29 +2697,6 @@ class BackendThread(threading.Thread):
                 #Update the GUI.
                 wx.CallAfter(self.ParentWindow.UpdateProgress, self.RecoveredData, self.DiskCapacity)
                 wx.CallAfter(self.ParentWindow.UpdateLine1Info, unicode(self.RecoveredData)+" "+self.RecoveredDataUnit, self.ErrorSize, self.CurrentReadRate)
-
-                #Elapsed time.
-                self.RunTimeSecs += 1
-
-                #Convert between Seconds, Minutes, Hours, and Days to make the value as understandable as possible.
-                if self.RunTimeSecs <= 60:
-                    RunTime = self.RunTimeSecs
-                    Unit = " seconds"
-
-                elif self.RunTimeSecs >= 60 and self.RunTimeSecs <= 3600: 
-                    RunTime = self.RunTimeSecs//60
-                    Unit = " minutes"
-
-                elif self.RunTimeSecs > 3600 and self.RunTimeSecs <= 86400:
-                    RunTime = round(self.RunTimeSecs/3600,2)
-                    Unit = " hours"
-
-                elif self.RunTimeSecs > 86400:
-                    RunTime = round(self.RunTimeSecs/86400,2)
-                    Unit = " days"
-
-                #Update the text.
-                wx.CallAfter(self.ParentWindow.UpdateTimeElapsed, "Time Elapsed: "+unicode(RunTime)+Unit)
 
     def ChangeUnits(self, NumberToChange, CurrentUnit, RequiredUnit):
         """Convert data so it uses the correct unit of measurement"""
