@@ -38,8 +38,8 @@ import sys
 import plistlib
 
 #Define the version number and the release date as global variables.
-Version = "1.5.1"
-ReleaseDate = "17/6/2016"
+Version = "1.6~pre1"
+ReleaseDate = "22/6/2016"
 
 def usage():
     print("\nUsage: DDRescue-GUI.py [OPTION]\n\n")
@@ -2500,7 +2500,10 @@ class ElapsedTimeThread(threading.Thread):
     def __init__(self, ParentWindow):
         """Initialize and start the thread"""
         self.ParentWindow = ParentWindow
-        self.RunTimeSecs = 0
+
+        #This starts a little after ddrescue, so start at 2 seconds.
+        self.RunTimeSecs = 2
+
         threading.Thread.__init__(self)
         self.start()
 
@@ -2541,6 +2544,9 @@ class BackendThread(threading.Thread):
         self.OldStatus = ""
         self.GotInitialStatus = False
         self.UnitList = ['null', 'B', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']
+        self.DDRescue121 = False
+        self.InputPos = "0 B"
+
         threading.Thread.__init__(self)
         self.start()
 
@@ -2587,9 +2593,6 @@ class BackendThread(threading.Thread):
         #Give ddrescue plenty of time to start.
         time.sleep(2)
 
-        #Start time elapsed thread.
-        ElapsedTimeThread(self.ParentWindow)
-
         #Grab information from ddrescue. (After ddrescue exits, attempt to read an extra 1000 chars to grab any remaining output)
         while cmd.poll() == None or counter < 1000:
             if cmd.poll() != None:
@@ -2600,7 +2603,11 @@ class BackendThread(threading.Thread):
 
             #If this is the end of the line, process it, and send the results to the GUI thread.
             if Char == "\n":
-                self.ProcessLine(Line.replace("\n", "").replace("\r", "").replace("\x1b[A", ""))
+                TidyLine = Line.replace("\n", "").replace("\r", "").replace("\x1b[A", "")
+
+                if TidyLine != "":
+                    self.ProcessLine(TidyLine)
+
                 wx.CallAfter(self.ParentWindow.UpdateOutputBox, Line.replace("\x1b[A", "¬"))
 
                 #Reset Line.
@@ -2624,80 +2631,111 @@ class BackendThread(threading.Thread):
 
     def ProcessLine(self, Line):
         """Process a given line to get ddrescue's current status and recovery information and send it to the GUI Thread""" 
-        if Line != "":
-            SplitLine = Line.split()
+        SplitLine = Line.split()
 
-            try:
-                Status, Info = Line.split("rescued:")
+        if SplitLine[0] == "About":
+            #Initial status.
+            logger.info("MainBackendThread().Processline(): Got Initial Status... Setting up the progressbar...")
+            self.GotInitialStatus = True
 
-            except ValueError:
-                if SplitLine[0] == "About":
-                    #Initial status.
-                    logger.info("MainBackendThread().Processline(): Got Initial Status... Setting up the progressbar...")
-                    self.GotInitialStatus = True
+            #Use ddrescue's output. We can do this on OS X too cos ddrescue knows the disk size now.
+            self.DiskCapacity = int(SplitLine[3])
+            self.DiskCapacityUnit = SplitLine[4]
 
-                    #Use ddrescue's output. We can do this on OS X too cos ddrescue knows the disk size now.
-                    self.DiskCapacity = int(SplitLine[3])
-                    self.DiskCapacityUnit = SplitLine[4]
+            wx.CallAfter(self.ParentWindow.SetProgressBarRange, self.DiskCapacity)
 
-                    wx.CallAfter(self.ParentWindow.SetProgressBarRange, self.DiskCapacity)
+            #Start time elapsed thread.
+            ElapsedTimeThread(self.ParentWindow)
 
-                elif SplitLine[0] == "ipos:":
-                    #Line 2
-                    self.InputPos = ' '.join(SplitLine[1:3]).replace(",", "")
-                    self.NumErrors = SplitLine[4].replace(",", "")
-                    self.AverageReadRate = SplitLine[7]
-                    self.AverageReadRateUnit = SplitLine[8]
+        elif SplitLine[0] == "ipos:":
+            #Line 2
+            if not self.DDRescue121:
+                self.NewInputPos = ' '.join(SplitLine[1:3]).replace(",", "")
+                self.NumErrors = SplitLine[4].replace(",", "")
+                self.AverageReadRate = SplitLine[7]
+                self.AverageReadRateUnit = SplitLine[8]
 
-                    #Calculate time remaining.
-                    self.TimeRemaining = self.CalculateTimeRemaining()
+        elif SplitLine[0] == "opos:":
+            #Line 3
+            self.OutputPos = ' '.join(SplitLine[1:3]).replace(",", "")
 
-                    #Update the GUI.
-                    wx.CallAfter(self.ParentWindow.UpdateLine2Info, self.InputPos, unicode(self.AverageReadRate)+" "+self.AverageReadRateUnit, self.NumErrors, self.TimeRemaining)
-
-                elif SplitLine[0] == "opos:":
-                    #Line 3
-                    self.OutputPos = ' '.join(SplitLine[1:3]).replace(",", "")
-
-                    #Adds compatibility for newer versions of ddrescue (the output format changed when 'run time' was introduced with v1.18, and 'time remaining' in v1.20).
-                    if SplitLine[-1] == "ago":
-                        self.TimeSinceLastRead = ' '.join(SplitLine[-3:-1]) #v1.14 to v1.18.
-                    else:
-                        self.TimeSinceLastRead = ' '.join(SplitLine[-2:]) #v1.18 and v1.19
-
-                    #Update the GUI.
-                    wx.CallAfter(self.ParentWindow.UpdateLine3Info, self.OutputPos, self.TimeSinceLastRead)
-
-                elif SplitLine[0] == "time":
-                    #Time since last read (ddrescue v1.20).
-                    self.TimeSinceLastRead = SplitLine[-1]
-
-                    #Update the GUI.
-                    wx.CallAfter(self.ParentWindow.UpdateLine3Info, self.OutputPos, self.TimeSinceLastRead)
+            #Adds compatibility for newer versions of ddrescue (the output format changed when 'run time' was introduced with v1.18, and 'time remaining' in v1.20). Not on ddrescue 1.21.
+            if self.DDRescue121:
+                #Get average read rate (ddrescue 1.21).
+                self.AverageReadRate = SplitLine[8]
+                self.AverageReadRateUnit = SplitLine[9]
 
             else:
-                #Status Line.
-                if Status != self.OldStatus:
-                    wx.CallAfter(self.ParentWindow.UpdateStatusBar, Status)
+                if SplitLine[-1] == "ago":
+                    self.TimeSinceLastRead = ' '.join(SplitLine[-3:-1]) #v1.14 to v1.18.
 
+                else:
+                    self.TimeSinceLastRead = ' '.join(SplitLine[-2:]) #v1.18 to v1.20
+
+        elif SplitLine[0] == "non-tried:":
+            #Unreadable data (ddrescue 1.21).
+            self.ErrorSize = ' '.join(SplitLine[4:6]).replace(",", "")
+
+        elif SplitLine[0] == "time":
+            #Time since last read (ddrescue v1.20).
+            self.TimeSinceLastRead = SplitLine[-1]
+
+        elif SplitLine[0] == "percent":
+            #Time since last read (ddrescue 1.21).
+            self.TimeSinceLastRead = SplitLine[-1]
+
+        elif SplitLine[-1] == "1.21":
+            #We're on ddrescue 1.21.
+            self.DDRescue121 = True
+
+        elif SplitLine[0] == "rescued:":
+            #Recovered data and number of errors (ddrescue 1.21).
+            self.RecoveredData = SplitLine[1]
+            self.RecoveredDataUnit = SplitLine[2][:2]
+            self.NumErrors = SplitLine[4].replace(",", "")
+
+        elif ("rescued:" in Line and SplitLine[0] != "rescued:") or "ipos:" in Line:
+            if self.DDRescue121:
+                Status, Info = Line.split("ipos:")
+
+            else:
+                Status, Info = Line.split("rescued:")
+
+            #Status Line.
+            if Status != self.OldStatus:
+                wx.CallAfter(self.ParentWindow.UpdateStatusBar, Status)
                 self.OldStatus = Status
 
-                #Line 1.
-                SplitLine = Info.split()
+            #Line 1.
+            SplitLine = Info.split()
 
+            if self.DDRescue121:
+                self.CurrentReadRate = ' '.join(SplitLine[7:9])
+                self.NewInputPos = ' '.join(SplitLine[0:2]).replace(",", "")
+
+            else:
+                self.CurrentReadRate = ' '.join(SplitLine[7:9])
+                self.ErrorSize = ' '.join(SplitLine[3:5]).replace(",", "")
                 self.RecoveredData = SplitLine[0]
                 self.RecoveredDataUnit = SplitLine[1][:2]
-                self.ErrorSize = ' '.join(SplitLine[3:5]).replace(",", "")
-                self.CurrentReadRate = ' '.join(SplitLine[7:9])
 
-                #Change the unit of measurement of the current amount of recovered data if needed.
-                self.RecoveredData, self.RecoveredDataUnit = self.ChangeUnits(float(self.RecoveredData), self.RecoveredDataUnit, self.DiskCapacityUnit)
-                self.RecoveredData = round(self.RecoveredData,3)
+            #Change the unit of measurement of the current amount of recovered data if needed.
+            self.RecoveredData, self.RecoveredDataUnit = self.ChangeUnits(float(self.RecoveredData), self.RecoveredDataUnit, self.DiskCapacityUnit)
+            self.RecoveredData = round(self.RecoveredData,3)
 
-                #Update the GUI.
-                wx.CallAfter(self.ParentWindow.UpdateProgress, self.RecoveredData, self.DiskCapacity)
-                wx.CallAfter(self.ParentWindow.UpdateLine1Info, unicode(self.RecoveredData)+" "+self.RecoveredDataUnit, self.ErrorSize, self.CurrentReadRate)
+            #Update the GUI.
+            if not self.DDRescue121:
+                self.InputPos = self.NewInputPos
 
+            self.TimeRemaining = self.CalculateTimeRemaining()
+
+            wx.CallAfter(self.ParentWindow.UpdateProgress, self.RecoveredData, self.DiskCapacity)
+            wx.CallAfter(self.ParentWindow.UpdateLine1Info, unicode(self.RecoveredData)+" "+self.RecoveredDataUnit, self.ErrorSize, self.CurrentReadRate)
+            wx.CallAfter(self.ParentWindow.UpdateLine2Info, self.InputPos, unicode(self.AverageReadRate)+" "+self.AverageReadRateUnit, self.NumErrors, self.TimeRemaining)
+            wx.CallAfter(self.ParentWindow.UpdateLine3Info, self.OutputPos, self.TimeSinceLastRead)
+
+            self.InputPos = self.NewInputPos
+            
     def ChangeUnits(self, NumberToChange, CurrentUnit, RequiredUnit):
         """Convert data so it uses the correct unit of measurement"""
         #Prepare for the change.
