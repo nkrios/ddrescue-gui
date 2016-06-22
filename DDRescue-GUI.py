@@ -272,7 +272,7 @@ class MainWindow(wx.Frame):
     def __init__(self):
         """Initialize MainWindow"""
         wx.Frame.__init__(self, None, title="DDRescue-GUI", size=(936,360), style=wx.DEFAULT_FRAME_STYLE)
-        self.MainPanel = wx.Panel(self)
+        self.Panel = wx.Panel(self)
         self.SetClientSize(wx.Size(936,360))
 
         print("DDRescue-GUI Version "+Version+" Starting...")
@@ -332,8 +332,8 @@ class MainWindow(wx.Frame):
         self.OnTerminalOutput()
         self.ListCtrl.SetColumnWidth(0, 150)
 
-        #Call Layout() on self.MainPanel() to ensure it displays properly.
-        self.MainPanel.Layout()
+        #Call Layout() on self.Panel() to ensure it displays properly.
+        self.Panel.Layout()
 
         logger.info("MainWindow().__init__(): Ready. Waiting for events...")
 
@@ -394,31 +394,31 @@ class MainWindow(wx.Frame):
 
     def CreateText(self):
         """Create all text for MainWindow"""
-        self.TitleText = wx.StaticText(self.MainPanel, -1, "Welcome to DDRescue-GUI!")
-        self.InputText = wx.StaticText(self.MainPanel, -1, "Image Source:")
-        self.LogFileText = wx.StaticText(self.MainPanel, -1, "Log File:")
-        self.OutputText = wx.StaticText(self.MainPanel, -1, "Image Destination:") 
+        self.TitleText = wx.StaticText(self.Panel, -1, "Welcome to DDRescue-GUI!")
+        self.InputText = wx.StaticText(self.Panel, -1, "Image Source:")
+        self.LogFileText = wx.StaticText(self.Panel, -1, "Log File:")
+        self.OutputText = wx.StaticText(self.Panel, -1, "Image Destination:") 
 
         #Also create special text for showing and hiding recovery info and terminal output.
-        self.DetailedInfoText = wx.lib.stattext.GenStaticText(self.MainPanel, -1, "Detailed Info")
-        self.TerminalOutputText = wx.lib.stattext.GenStaticText(self.MainPanel, -1, "Terminal Output")
+        self.DetailedInfoText = wx.lib.stattext.GenStaticText(self.Panel, -1, "Detailed Info")
+        self.TerminalOutputText = wx.lib.stattext.GenStaticText(self.Panel, -1, "Terminal Output")
 
         #And some text for basic recovery information.
-        self.TimeElapsedText = wx.StaticText(self.MainPanel, -1, "Time Elapsed:")
-        self.TimeRemainingText = wx.StaticText(self.MainPanel, -1, "Estimated Time Remaining:")
+        self.TimeElapsedText = wx.StaticText(self.Panel, -1, "Time Elapsed:")
+        self.TimeRemainingText = wx.StaticText(self.Panel, -1, "Estimated Time Remaining:")
 
     def CreateButtons(self):
         """Create all buttons for MainWindow"""
-        self.SettingsButton = wx.Button(self.MainPanel, -1, "Settings")
-        self.UpdateDiskInfoButton = wx.Button(self.MainPanel, -1, "Update Disk Info")          
-        self.ShowDiskInfoButton = wx.Button(self.MainPanel, -1, "Disk Information")
-        self.ControlButton = wx.Button(self.MainPanel, -1, "Start")
+        self.SettingsButton = wx.Button(self.Panel, -1, "Settings")
+        self.UpdateDiskInfoButton = wx.Button(self.Panel, -1, "Update Disk Info")          
+        self.ShowDiskInfoButton = wx.Button(self.Panel, -1, "Disk Information")
+        self.ControlButton = wx.Button(self.Panel, -1, "Start")
 
     def CreateChoiceBoxes(self):
         """Create all choiceboxes for MainWindow"""
-        self.InputChoiceBox = wx.Choice(self.MainPanel, -1, choices=['-- Please Select --', 'Select a File/Disk'])
-        self.LogChoiceBox = wx.Choice(self.MainPanel, -1, choices=['-- Please Select --', 'Select a File', 'None (not recommended)'])
-        self.OutputChoiceBox = wx.Choice(self.MainPanel, -1, choices=['-- Please Select --', 'Select a File/Disk'])
+        self.InputChoiceBox = wx.Choice(self.Panel, -1, choices=['-- Please Select --', 'Select a File/Disk'])
+        self.LogChoiceBox = wx.Choice(self.Panel, -1, choices=['-- Please Select --', 'Select a File', 'None (not recommended)'])
+        self.OutputChoiceBox = wx.Choice(self.Panel, -1, choices=['-- Please Select --', 'Select a File/Disk'])
 
         #Set the default value.
         self.InputChoiceBox.SetStringSelection("-- Please Select --")
@@ -429,19 +429,19 @@ class MainWindow(wx.Frame):
         """Create all other widgets for MainWindow"""
         #Create the animation for the throbber.
         throb = wx.animate.Animation(RescourcePath+"/images/Throbber.gif")
-        self.Throbber = wx.animate.AnimationCtrl(self.MainPanel, -1, throb)
+        self.Throbber = wx.animate.AnimationCtrl(self.Panel, -1, throb)
         self.Throbber.SetUseWindowBackgroundColour(True)
         self.Throbber.SetInactiveBitmap(wx.Bitmap(RescourcePath+"/images/ThrobberRest.png", wx.BITMAP_TYPE_PNG))
         self.Throbber.SetClientSize(wx.Size(30,30))
 
         #Create the list control for the detailed info.
-        self.ListCtrl = wx.ListCtrl(self.MainPanel, -1, style=wx.LC_REPORT|wx.BORDER_SUNKEN|wx.LC_VRULES)
+        self.ListCtrl = wx.ListCtrl(self.Panel, -1, style=wx.LC_REPORT|wx.BORDER_SUNKEN|wx.LC_VRULES)
         self.ListCtrl.InsertColumn(col=0, heading="Category", format=wx.LIST_FORMAT_CENTRE, width=150)
         self.ListCtrl.InsertColumn(col=1, heading="Value", format=wx.LIST_FORMAT_CENTRE, width=-1)
         self.ListCtrl.SetMinSize(wx.Size(50, 240))
 
         #Create a text control for terminal output.
-        self.OutputBox = CustomTextCtrl(self.MainPanel, -1, "", style=wx.TE_MULTILINE|wx.TE_READONLY|wx.TE_WORDWRAP)
+        self.OutputBox = CustomTextCtrl(self.Panel, -1, "", style=wx.TE_MULTILINE|wx.TE_READONLY|wx.TE_WORDWRAP)
         self.OutputBox.SetBackgroundColour((0,0,0))
         self.OutputBox.SetDefaultStyle(wx.TextAttr(wx.WHITE))
         self.OutputBox.SetMinSize(wx.Size(50, 240))
@@ -452,11 +452,11 @@ class MainWindow(wx.Frame):
         self.DownArrowImage = wx.BitmapFromImage(img1)
         self.RightArrowImage = wx.BitmapFromImage(img2)
 
-        self.Arrow1 = wx.lib.statbmp.GenStaticBitmap(self.MainPanel, -1, self.DownArrowImage)
-        self.Arrow2 = wx.lib.statbmp.GenStaticBitmap(self.MainPanel, -1, self.DownArrowImage)
+        self.Arrow1 = wx.lib.statbmp.GenStaticBitmap(self.Panel, -1, self.DownArrowImage)
+        self.Arrow2 = wx.lib.statbmp.GenStaticBitmap(self.Panel, -1, self.DownArrowImage)
 
         #Create the progress bar.
-        self.ProgressBar = wx.Gauge(self.MainPanel, -1, 5000)
+        self.ProgressBar = wx.Gauge(self.Panel, -1, 5000)
 
     def SetupSizers(self):
         """Setup sizers for MainWindow"""
@@ -544,18 +544,18 @@ class MainWindow(wx.Frame):
 
         #Add items to the main sizer.
         self.MainSizer.Add(self.TitleText, 0, wx.TOP|wx.ALIGN_CENTER, 10)
-        self.MainSizer.Add(wx.StaticLine(self.MainPanel), 0, wx.ALL|wx.EXPAND, 10)
+        self.MainSizer.Add(wx.StaticLine(self.Panel), 0, wx.ALL|wx.EXPAND, 10)
         self.MainSizer.Add(FileChoicesSizer, 0, wx.ALL|wx.ALIGN_CENTER|wx.EXPAND, 10)
-        self.MainSizer.Add(wx.StaticLine(self.MainPanel), 0, wx.ALL|wx.EXPAND, 10)
+        self.MainSizer.Add(wx.StaticLine(self.Panel), 0, wx.ALL|wx.EXPAND, 10)
         self.MainSizer.Add(ButtonSizer, 0, wx.ALL|wx.ALIGN_CENTER|wx.EXPAND, 10)
-        self.MainSizer.Add(wx.StaticLine(self.MainPanel), 0, wx.TOP|wx.EXPAND, 10)
+        self.MainSizer.Add(wx.StaticLine(self.Panel), 0, wx.TOP|wx.EXPAND, 10)
         self.MainSizer.Add(ThrobberSizer, 0, wx.ALL|wx.ALIGN_CENTER|wx.EXPAND, 5)
         self.MainSizer.Add(self.InfoSizer, 1, wx.TOP|wx.BOTTOM|wx.ALIGN_CENTER|wx.EXPAND, 10)
         self.MainSizer.Add(InfoTextSizer, 0, wx.ALL|wx.ALIGN_CENTER|wx.EXPAND, 10)
         self.MainSizer.Add(self.ProgressSizer, 0, wx.TOP|wx.BOTTOM|wx.ALIGN_CENTER|wx.EXPAND, 10)
 
         #Get the sizer set up for the frame.
-        self.MainPanel.SetSizer(self.MainSizer)
+        self.Panel.SetSizer(self.MainSizer)
         self.MainSizer.SetMinSize(wx.Size(936,360))
         self.MainSizer.SetSizeHints(self)
 
@@ -677,9 +677,9 @@ class MainWindow(wx.Frame):
             self.ListCtrl.Show()
             self.SetClientSize(wx.Size(Width,600))
 
-        #Call Layout() on self.MainPanel() and self.OnSize() to ensure it displays properly.
+        #Call Layout() on self.Panel() and self.OnSize() to ensure it displays properly.
         self.OnSize()
-        self.MainPanel.Layout()
+        self.Panel.Layout()
         self.MainSizer.SetSizeHints(self)
 
     def OnTerminalOutput(self, Event=None):
@@ -714,9 +714,9 @@ class MainWindow(wx.Frame):
             self.OutputBox.Show()
             self.SetClientSize(wx.Size(Width,600))
 
-        #Call Layout() on self.MainPanel() and self.OnSize to ensure it displays properly.
+        #Call Layout() on self.Panel() and self.OnSize to ensure it displays properly.
         self.OnSize()
-        self.MainPanel.Layout()
+        self.Panel.Layout()
         self.MainSizer.SetSizeHints(self)
 
     def GetDiskInfo(self, Event=None):
@@ -808,7 +808,7 @@ class MainWindow(wx.Frame):
         InputFile = self.InputChoiceBox.GetStringSelection()
 
         if InputFile == "Select a File/Disk":
-            InputFileDlg = wx.FileDialog(self.MainPanel, "Select Input File/Disk...", defaultDir="/dev", wildcard=self.InputWildcard, style=wx.OPEN)
+            InputFileDlg = wx.FileDialog(self.Panel, "Select Input File/Disk...", defaultDir="/dev", wildcard=self.InputWildcard, style=wx.OPEN)
 
             #Change the default dir on OS X.
             if Linux == False:
@@ -828,7 +828,7 @@ class MainWindow(wx.Frame):
 
         elif InputFile not in [None, "-- Please Select --"] and InputFile == OutputFile:
             logger.warning("MainWindow().SelectInputFile(): InputFile equals OutputFile!, resetting to None and warning user...")
-            dlg = wx.MessageDialog(self.MainPanel, "You can't use the same disk/file as both the source and the destination!", 'DDRescue-GUI - Error!', wx.OK | wx.ICON_ERROR)
+            dlg = wx.MessageDialog(self.Panel, "You can't use the same disk/file as both the source and the destination!", 'DDRescue-GUI - Error!', wx.OK | wx.ICON_ERROR)
             dlg.ShowModal()
             dlg.Destroy()
             InputFile = None
@@ -845,13 +845,13 @@ class MainWindow(wx.Frame):
         OutputFile = self.OutputChoiceBox.GetStringSelection()
 
         if OutputFile == "Select a File/Disk":
-            OutputFileDlg = wx.FileDialog(self.MainPanel, "Select Output File/Disk...", defaultDir=self.UserHomeDir, wildcard=self.OutputWildcard, style=wx.SAVE)
+            OutputFileDlg = wx.FileDialog(self.Panel, "Select Output File/Disk...", defaultDir=self.UserHomeDir, wildcard=self.OutputWildcard, style=wx.SAVE)
 
             if OutputFileDlg.ShowModal() == wx.ID_OK:
                 OutputFile = OutputFileDlg.GetPath()
                 if PartedMagic and "/root" in OutputFile:
                     logger.warning("MainWindow().SelectOutputFile(): OutputFile is in root's home directory on Parted Magic! There is no space here, warning user and declining selection...")
-                    dlg = wx.MessageDialog(self.MainPanel, "You can't save the output file in root's home directory in Parted Magic! There's not enough space there, please select a new file.", 'DDRescue-GUI - Error!', wx.OK | wx.ICON_ERROR)
+                    dlg = wx.MessageDialog(self.Panel, "You can't save the output file in root's home directory in Parted Magic! There's not enough space there, please select a new file.", 'DDRescue-GUI - Error!', wx.OK | wx.ICON_ERROR)
                     dlg.ShowModal()
                     dlg.Destroy()
 
@@ -871,7 +871,7 @@ class MainWindow(wx.Frame):
 
         elif OutputFile not in [None, "-- Please Select --"] and OutputFile == InputFile:
             logger.warning("MainWindow().SelectOutputFile(): OutputFile equals InputFile!, resetting to None and warning user...")
-            dlg = wx.MessageDialog(self.MainPanel, "You can't use the same Disk/file as both the source and the destination!", 'DDRescue-GUI - Error!', wx.OK | wx.ICON_ERROR)
+            dlg = wx.MessageDialog(self.Panel, "You can't use the same Disk/file as both the source and the destination!", 'DDRescue-GUI - Error!', wx.OK | wx.ICON_ERROR)
             dlg.ShowModal()
             dlg.Destroy()
             OutputFile = None
@@ -885,7 +885,7 @@ class MainWindow(wx.Frame):
         if OutputFile != None:
             if os.path.exists(OutputFile):
                 logger.info("MainWindow().SelectInputFile(): Selected file already exists! Showing warning to user...")
-                Dlg = wx.MessageDialog(self.MainPanel, "The file you selected already exists!\n\nIf you're doing a two-stage recovery, *and you've selected a logfile*, DDRescue-GUI will resume where it left off on the previous run, and it is safe to continue.\n\nOtherwise, you will lose data on this file or device.\n\nPlease be sure you selected the right file. Do you want to accept this file as your output file?", 'DDRescue-GUI -- Warning!', wx.YES_NO | wx.ICON_EXCLAMATION)
+                Dlg = wx.MessageDialog(self.Panel, "The file you selected already exists!\n\nIf you're doing a two-stage recovery, *and you've selected a logfile*, DDRescue-GUI will resume where it left off on the previous run, and it is safe to continue.\n\nOtherwise, you will lose data on this file or device.\n\nPlease be sure you selected the right file. Do you want to accept this file as your output file?", 'DDRescue-GUI -- Warning!', wx.YES_NO | wx.ICON_EXCLAMATION)
 
                 if Dlg.ShowModal() == wx.ID_YES:
                     logger.warning("MainWindow().SelectOutputFile(): Accepted already-present file as output file!")
@@ -916,7 +916,7 @@ class MainWindow(wx.Frame):
         LogFile = self.LogChoiceBox.GetStringSelection()
 
         if LogFile == "None (not recommended)":
-            Dlg = wx.MessageDialog(self.MainPanel, "You have not chosen to use a log file. If you do not use one, you will have to start from scratch in the event of a power outage, or if DDRescue-GUI is interrupted. Additionally, you can't do a two-stage recovery without a log file.\n\nAre you really sure you do not want to use a logfile?", "DDRescue-GUI - Warning", wx.YES_NO | wx.ICON_EXCLAMATION)
+            Dlg = wx.MessageDialog(self.Panel, "You have not chosen to use a log file. If you do not use one, you will have to start from scratch in the event of a power outage, or if DDRescue-GUI is interrupted. Additionally, you can't do a two-stage recovery without a log file.\n\nAre you really sure you do not want to use a logfile?", "DDRescue-GUI - Warning", wx.YES_NO | wx.ICON_EXCLAMATION)
 
             if Dlg.ShowModal() == wx.ID_YES:
                 logger.warning("MainWindow().SelectLogFile(): User isn't using a log file, despite our warning!")
@@ -930,14 +930,14 @@ class MainWindow(wx.Frame):
             Dlg.Destroy()
 
         elif LogFile == "Select a File":
-            LogFileDlg = wx.FileDialog(self.MainPanel, "Select Log File Position & Name...", defaultDir=self.UserHomeDir, wildcard="Log Files (*.log)|*.log", style=wx.SAVE)
+            LogFileDlg = wx.FileDialog(self.Panel, "Select Log File Position & Name...", defaultDir=self.UserHomeDir, wildcard="Log Files (*.log)|*.log", style=wx.SAVE)
 
             if LogFileDlg.ShowModal() == wx.ID_OK:
                 LogFile = LogFileDlg.GetPath()
 
                 if PartedMagic and "/root" in LogFile:
                     logger.warning("MainWindow().SelectLogFile(): LogFile is in root's home directory on Parted Magic! There is no space here, warning user and declining selection...")
-                    dlg = wx.MessageDialog(self.MainPanel, "You can't save the log file in root's home directory in Parted Magic! There's not enough space there, please select a new file.", 'DDRescue-GUI - Error!', wx.OK | wx.ICON_ERROR)
+                    dlg = wx.MessageDialog(self.Panel, "You can't save the log file in root's home directory in Parted Magic! There's not enough space there, please select a new file.", 'DDRescue-GUI - Error!', wx.OK | wx.ICON_ERROR)
                     dlg.ShowModal()
                     dlg.Destroy()
 
@@ -984,7 +984,7 @@ class MainWindow(wx.Frame):
             SettingsWindow(self).Show()
 
         else:
-            dlg = wx.MessageDialog(self.MainPanel, 'Please select input and output files first!', 'DDRescue-GUI - Error!', wx.OK | wx.ICON_ERROR)
+            dlg = wx.MessageDialog(self.Panel, 'Please select input and output files first!', 'DDRescue-GUI - Error!', wx.OK | wx.ICON_ERROR)
             dlg.ShowModal()
             dlg.Destroy()
 
@@ -1011,7 +1011,7 @@ class MainWindow(wx.Frame):
 
         if CheckedSettings == False:
             logger.error("MainWindow().OnStart(): The settings haven't been checked properly! Aborting recovery...")
-            dlg = wx.MessageDialog(self.MainPanel, "Please check the settings before starting the recovery.", "DDRescue-GUI - Warning", wx.OK | wx.ICON_EXCLAMATION)
+            dlg = wx.MessageDialog(self.Panel, "Please check the settings before starting the recovery.", "DDRescue-GUI - Warning", wx.OK | wx.ICON_EXCLAMATION)
             dlg.ShowModal()
             dlg.Destroy()
             self.UpdateStatusBar("Ready.")
@@ -1052,7 +1052,7 @@ class MainWindow(wx.Frame):
                     if Retval != 0:
                         #It didn't. Warn the user, and exit the function.
                         logger.info("MainWindow().OnStart(): Failed! Warning user...")
-                        dlg = wx.MessageDialog(self.MainPanel, "Could not unmount disk "+Disk+"! Please close all other programs and anything that may be accessing this disk (or any of its partitions), like the file manager perhaps, and try again.", "DDRescue-GUI - Error!", wx.OK | wx.ICON_ERROR)
+                        dlg = wx.MessageDialog(self.Panel, "Could not unmount disk "+Disk+"! Please close all other programs and anything that may be accessing this disk (or any of its partitions), like the file manager perhaps, and try again.", "DDRescue-GUI - Error!", wx.OK | wx.ICON_ERROR)
                         dlg.ShowModal()
                         dlg.Destroy()
                         self.UpdateStatusBar("Ready.")
@@ -1117,7 +1117,7 @@ class MainWindow(wx.Frame):
 
         else:
             logger.error("MainWindow().OnStart(): One or more of InputFIle, OutputFile or LogFile hasn't been set! Aborting Recovery...")
-            dlg = wx.MessageDialog(self.MainPanel, 'Please set the Input file, Log file and Output file correctly before starting!', 'DDRescue-GUI - Error!', wx.OK | wx.ICON_ERROR)
+            dlg = wx.MessageDialog(self.Panel, 'Please set the Input file, Log file and Output file correctly before starting!', 'DDRescue-GUI - Error!', wx.OK | wx.ICON_ERROR)
             dlg.ShowModal()
             dlg.Destroy()
             self.UpdateStatusBar("Ready.")
@@ -1268,7 +1268,7 @@ class MainWindow(wx.Frame):
         #If we're still recovering data, prompt the user to try killing ddrescue again.
         if RecoveringData:
             logger.warning("MainWindow().PromptToKillDdrescue(): ddrescue is still running 5 seconds after attempted abort! Asking user whether to wait or trying killing it again...")
-            dlg = wx.MessageDialog(self.MainPanel, "Do you want to try to stop ddrescue again, or wait for five more seconds? Click yes to stop ddrescue and no to wait.", "DDRescue is still running!", wx.YES_NO|wx.ICON_QUESTION)
+            dlg = wx.MessageDialog(self.Panel, "Do you want to try to stop ddrescue again, or wait for five more seconds? Click yes to stop ddrescue and no to wait.", "DDRescue is still running!", wx.YES_NO|wx.ICON_QUESTION)
 
             #Catch errors on wxpython < 2.9.
             try:
@@ -1303,7 +1303,7 @@ class MainWindow(wx.Frame):
             else:
                 subprocess.Popen(RescourcePath+"""/other/CocoaDialog.app/Contents/MacOS/CocoaDialog bubble --title "DDRescue-GUI" --text "Recovery aborted by user." --icon-file """+RescourcePath+"""/images/Logo.png  --background-top EFF7FD --border-color EFF7FD""", shell=True)
 
-            dlg = wx.MessageDialog(self.MainPanel, "Your recovery has been aborted as you requested.\n\nNote: Your recovered data may be incomplete at this point, so you may now want to run a second recovery to try and grab the remaining data. If you wish to, you may now use DDRescue-GUI to mount your destination drive/file so you can access your data, although some/all of it may be unreadable in its current state.", "DDRescue-GUI - Information", wx.OK | wx.ICON_INFORMATION)
+            dlg = wx.MessageDialog(self.Panel, "Your recovery has been aborted as you requested.\n\nNote: Your recovered data may be incomplete at this point, so you may now want to run a second recovery to try and grab the remaining data. If you wish to, you may now use DDRescue-GUI to mount your destination drive/file so you can access your data, although some/all of it may be unreadable in its current state.", "DDRescue-GUI - Information", wx.OK | wx.ICON_INFORMATION)
             dlg.ShowModal()
             dlg.Destroy()
 
@@ -1317,7 +1317,7 @@ class MainWindow(wx.Frame):
             else:
                 subprocess.Popen(RescourcePath+"""/other/CocoaDialog.app/Contents/MacOS/CocoaDialog bubble --title "DDRescue-GUI" --text "Recovery Error! ddrescue aborted immediately. See GUI for more info." --icon-file """+RescourcePath+"""/images/Logo.png  --background-top EFF7FD --border-color EFF7FD""", shell=True)
 
-            dlg = wx.MessageDialog(self.MainPanel, "We didn't get ddrescue's initial status! This probably means ddrescue aborted immediately. Please check all of your settings, and try again. Here is ddrescue's output, which may tell you what went wrong:\n\n"+self.OutputBox.GetValue(), "DDRescue-GUI - Error!", wx.OK | wx.ICON_ERROR)
+            dlg = wx.MessageDialog(self.Panel, "We didn't get ddrescue's initial status! This probably means ddrescue aborted immediately. Please check all of your settings, and try again. Here is ddrescue's output, which may tell you what went wrong:\n\n"+self.OutputBox.GetValue(), "DDRescue-GUI - Error!", wx.OK | wx.ICON_ERROR)
             dlg.ShowModal()
             dlg.Destroy()
 
@@ -1331,7 +1331,7 @@ class MainWindow(wx.Frame):
             else:
                 subprocess.Popen(RescourcePath+"""/other/CocoaDialog.app/Contents/MacOS/CocoaDialog bubble --title "DDRescue-GUI" --text "Recovery Error! ddrescue exited with exit status "+unicode(ReturnCode)+"!" --icon-file """+RescourcePath+"""/images/Logo.png  --background-top EFF7FD --border-color EFF7FD""", shell=True)
 
-            dlg = wx.MessageDialog(self.MainPanel, "Ddrescue exited with nonzero exit status "+unicode(ReturnCode)+"! Perhaps the output file/disk is full? Please check all of your settings, and try again. Here is ddrescue's output, which may tell you what went wrong:\n\n"+self.OutputBox.GetValue(), "DDRescue-GUI - Error!", wx.OK | wx.ICON_ERROR)
+            dlg = wx.MessageDialog(self.Panel, "Ddrescue exited with nonzero exit status "+unicode(ReturnCode)+"! Perhaps the output file/disk is full? Please check all of your settings, and try again. Here is ddrescue's output, which may tell you what went wrong:\n\n"+self.OutputBox.GetValue(), "DDRescue-GUI - Error!", wx.OK | wx.ICON_ERROR)
             dlg.ShowModal()
             dlg.Destroy()
 
@@ -1358,7 +1358,7 @@ class MainWindow(wx.Frame):
                 else:
                     subprocess.Popen(RescourcePath+"""/other/CocoaDialog.app/Contents/MacOS/CocoaDialog bubble --title "DDRescue-GUI" --text "Recovery Finished, but not all data was recovered." --icon-file """+RescourcePath+"""/images/Logo.png  --background-top EFF7FD --border-color EFF7FD""", shell=True)
 
-            dlg = wx.MessageDialog(self.MainPanel, Message, "DDRescue-GUI - Information", wx.OK | wx.ICON_INFORMATION)
+            dlg = wx.MessageDialog(self.Panel, Message, "DDRescue-GUI - Information", wx.OK | wx.ICON_INFORMATION)
             dlg.ShowModal()
             dlg.Destroy()
 
@@ -1421,13 +1421,13 @@ class MainWindow(wx.Frame):
         #Check if DDRescue-GUI is recovering data.
         if RecoveringData:
             logger.error("MainWindow().OnExit(): Can't exit while recovering data! Aborting exit attempt...")
-            dlg = wx.MessageDialog(self.MainPanel, "You can't exit DDRescue-GUI while recovering data!", "DDRescue-GUI - Error!", wx.OK | wx.ICON_ERROR)
+            dlg = wx.MessageDialog(self.Panel, "You can't exit DDRescue-GUI while recovering data!", "DDRescue-GUI - Error!", wx.OK | wx.ICON_ERROR)
             dlg.ShowModal()
             dlg.Destroy()
 
         else:
             logger.info("MainWindow().OnExit(): Double-checking the exit attempt with the user...")
-            dlg = wx.MessageDialog(self.MainPanel, 'Are you sure you want to exit?', 'DDRescue-GUI - Question!', wx.YES_NO | wx.ICON_QUESTION)
+            dlg = wx.MessageDialog(self.Panel, 'Are you sure you want to exit?', 'DDRescue-GUI - Question!', wx.YES_NO | wx.ICON_QUESTION)
             Answer = dlg.ShowModal()
             dlg.Destroy()
 
@@ -1439,13 +1439,13 @@ class MainWindow(wx.Frame):
                 logging.shutdown()
 
                 #Prompt user to save the log file.
-                dlg = wx.MessageDialog(self.MainPanel, "Do you want to keep DDRescue-GUI's log file? For privacy reasons, DDRescue-GUI will delete its log file when closing. If you want to save it, which is helpful for debugging if something went wrong, click yes, and otherwise click no.", "DDRescue-GUI - Question", style=wx.YES_NO | wx.ICON_QUESTION, pos=wx.DefaultPosition)
+                dlg = wx.MessageDialog(self.Panel, "Do you want to keep DDRescue-GUI's log file? For privacy reasons, DDRescue-GUI will delete its log file when closing. If you want to save it, which is helpful for debugging if something went wrong, click yes, and otherwise click no.", "DDRescue-GUI - Question", style=wx.YES_NO | wx.ICON_QUESTION, pos=wx.DefaultPosition)
                 Answer = dlg.ShowModal()
                 dlg.Destroy()
 
                 if Answer == wx.ID_YES:
                     #Ask the user where to save it.
-                    dlg = wx.FileDialog(self.MainPanel, "Save log file to...", defaultDir=self.UserHomeDir, wildcard="Log Files (*.log)|*.log" , style=wx.SAVE)
+                    dlg = wx.FileDialog(self.Panel, "Save log file to...", defaultDir=self.UserHomeDir, wildcard="Log Files (*.log)|*.log" , style=wx.SAVE)
                     Answer = dlg.ShowModal()
                     File = dlg.GetPath()
                     dlg.Destroy()
@@ -1454,17 +1454,17 @@ class MainWindow(wx.Frame):
                         #Copy it to the specified path, using a one-liner, and don't bother handling any errors, because this is run as root.
                         BackendTools().StartProcess(Command="cp /tmp/ddrescue-gui.log "+File, ReturnOutput=False)
 
-                        dlg = wx.MessageDialog(self.MainPanel, 'Done! DDRescue-GUI will now exit.', 'DDRescue-GUI - Information', wx.OK | wx.ICON_INFORMATION)
+                        dlg = wx.MessageDialog(self.Panel, 'Done! DDRescue-GUI will now exit.', 'DDRescue-GUI - Information', wx.OK | wx.ICON_INFORMATION)
                         dlg.ShowModal()
                         dlg.Destroy()
 
                     else:
-                        dlg = wx.MessageDialog(self.MainPanel, 'Okay, DDRescue-GUI will now exit without saving the log file.', 'DDRescue-GUI - Information', wx.OK | wx.ICON_INFORMATION)
+                        dlg = wx.MessageDialog(self.Panel, 'Okay, DDRescue-GUI will now exit without saving the log file.', 'DDRescue-GUI - Information', wx.OK | wx.ICON_INFORMATION)
                         dlg.ShowModal()
                         dlg.Destroy()
 
                 else:
-                    dlg = wx.MessageDialog(self.MainPanel, 'Okay, DDRescue-GUI will now exit without saving the log file.', 'DDRescue-GUI - Information', wx.OK | wx.ICON_INFORMATION)
+                    dlg = wx.MessageDialog(self.Panel, 'Okay, DDRescue-GUI will now exit without saving the log file.', 'DDRescue-GUI - Information', wx.OK | wx.ICON_INFORMATION)
                     dlg.ShowModal()
                     dlg.Destroy()
 
@@ -1487,7 +1487,7 @@ class DevInfoWindow(wx.Frame):
     def __init__(self,ParentWindow):
         """Initialize DevInfoWindow"""
         wx.Frame.__init__(self, wx.GetApp().TopWindow, title="DDRescue-GUI - Disk Information", size=(780,310), style=wx.DEFAULT_FRAME_STYLE)
-        self.DevInfoPanel=wx.Panel(self)
+        self.Panel = wx.Panel(self)
         self.SetClientSize(wx.Size(780,310))
         self.ParentWindow = ParentWindow
         wx.Frame.SetIcon(self, AppIcon)
@@ -1506,17 +1506,17 @@ class DevInfoWindow(wx.Frame):
             logger.debug("DevInfoWindow().__init__(): Updating list ctrl with Disk info already present...")
             self.UpdateListCtrl()
 
-        #Call Layout() on self.DevInfoPanel() to ensure it displays properly.
-        self.DevInfoPanel.Layout()
+        #Call Layout() on self.Panel() to ensure it displays properly.
+        self.Panel.Layout()
 
         logger.info("DevInfoWindow().__init__(): Ready. Waiting for events...")
 
     def CreateWidgets(self):
         """Create all widgets for DevInfoWindow"""
-        self.TitleText = wx.StaticText(self.DevInfoPanel, -1, "Here are all the detected disks on your computer")
-        self.ListCtrl = wx.ListCtrl(self.DevInfoPanel, -1, style=wx.LC_REPORT|wx.LC_VRULES)
-        self.OkayButton = wx.Button(self.DevInfoPanel, -1, "Okay")
-        self.RefreshButton = wx.Button(self.DevInfoPanel, -1, "Refresh")
+        self.TitleText = wx.StaticText(self.Panel, -1, "Here are all the detected disks on your computer")
+        self.ListCtrl = wx.ListCtrl(self.Panel, -1, style=wx.LC_REPORT|wx.LC_VRULES)
+        self.OkayButton = wx.Button(self.Panel, -1, "Okay")
+        self.RefreshButton = wx.Button(self.Panel, -1, "Refresh")
 
         #Disable the refresh button if we're recovering data.
         if RecoveringData:
@@ -1524,7 +1524,7 @@ class DevInfoWindow(wx.Frame):
 
         #Create the animation for the throbber.
         throb = wx.animate.Animation(RescourcePath+"/images/Throbber.gif")
-        self.Throbber = wx.animate.AnimationCtrl(self.DevInfoPanel, -1, throb)
+        self.Throbber = wx.animate.AnimationCtrl(self.Panel, -1, throb)
         self.Throbber.SetUseWindowBackgroundColour(True)
         self.Throbber.SetInactiveBitmap(wx.Bitmap(RescourcePath+"/images/ThrobberRest.png", wx.BITMAP_TYPE_PNG))
         self.Throbber.SetClientSize(wx.Size(30,30))
@@ -1550,7 +1550,7 @@ class DevInfoWindow(wx.Frame):
         MainSizer.Add(BottomSizer, 0, wx.EXPAND|wx.ALL ^ wx.TOP, 10)
 
         #Get the sizer set up for the frame.
-        self.DevInfoPanel.SetSizer(MainSizer)
+        self.Panel.SetSizer(MainSizer)
         MainSizer.SetMinSize(wx.Size(780,310))
         MainSizer.SetSizeHints(self)
 
@@ -1670,7 +1670,7 @@ class SettingsWindow(wx.Frame):
     def __init__(self,ParentWindow):
         """Initialize SettingsWindow"""
         wx.Frame.__init__(self, wx.GetApp().TopWindow, title="DDRescue-GUI - Settings", size=(569,479), style=wx.DEFAULT_FRAME_STYLE)
-        self.SettingsPanel=wx.Panel(self)
+        self.Panel = wx.Panel(self)
         self.SetClientSize(wx.Size(569,479))
         self.ParentWindow = ParentWindow
         wx.Frame.SetIcon(self, AppIcon)
@@ -1703,38 +1703,38 @@ class SettingsWindow(wx.Frame):
         logger.debug("SettingsWindow().__init__(): Setting up options...")
         self.SetupOptions()
 
-        #Call Layout() on self.SettingsPanel() to ensure it displays properly.
-        self.SettingsPanel.Layout()
+        #Call Layout() on self.Panel() to ensure it displays properly.
+        self.Panel.Layout()
 
         logger.info("SettingsWindow().__init__(): Ready. Waiting for events...")
 
     def CreateButtons(self):
         """Create all buttons for SettingsWindow"""
-        self.FastRecButton = wx.Button(self.SettingsPanel, -1, "Set to fastest recovery")
-        self.BestRecButton = wx.Button(self.SettingsPanel, -1, "Set to best recovery")
-        self.DefaultRecButton = wx.Button(self.SettingsPanel, -1, "Balanced (default)")
-        self.ExitButton = wx.Button(self.SettingsPanel, -1, "Save settings and close") 
+        self.FastRecButton = wx.Button(self.Panel, -1, "Set to fastest recovery")
+        self.BestRecButton = wx.Button(self.Panel, -1, "Set to best recovery")
+        self.DefaultRecButton = wx.Button(self.Panel, -1, "Balanced (default)")
+        self.ExitButton = wx.Button(self.Panel, -1, "Save settings and close") 
 
     def CreateText(self):
         """Create all text for SettingsWindow"""
-        self.TitleText = wx.StaticText(self.SettingsPanel, -1, "Welcome to Settings.")
-        self.BadSectText = wx.StaticText(self.SettingsPanel, -1, "No. of times to retry bad sectors:")
-        self.MaxErrorsText = wx.StaticText(self.SettingsPanel, -1, "Maximum number of errors before exiting:")
-        self.ClustSizeText = wx.StaticText(self.SettingsPanel, -1, "Number of clusters to copy at a time:")
+        self.TitleText = wx.StaticText(self.Panel, -1, "Welcome to Settings.")
+        self.BadSectText = wx.StaticText(self.Panel, -1, "No. of times to retry bad sectors:")
+        self.MaxErrorsText = wx.StaticText(self.Panel, -1, "Maximum number of errors before exiting:")
+        self.ClustSizeText = wx.StaticText(self.Panel, -1, "Number of clusters to copy at a time:")
 
     def CreateCheckBoxes(self):
         """Create all CheckBoxes for SettingsWindow, and set their default states (all unchecked)"""
-        self.DirectAccessCB = wx.CheckBox(self.SettingsPanel, -1, "Use Direct Disk Access (Recommended)")
-        self.OverwriteCB = wx.CheckBox(self.SettingsPanel, -1, "Overwrite output file/disk (Enable if recovering to a disk)")
-        self.ReverseCB = wx.CheckBox(self.SettingsPanel, -1, "Read the input file/disk backwards")
-        self.PreallocCB = wx.CheckBox(self.SettingsPanel, -1, "Preallocate space on disc for output file/disk")
-        self.NoSplitCB = wx.CheckBox(self.SettingsPanel, -1, "Do a soft run (don't attempt to read bad sectors)")
+        self.DirectAccessCB = wx.CheckBox(self.Panel, -1, "Use Direct Disk Access (Recommended)")
+        self.OverwriteCB = wx.CheckBox(self.Panel, -1, "Overwrite output file/disk (Enable if recovering to a disk)")
+        self.ReverseCB = wx.CheckBox(self.Panel, -1, "Read the input file/disk backwards")
+        self.PreallocCB = wx.CheckBox(self.Panel, -1, "Preallocate space on disc for output file/disk")
+        self.NoSplitCB = wx.CheckBox(self.Panel, -1, "Do a soft run (don't attempt to read bad sectors)")
 
     def CreateChoiceBoxes(self):
         """Create all ChoiceBoxes for SettingsWindow, and call self.SetDefaultRec()"""
-        self.BadSectChoice = wx.Choice(self.SettingsPanel, -1, choices=['0', '1', 'Default (2)', '3', '5', 'Forever'])  
-        self.MaxErrorsChoice = wx.Choice(self.SettingsPanel, -1, choices=['Default (Infinite)', '1000', '500', '100', '50', '10'])
-        self.ClustSizeChoice = wx.Choice(self.SettingsPanel, -1, choices=['256', 'Default (128)', '64', '32']) 
+        self.BadSectChoice = wx.Choice(self.Panel, -1, choices=['0', '1', 'Default (2)', '3', '5', 'Forever'])  
+        self.MaxErrorsChoice = wx.Choice(self.Panel, -1, choices=['Default (Infinite)', '1000', '500', '100', '50', '10'])
+        self.ClustSizeChoice = wx.Choice(self.Panel, -1, choices=['256', 'Default (128)', '64', '32']) 
 
         #Set default settings.
         self.SetDefaultRec()
@@ -1785,7 +1785,7 @@ class SettingsWindow(wx.Frame):
         MainSizer.Add(self.ExitButton, 4, wx.CENTER|wx.ALL, 10)
 
         #Get the main sizer set up for the frame.
-        self.SettingsPanel.SetSizer(MainSizer)
+        self.Panel.SetSizer(MainSizer)
         MainSizer.SetMinSize(wx.Size(569,479))
         MainSizer.SetSizeHints(self)
 
@@ -2021,7 +2021,7 @@ class PrivPolWindow(wx.Frame):
     def __init__(self, ParentWindow):
         """Initialize PrivPolWindow"""
         wx.Frame.__init__(self, parent=wx.GetApp().TopWindow, title="DDRescue-GUI - Privacy Policy", size=(400,310), style=wx.DEFAULT_FRAME_STYLE)
-        self.PrivPolPanel = wx.Panel(self)
+        self.Panel = wx.Panel(self)
         self.SetClientSize(wx.Size(400,310))
         self.ParentWindow = ParentWindow
         wx.Frame.SetIcon(self, AppIcon)
@@ -2035,15 +2035,15 @@ class PrivPolWindow(wx.Frame):
         logger.debug("PrivPolWindow().__init__(): Binding Events...")
         self.BindEvents()
 
-        #Call Layout() on self.PrivPolPanel() to ensure it displays properly.
-        self.PrivPolPanel.Layout()
+        #Call Layout() on self.Panel() to ensure it displays properly.
+        self.Panel.Layout()
 
         logger.debug("PrivPolWindow().__init__(): Ready. Waiting for events...")
 
     def CreateWidgets(self):
         """Create all widgets for PrivPolWindow"""
         #Make a text box to contain the policy's text.
-        self.TextBox = wx.TextCtrl(self.PrivPolPanel, -1, "", style=wx.TE_MULTILINE|wx.TE_READONLY|wx.TE_WORDWRAP)
+        self.TextBox = wx.TextCtrl(self.Panel, -1, "", style=wx.TE_MULTILINE|wx.TE_READONLY|wx.TE_WORDWRAP)
 
         #Populate the text box.
         self.TextBox.LoadFile(RescourcePath+"/other/privacypolicy.txt")
@@ -2052,7 +2052,7 @@ class PrivPolWindow(wx.Frame):
         self.TextBox.SetInsertionPoint(0)
 
         #Make a button to close the dialog.
-        self.CloseButton = wx.Button(self.PrivPolPanel, -1, "Okay")
+        self.CloseButton = wx.Button(self.Panel, -1, "Okay")
 
     def SetupSizers(self):
         """Set up sizers for PrivPolWindow"""
@@ -2064,7 +2064,7 @@ class PrivPolWindow(wx.Frame):
         MainSizer.Add(self.CloseButton, 0, wx.BOTTOM|wx.CENTER, 10)
 
         #Get the sizer set up for the frame.
-        self.PrivPolPanel.SetSizer(MainSizer)
+        self.Panel.SetSizer(MainSizer)
         MainSizer.SetMinSize(wx.Size(400,310))
         MainSizer.SetSizeHints(self)
 
@@ -2083,7 +2083,7 @@ class FinishedWindow(wx.Frame):
     def __init__(self,ParentWindow):
         """Initialize FinishedWindow"""
         wx.Frame.__init__(self, wx.GetApp().TopWindow, title="DDRescue-GUI - Finished!", size=(350,120), style=wx.DEFAULT_FRAME_STYLE)
-        self.FinishedPanel = wx.Panel(self)
+        self.Panel = wx.Panel(self)
         self.SetClientSize(wx.Size(350,120))
         self.ParentWindow = ParentWindow
         self.OutputFileType = None
@@ -2102,22 +2102,22 @@ class FinishedWindow(wx.Frame):
         logger.debug("FinishedWindow().__init__(): Binding events...")
         self.BindEvents()
 
-        #Call Layout() on self.FinishedPanel() to ensure it displays properly.
-        self.FinishedPanel.Layout()
+        #Call Layout() on self.Panel() to ensure it displays properly.
+        self.Panel.Layout()
 
         logger.info("FinishedWindow().__init__(): Ready. Waiting for events...")
 
     def CreateButtons(self):
         """Create all buttons for FinishedWindow"""
-        self.RestartButton = wx.Button(self.FinishedPanel, -1, "Reset")
-        self.MountButton = wx.Button(self.FinishedPanel, -1, "Mount Image/Disk")
-        self.QuitButton = wx.Button(self.FinishedPanel, -1, "Quit")
+        self.RestartButton = wx.Button(self.Panel, -1, "Reset")
+        self.MountButton = wx.Button(self.Panel, -1, "Mount Image/Disk")
+        self.QuitButton = wx.Button(self.Panel, -1, "Quit")
 
     def CreateText(self):
         """Create all text for FinishedWindow"""
-        self.TopText = wx.StaticText(self.FinishedPanel, -1, "Your recovered data is at:")
-        self.PathText = wx.StaticText(self.FinishedPanel, -1, OutputFile)
-        self.BottomText = wx.StaticText(self.FinishedPanel, -1, "What do you want to do now?")
+        self.TopText = wx.StaticText(self.Panel, -1, "Your recovered data is at:")
+        self.PathText = wx.StaticText(self.Panel, -1, OutputFile)
+        self.BottomText = wx.StaticText(self.Panel, -1, "What do you want to do now?")
     
     def SetupSizers(self):
         """Set up all sizers for FinishedWindow"""
@@ -2141,7 +2141,7 @@ class FinishedWindow(wx.Frame):
         MainSizer.Add(ButtonSizer, 0, wx.BOTTOM|wx.EXPAND, 10)
 
         #Get the sizer set up for the frame.
-        self.FinishedPanel.SetSizer(MainSizer)
+        self.Panel.SetSizer(MainSizer)
         MainSizer.SetMinSize(wx.Size(350,120))
         MainSizer.SetSizeHints(self)
 
@@ -2164,10 +2164,10 @@ class FinishedWindow(wx.Frame):
                 self.RestartButton.Disable()
                 self.QuitButton.Disable()
 
-                #Call Layout() on self.FinishedPanel() to ensure it displays properly.
-                self.FinishedPanel.Layout()
+                #Call Layout() on self.Panel() to ensure it displays properly.
+                self.Panel.Layout()
 
-                dlg = wx.MessageDialog(self.FinishedPanel, "Your output file is now mounted. Leave DDRescue-GUI open and click unmount when you're finished.", "DDRescue-GUI - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
+                dlg = wx.MessageDialog(self.Panel, "Your output file is now mounted. Leave DDRescue-GUI open and click unmount when you're finished.", "DDRescue-GUI - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
                 dlg.ShowModal()
                 dlg.Destroy()
 
@@ -2182,8 +2182,8 @@ class FinishedWindow(wx.Frame):
                 self.RestartButton.Enable()
                 self.QuitButton.Enable()
 
-                #Call Layout() on self.FinishedPanel() to ensure it displays properly.
-                self.FinishedPanel.Layout()
+                #Call Layout() on self.Panel() to ensure it displays properly.
+                self.Panel.Layout()
 
         wx.CallAfter(self.ParentWindow.UpdateStatusBar, "Finished")
 
@@ -2199,7 +2199,7 @@ class FinishedWindow(wx.Frame):
             except:
                 #An error has occured.
                 logger.error("FinishedWindow().MountOutputFile(): Couldn't mount output file. Warning user...")
-                dlg = wx.MessageDialog(self.FinishedPanel, "Your output file could not be mounted!\n\nThe most likely reason for this is that the disk image is incomplete. If the disk image is complete, it may use an unsupported filesystem.\n\nIf you were asked which partition to mount, try again and choose a different one.", "DDRescue-GUI - Error!", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
+                dlg = wx.MessageDialog(self.Panel, "Your output file could not be mounted!\n\nThe most likely reason for this is that the disk image is incomplete. If the disk image is complete, it may use an unsupported filesystem.\n\nIf you were asked which partition to mount, try again and choose a different one.", "DDRescue-GUI - Error!", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
                 dlg.ShowModal()
                 dlg.Destroy()
                 return False
@@ -2211,7 +2211,7 @@ class FinishedWindow(wx.Frame):
             except:
                 #An error has occured.
                 logger.error("FinishedWindow().MountOutputFile(): Couldn't mount output file. Warning user...")
-                dlg = wx.MessageDialog(self.FinishedPanel, "Your output file could not be mounted!\n\nThe most likely reason for this is that the disk image is incomplete. If the disk image is complete, it may use an unsupported filesystem (OS X can read only FAT, NTFS, EXFAT, and HFS/HFS+ filesystems).\n\nIf you were asked which partition to mount, try again and choose a different one.", "DDRescue-GUI - Error!", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
+                dlg = wx.MessageDialog(self.Panel, "Your output file could not be mounted!\n\nThe most likely reason for this is that the disk image is incomplete. If the disk image is complete, it may use an unsupported filesystem (OS X can read only FAT, NTFS, EXFAT, and HFS/HFS+ filesystems).\n\nIf you were asked which partition to mount, try again and choose a different one.", "DDRescue-GUI - Error!", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
                 dlg.ShowModal()
                 dlg.Destroy()
                 return False
@@ -2278,7 +2278,7 @@ class FinishedWindow(wx.Frame):
 
             else:
                 logger.error("FinishedWindow().MountDiskOSX(): Error! Warning the user...")
-                dlg = wx.MessageDialog(self.FinishedPanel, "Couldn't mount your output file. Perhaps it uses an unsupported filesystem?", "DDRescue-GUI - Error!", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
+                dlg = wx.MessageDialog(self.Panel, "Couldn't mount your output file. Perhaps it uses an unsupported filesystem?", "DDRescue-GUI - Error!", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
                 dlg.ShowModal()
                 dlg.Destroy()
                 return False
@@ -2325,7 +2325,7 @@ class FinishedWindow(wx.Frame):
 
             #Ask the user which partition to mount.
             logger.debug("FinishedWindow().MountDiskOSX(): Asking user which partition to mount...")
-            dlg = wx.SingleChoiceDialog(self.FinishedPanel, "Please select which partition you wish to mount", "DDRescue-GUI - Select a Partition", Choices, pos=wx.DefaultPosition)
+            dlg = wx.SingleChoiceDialog(self.Panel, "Please select which partition you wish to mount", "DDRescue-GUI - Select a Partition", Choices, pos=wx.DefaultPosition)
 
             #Respond to the user's action.
             if dlg.ShowModal() != wx.ID_OK:
@@ -2373,7 +2373,7 @@ class FinishedWindow(wx.Frame):
 
             else:
                 logger.error("FinishedWindow().MountDiskOSX(): Error! Warning the user...")
-                dlg = wx.MessageDialog(self.FinishedPanel, "Couldn't mount your selected partition. Perhaps it uses an unsupported filesystem?", "DDRescue-GUI - Error!", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
+                dlg = wx.MessageDialog(self.Panel, "Couldn't mount your selected partition. Perhaps it uses an unsupported filesystem?", "DDRescue-GUI - Error!", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
                 dlg.ShowModal()
                 dlg.Destroy()
                 return False
@@ -2405,7 +2405,7 @@ class FinishedWindow(wx.Frame):
 
             else:
                 logger.error("FinishedWindow().MountDiskLinux(): Error! Warning the user...")
-                dlg = wx.MessageDialog(self.FinishedPanel, "Couldn't mount your output file. Perhaps it uses an unsupported filesystem?", "DDRescue-GUI - Error!", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
+                dlg = wx.MessageDialog(self.Panel, "Couldn't mount your output file. Perhaps it uses an unsupported filesystem?", "DDRescue-GUI - Error!", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
                 dlg.ShowModal()
                 dlg.Destroy()
                 return False
@@ -2445,7 +2445,7 @@ class FinishedWindow(wx.Frame):
 
             #Ask the user which partition to mount.
             logger.debug("FinishedWindow().MountDiskLinux(): Asking user which partition to mount...")
-            dlg = wx.SingleChoiceDialog(self.FinishedPanel, "Please select which partition you wish to mount", "DDRescue-GUI - Select a Partition", Choices, pos=wx.DefaultPosition)
+            dlg = wx.SingleChoiceDialog(self.Panel, "Please select which partition you wish to mount", "DDRescue-GUI - Select a Partition", Choices, pos=wx.DefaultPosition)
 
             #Respond to the user's action.
             if dlg.ShowModal() != wx.ID_OK:
@@ -2476,7 +2476,7 @@ class FinishedWindow(wx.Frame):
 
             else:
                 logger.error("FinishedWindow().MountDiskLinux(): Error! Warning the user...")
-                dlg = wx.MessageDialog(self.FinishedPanel, "Couldn't mount your selected partition. Perhaps it uses an unsupported filesystem?", "DDRescue-GUI - Error!", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
+                dlg = wx.MessageDialog(self.Panel, "Couldn't mount your selected partition. Perhaps it uses an unsupported filesystem?", "DDRescue-GUI - Error!", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
                 dlg.ShowModal()
                 dlg.Destroy()
                 return False
