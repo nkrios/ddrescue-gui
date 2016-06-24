@@ -27,6 +27,7 @@ import wx.animate
 import time
 import subprocess
 import os
+import sys
 
 #Determine if running on Linux or Mac.
 if "wxGTK" in wx.PlatformInfo:
@@ -214,10 +215,10 @@ class AuthWindow(wx.Frame):
     def StartDDRescueGUI(self, Password):
         """Start DDRescue-GUI and exit"""
         if Linux:
-            Cmd = subprocess.Popen("sudo -SH "+RescourcePath+"/DDRescue-GUI.py", stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+            Cmd = subprocess.Popen("sudo -SH "+RescourcePath+"/DDRescue-GUI.py", stdin=subprocess.PIPE, stdout=sys.stdout, stderr=subprocess.PIPE, shell=True)
 
         else:
-            Cmd = subprocess.Popen("sudo -SH "+RescourcePath+"/../MacOS/DDRescue-GUI", stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+            Cmd = subprocess.Popen("sudo -SH "+RescourcePath+"/../MacOS/DDRescue-GUI", stdin=subprocess.PIPE, stdout=sys.stdout, stderr=subprocess.PIPE, shell=True)
 
         #Send the password to sudo through stdin, to avoid showing the user's password in the system/activity monitor.
         Cmd.stdin.write(Password+"\n")
