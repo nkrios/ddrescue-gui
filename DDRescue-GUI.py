@@ -36,10 +36,11 @@ import re
 import os
 import sys
 import plistlib
+from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "1.6~pre1"
-ReleaseDate = "22/6/2016"
+ReleaseDate = "1/7/2016"
 
 def usage():
     print("\nUsage: DDRescue-GUI.py [OPTION]\n\n")
@@ -118,6 +119,7 @@ logger.setLevel(loggerLevel)
 #Log which OS we're running on (helpful for debugging).
 if Linux:
     logger.debug("Detected Linux...")
+
     if PartedMagic:
         logger.debug("Detected Parted Magic...")
 
@@ -137,6 +139,7 @@ GetDevInfo.getdevinfo.re = re
 GetDevInfo.getdevinfo.logger = logger
 GetDevInfo.getdevinfo.Linux = Linux
 GetDevInfo.getdevinfo.plistlib = plistlib
+GetDevInfo.getdevinfo.BeautifulSoup = BeautifulSoup
 
 Tools.tools.os = os
 Tools.tools.subprocess = subprocess
@@ -763,7 +766,10 @@ class MainWindow(wx.Frame):
         logger.info("MainWindow().UpdateFileChoices(): Updating the GUI with the new Disk information...")
 
         #Grab the Disk list from the other Disk info.
-        DiskList = DiskInfo[0]
+        DiskList = []
+
+        for Disk in DiskInfo.keys():
+            DiskList.append(Disk)
 
         if self.Starting:
             #We are starting up, so do some extra stuff.
@@ -1021,13 +1027,13 @@ class MainWindow(wx.Frame):
             logger.info("MainWindow().OnStart(): Unmounting input and output files if needed...")
 
             for Disk in [InputFile, OutputFile]:
-                if BackendTools().GetDiskMountPoint(Disk) != None or DevInfoTools().IsPartition(Disk, DiskInfo[0]) == False:
+                if BackendTools().GetDiskMountPoint(Disk) != None or DiskInfo[Disk]["Type"] == "Device":
                     #The Disk is mounted.
                     logger.info("MainWindow().OnStart(): Unmounting "+Disk+"...")
                     self.UpdateStatusBar("Unmounting "+Disk+". This may take a few moments...")
                     wx.Yield()
 
-                    if DevInfoTools().IsPartition(Disk, DiskInfo[0]):
+                    if DiskInfo[Disk]["Type"] == "Partition":
                         #Unmount it.
                         logger.debug("MainWindow().OnStart(): "+Disk+" is a partition. Unmounting "+Disk+"...")
                         Retval = BackendTools().UnmountDisk(Disk)
@@ -1038,7 +1044,7 @@ class MainWindow(wx.Frame):
                         Retvals = []
                         Retval = 0
 
-                        for Partition in DevInfoTools().GetPartitions(Disk, DiskInfo[0]):
+                        for Partition in DiskInfo[Disk]["Partitions"]:
                             logger.info("MainWindow().OnStart(): Unmounting "+Partition+"...")
                             Retvals.append(BackendTools().UnmountDisk(Partition))
 
@@ -1616,45 +1622,20 @@ class DevInfoWindow(wx.Frame):
         #Add info from the custom module.
         logger.debug("DevInfoWindow().UpdateListCtrl(): Adding Disk info to list ctrl...")
 
-        DiskList = DiskInfo[0]
-        DiskTypeInfoList = DiskInfo[1]
-        VendorInfoList = DiskInfo[2]
-        ProductInfoList = DiskInfo[3]
-        SizeInfoList = DiskInfo[4]
-        DescriptionInfoList = DiskInfo[5]
-
-        #Round the sizes to make them human-readable.
-        UnitList = [None, "B", "KB", "MB", "GB", "TB", "PB"]
-        HumanSizeInfoList = []
-
-        for Size in SizeInfoList:
-            Unit = "B"
-
-            #Catch an error in case Size is unknown.
-            try:
-                HumanSize = int(Size)
-
-            except ValueError:
-                HumanSizeInfoList.append(Size)
-
-            else:
-                while len(unicode(HumanSize)) > 3:
-                    #Shift up one unit.
-                    Unit = UnitList[UnitList.index(Unit)+1]
-                    HumanSize = HumanSize//1000
-
-                #Include the unit in the result for both exact and human-readable sizes.
-                HumanSizeInfoList.append(unicode(HumanSize)+" "+Unit)
-
         #Do all of the data at the same time.
-        for DiskName in DiskList:
-            Number = DiskList.index(DiskName)
-            self.ListCtrl.InsertStringItem(index=Number, label=DiskName)
-            self.ListCtrl.SetStringItem(index=Number, col=1, label=DiskTypeInfoList[Number])
-            self.ListCtrl.SetStringItem(index=Number, col=2, label=VendorInfoList[Number])
-            self.ListCtrl.SetStringItem(index=Number, col=3, label=ProductInfoList[Number])
-            self.ListCtrl.SetStringItem(index=Number, col=4, label=HumanSizeInfoList[Number])
-            self.ListCtrl.SetStringItem(index=Number, col=5, label=DescriptionInfoList[Number])
+        Number = -1
+        for Disk in DiskInfo.keys():
+            Number += 1
+            Column = 0
+
+            for Heading in ("Name", "Type", "Vendor", "Product", "Capacity", "Description"):
+                if Column == 0:
+                    self.ListCtrl.InsertStringItem(index=Number, label=Heading)
+
+                else:
+                    self.ListCtrl.SetStringItem(index=Number, col=Column, label=Heading)
+
+                Column += 1
 
         #Auto Resize the columns.
         self.OnSize()
@@ -1934,8 +1915,7 @@ class SettingsWindow(wx.Frame):
 
         #Disk Size setting (OS X only).
         if Linux == False:
-            DiskNum = DiskInfo[0].index(InputFile)
-            DiskSize = "-s "+DiskInfo[4][DiskNum]
+            DiskSize = "-s "+DiskInfo[InputFile]["Capacity"]
             logger.info("SettingsWindow().SaveOptions(): Using disk size: "+DiskSize+".")
 
         else:
