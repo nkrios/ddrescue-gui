@@ -40,7 +40,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "1.6~pre1"
-ReleaseDate = "1/7/2016"
+ReleaseDate = "5/7/2016"
 
 def usage():
     print("\nUsage: DDRescue-GUI.py [OPTION]\n\n")
