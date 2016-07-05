@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*- 
-# Authentication Dialog for DDRescue-GUI Version 1.5
+# Authentication Dialog for DDRescue-GUI Version 1.6
 # This file is part of DDRescue-GUI.
 # Copyright (C) 2013-2016 Hamish McIntyre-Bhatty
 # DDRescue-GUI is free software: you can redistribute it and/or modify it

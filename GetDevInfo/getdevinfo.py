@@ -1,19 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*- 
-# Device Information Obtainer for WxFixBoot Version 2.0~pre1
-# This file is part of WxFixBoot.
+# Device Information Obtainer for DDRescue-GUI 1.6
+# This file is part of DDRescue-GUI 1.6.
 # Copyright (C) 2013-2016 Hamish McIntyre-Bhatty
-# WxFixBoot is free software: you can redistribute it and/or modify it
+# DDRescue-GUI is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 3 or,
 # at your option, any later version.
 #
-# WxFixBoot is distributed in the hope that it will be useful,
+# DDRescue-GUI is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
+# along with DDRescue-GUI.  If not, see <http://www.gnu.org/licenses/>.
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -21,17 +21,25 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-#Begin Main Class. #*** Refactor ***
+#Begin Main Class.
 class Main():
     def IsPartition(self, Disk, DiskList=None):
-        """Check if the given Disk is a partition (macOS)"""
+        """Check if the given Disk is a partition"""
         logger.debug("GetDevInfo: Main().IsPartition(): Checking if Disk: "+Disk+" is a partition...")
 
-        if "s" in Disk.split("disk")[1]:
-            Result = True
+        if Linux:
+            if Disk[0:7] not in ["/dev/sr", "/dev/fd"] and Disk[-1].isdigit() and Disk[0:8] in DiskInfo.keys():
+                Result =  True
+
+            else:
+                Result = False
 
         else:
-            Result = False
+            if "s" in Disk.split("disk")[1]:
+                Result = True
+
+            else:
+                Result = False
 
         logger.info("GetDevInfo: Main().IsPartition(): Result: "+str(Result)+"...")
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*- 
-# DDRescue-GUI Main Script Version 1.5
+# DDRescue-GUI Main Script Version 1.6
 # This file is part of DDRescue-GUI.
 # Copyright (C) 2013-2016 Hamish McIntyre-Bhatty
 # DDRescue-GUI is free software: you can redistribute it and/or modify it
@@ -39,7 +39,7 @@ import plistlib
 from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
-Version = "1.6~pre1"
+Version = "1.6"
 ReleaseDate = "5/7/2016"
 
 def usage():
@@ -342,35 +342,25 @@ class MainWindow(wx.Frame):
 
     def SetVars(self):
         """Set some essential variables"""
-        #Globals.
-        global InputFile
-        global OutputFile
-        global LogFile
-        global RecoveringData
-        global CheckedSettings
-        RecoveringData = False
-        CheckedSettings = False
-        InputFile = None
-        OutputFile = None
-        LogFile = None
+        global Settings
+        Settings = {}
 
-        #Settings globals.
-        global DirectAccess
-        global OverwriteOutputFile
-        global Reverse
-        global Preallocate
-        global NoSplit
-        global BadSectorRetries
-        global MaxErrors
-        global ClusterSize
-        DirectAccess = "-d"
-        OverwriteOutputFile = ""
-        Reverse = ""
-        Preallocate = ""
-        NoSplit = ""
-        BadSectorRetries = "-r 2"
-        MaxErrors = ""
-        ClusterSize = "-c 128"
+        #Basic settings and info.
+        Settings["InputFile"] = None
+        Settings["OutputFile"] = None
+        Settings["LogFile"] = None
+        Settings["RecoveringData"] = False
+        Settings["CheckedSettings"] = False
+
+        #DDRescue's options.
+        Settings["DirectAccess"] = "-d"
+        Settings["OverwriteOutputFile"] = ""
+        Settings["Reverse"] = ""
+        Settings["Preallocate"] = ""
+        Settings["NoSplit"] = ""
+        Settings["BadSectorRetries"] = "-r 2"
+        Settings["MaxErrors"] = ""
+        Settings["ClusterSize"] = "-c 128"
 
         #Local to this function.
         self.AbortedRecovery = False
@@ -810,10 +800,9 @@ class MainWindow(wx.Frame):
     def SetInputFile(self, Event=None):
         """Get the input file/Disk and set a variable to the selected value"""
         logger.debug("MainWindow().SelectInputFile(): Getting user selection...")
-        global InputFile
-        InputFile = self.InputChoiceBox.GetStringSelection()
+        Settings["InputFile"] = self.InputChoiceBox.GetStringSelection()
 
-        if InputFile == "Select a File/Disk":
+        if Settings["InputFile"] == "Select a File/Disk":
             InputFileDlg = wx.FileDialog(self.Panel, "Select Input File/Disk...", defaultDir="/dev", wildcard=self.InputWildcard, style=wx.OPEN)
 
             #Change the default dir on OS X.
@@ -821,75 +810,74 @@ class MainWindow(wx.Frame):
                 InputFileDlg.SetDirectory("/Users")
 
             if InputFileDlg.ShowModal() == wx.ID_OK:
-                InputFile = InputFileDlg.GetPath()
-                logger.info("MainWindow().SelectInputFile(): User selected custom file: "+InputFile+"...")
-                self.CustomInputPathsList.append(InputFile)
-                self.InputChoiceBox.Append(InputFile)
-                self.InputChoiceBox.SetStringSelection(InputFile)
+                Settings["InputFile"] = InputFileDlg.GetPath()
+                logger.info("MainWindow().SelectInputFile(): User selected custom file: "+Settings["InputFile"]+"...")
+                self.CustomInputPathsList.append(Settings["InputFile"])
+                self.InputChoiceBox.Append(Settings["InputFile"])
+                self.InputChoiceBox.SetStringSelection(Settings["InputFile"])
 
             else:
                 logger.info("MainWindow().SelectInputFile(): User declined custom file selection. Resetting InputFile...")
-                InputFile = None
+                Settings["InputFile"] = None
                 self.InputChoiceBox.SetStringSelection("-- Please Select --")
 
-        elif InputFile not in [None, "-- Please Select --"] and InputFile == OutputFile:
+        elif Settings["InputFile"] not in [None, "-- Please Select --"] and Settings["InputFile"] == Settings["OutputFile"]:
             logger.warning("MainWindow().SelectInputFile(): InputFile equals OutputFile!, resetting to None and warning user...")
             dlg = wx.MessageDialog(self.Panel, "You can't use the same disk/file as both the source and the destination!", 'DDRescue-GUI - Error!', wx.OK | wx.ICON_ERROR)
             dlg.ShowModal()
             dlg.Destroy()
-            InputFile = None
+            Settings["InputFile"] = None
             self.InputChoiceBox.SetStringSelection("-- Please Select --")
 
-        elif InputFile == "-- Please Select --":
+        elif Settings["InputFile"] == "-- Please Select --":
             logger.info("MainWindow().SelectInputFile(): Input file reset..")
-            InputFile = None
+            Settings["InputFile"] = None
 
     def SetOutputFile(self, Event=None):
         """Get the output file/Disk and set a variable to the selected value"""
         logger.debug("MainWindow().SelectOutputFile(): Getting user selection...")
-        global OutputFile
-        OutputFile = self.OutputChoiceBox.GetStringSelection()
+        Settings["OutputFile"] = self.OutputChoiceBox.GetStringSelection()
 
-        if OutputFile == "Select a File/Disk":
+        if Settings["OutputFile"] == "Select a File/Disk":
             OutputFileDlg = wx.FileDialog(self.Panel, "Select Output File/Disk...", defaultDir=self.UserHomeDir, wildcard=self.OutputWildcard, style=wx.SAVE)
 
             if OutputFileDlg.ShowModal() == wx.ID_OK:
-                OutputFile = OutputFileDlg.GetPath()
-                if PartedMagic and "/root" in OutputFile:
+                Settings["OutputFile"] = OutputFileDlg.GetPath()
+                if PartedMagic and "/root" in Settings["OutputFile"]:
                     logger.warning("MainWindow().SelectOutputFile(): OutputFile is in root's home directory on Parted Magic! There is no space here, warning user and declining selection...")
                     dlg = wx.MessageDialog(self.Panel, "You can't save the output file in root's home directory in Parted Magic! There's not enough space there, please select a new file.", 'DDRescue-GUI - Error!', wx.OK | wx.ICON_ERROR)
                     dlg.ShowModal()
                     dlg.Destroy()
 
-                    OutputFile = None
+                    Settings["OutputFile"] = None
                     self.OutputChoiceBox.SetStringSelection("-- Please Select --")
 
                 else:
-                    logger.info("MainWindow().SelectOutputFile(): User selected custom file: "+OutputFile+"...")
-                    self.CustomOutputPathsList.append(OutputFile)
-                    self.OutputChoiceBox.Append(OutputFile)
-                    self.OutputChoiceBox.SetStringSelection(OutputFile)
+                    logger.info("MainWindow().SelectOutputFile(): User selected custom file: "+Settings["OutputFile"]+"...")
+                    self.CustomOutputPathsList.append(Settings["OutputFile"])
+                    self.OutputChoiceBox.Append(Settings["OutputFile"])
+                    self.OutputChoiceBox.SetStringSelection(Settings["OutputFile"])
 
             else:
                 logger.info("MainWindow().SelectOutputFile(): User declined custom file selection. Resetting OutputFile...")
-                OutputFile = None
+                Settings["OutputFile"] = None
                 self.OutputChoiceBox.SetStringSelection("-- Please Select --")
 
-        elif OutputFile not in [None, "-- Please Select --"] and OutputFile == InputFile:
+        elif Settings["OutputFile"] not in [None, "-- Please Select --"] and Settings["OutputFile"] == Settings["InputFile"]:
             logger.warning("MainWindow().SelectOutputFile(): OutputFile equals InputFile!, resetting to None and warning user...")
             dlg = wx.MessageDialog(self.Panel, "You can't use the same Disk/file as both the source and the destination!", 'DDRescue-GUI - Error!', wx.OK | wx.ICON_ERROR)
             dlg.ShowModal()
             dlg.Destroy()
-            OutputFile = None
+            Settings["OutputFile"] = None
             self.OutputChoiceBox.SetStringSelection("-- Please Select --")
 
-        elif OutputFile == "-- Please Select --":
+        elif Settings["OutputFile"] == "-- Please Select --":
             logger.debug("MainWindow().SelectInputFile(): Output file reset...")
-            OutputFile = None
+            Settings["OutputFile"] = None
 
         #Check with the user if the output file already exists.
-        if OutputFile != None:
-            if os.path.exists(OutputFile):
+        if Settings["OutputFile"] != None:
+            if os.path.exists(Settings["OutputFile"]):
                 logger.info("MainWindow().SelectInputFile(): Selected file already exists! Showing warning to user...")
                 Dlg = wx.MessageDialog(self.Panel, "The file you selected already exists!\n\nIf you're doing a two-stage recovery, *and you've selected a logfile*, DDRescue-GUI will resume where it left off on the previous run, and it is safe to continue.\n\nOtherwise, you will lose data on this file or device.\n\nPlease be sure you selected the right file. Do you want to accept this file as your output file?", 'DDRescue-GUI -- Warning!', wx.YES_NO | wx.ICON_EXCLAMATION)
 
@@ -898,73 +886,70 @@ class MainWindow(wx.Frame):
 
                 else:
                     logger.info("MainWindow().SelectOutputFile(): User declined the selection. Resetting OutputFile...")
-                    OutputFile = None
+                    Settings["OutputFile"] = None
                     self.OutputChoiceBox.SetStringSelection("-- Please Select --")
 
                 Dlg.Destroy()
 
         #If the file selected is a Disk, enable the overwrite output file option, else disable it.
-        if OutputFile != None:
-            global OverwriteOutputFile
-
-            if OutputFile[0:5] == "/dev/":
+        if Settings["OutputFile"] != None:
+            if Settings["OutputFile"][0:5] == "/dev/":
                 logger.info("MainWindow().SelectOutputFile(): OutputFile is a disk so enabling ddrescue's overwrite mode...")
-                OverwriteOutputFile = "-f"
+                Settings["OverwriteOutputFile"] = "-f"
 
             else:
                 logger.info("MainWindow().SelectOutputFile(): OutputFile isn't a disk so disabling ddrescue's overwrite mode...")
-                OverwriteOutputFile = ""
+                Settings["OverwriteOutputFile"] = ""
 
     def SetLogFile(self, Event=None):
         """Get the log file position/name and set a variable to the selected value"""
         logger.debug("MainWindow().SelectLogFile(): Getting user selection...")
-        global LogFile
-        LogFile = self.LogChoiceBox.GetStringSelection()
+        Settings["LogFile"] = self.LogChoiceBox.GetStringSelection()
 
-        if LogFile == "None (not recommended)":
+        if Settings["LogFile"] == "None (not recommended)":
             Dlg = wx.MessageDialog(self.Panel, "You have not chosen to use a log file. If you do not use one, you will have to start from scratch in the event of a power outage, or if DDRescue-GUI is interrupted. Additionally, you can't do a two-stage recovery without a log file.\n\nAre you really sure you do not want to use a logfile?", "DDRescue-GUI - Warning", wx.YES_NO | wx.ICON_EXCLAMATION)
 
             if Dlg.ShowModal() == wx.ID_YES:
                 logger.warning("MainWindow().SelectLogFile(): User isn't using a log file, despite our warning!")
-                LogFile = ""
+                Settings["LogFile"] = ""
 
             else:
                 logger.info("MainWindow().SelectLogFile(): User decided against not using a log file. Good!")
-                LogFile = None
+                Settings["LogFile"] = None
                 self.LogChoiceBox.SetStringSelection("-- Please Select --")
 
             Dlg.Destroy()
 
-        elif LogFile == "Select a File":
+        elif Settings["LogFile"] == "Select a File":
             LogFileDlg = wx.FileDialog(self.Panel, "Select Log File Position & Name...", defaultDir=self.UserHomeDir, wildcard="Log Files (*.log)|*.log", style=wx.SAVE)
 
             if LogFileDlg.ShowModal() == wx.ID_OK:
-                LogFile = LogFileDlg.GetPath()
+                Settings["LogFile"] = LogFileDlg.GetPath()
 
-                if PartedMagic and "/root" in LogFile:
+                if PartedMagic and "/root" in Settings["LogFile"]:
                     logger.warning("MainWindow().SelectLogFile(): LogFile is in root's home directory on Parted Magic! There is no space here, warning user and declining selection...")
                     dlg = wx.MessageDialog(self.Panel, "You can't save the log file in root's home directory in Parted Magic! There's not enough space there, please select a new file.", 'DDRescue-GUI - Error!', wx.OK | wx.ICON_ERROR)
                     dlg.ShowModal()
                     dlg.Destroy()
 
-                    LogFile = None
+                    Settings["LogFile"] = None
                     self.LogChoiceBox.SetStringSelection("-- Please Select --")
 
                 else:
-                    logger.debug("MainWindow().SelectLogFile(): User selected custom file: "+LogFile+"...")
-                    self.LogChoiceBox.Append(LogFile)
-                    self.LogChoiceBox.SetStringSelection(LogFile)
+                    logger.debug("MainWindow().SelectLogFile(): User selected custom file: "+Settings["LogFile"]+"...")
+                    self.LogChoiceBox.Append(Settings["LogFile"])
+                    self.LogChoiceBox.SetStringSelection(Settings["LogFile"])
 
             else:
                 logger.debug("MainWindow().SelectLogFile(): User declined custom file selection. Resetting LogFile...")
-                LogFile = None
+                Settings["LogFile"] = None
                 self.LogChoiceBox.SetStringSelection("-- Please Select --")
 
             LogFileDlg.Destroy()
 
-        elif LogFile == "-- Please Select --":
+        elif Settings["LogFile"] == "-- Please Select --":
             logger.debug("MainWindow().SelectLogFile(): LogFile reset.")
-            LogFile = None
+            Settings["LogFile"] = None
 
     def OnAbout(self, Event=None):
         """Show the about box"""
@@ -986,7 +971,7 @@ class MainWindow(wx.Frame):
     def ShowSettings(self, Event=None):
         """Show the Settings Window"""
         #If input and output files are set (do not equal None) then continue.
-        if None not in [InputFile, OutputFile]:
+        if None not in [Settings["InputFile"], Settings["OutputFile"]]:
             SettingsWindow(self).Show()
 
         else:
@@ -1004,7 +989,7 @@ class MainWindow(wx.Frame):
 
     def OnControlButton(self, Event=None):
         """Handle events from the control button, as its purpose changes during and after recovery. Call self.OnAbort() or self.OnStart() as required."""
-        if RecoveringData:
+        if Settings["RecoveringData"]:
             self.OnAbort()
 
         else:
@@ -1015,25 +1000,25 @@ class MainWindow(wx.Frame):
         logger.info("MainWindow().OnStart(): Checking settings...")
         self.UpdateStatusBar("Preparing to start ddrescue...")
 
-        if CheckedSettings == False:
+        if Settings["CheckedSettings"] == False:
             logger.error("MainWindow().OnStart(): The settings haven't been checked properly! Aborting recovery...")
             dlg = wx.MessageDialog(self.Panel, "Please check the settings before starting the recovery.", "DDRescue-GUI - Warning", wx.OK | wx.ICON_EXCLAMATION)
             dlg.ShowModal()
             dlg.Destroy()
             self.UpdateStatusBar("Ready.")
 
-        elif None not in [InputFile, LogFile, OutputFile]:
+        elif None not in [Settings["InputFile"], Settings["LogFile"], Settings["OutputFile"]]:
             #Attempt to unmount input/output Disks now, if needed.
             logger.info("MainWindow().OnStart(): Unmounting input and output files if needed...")
 
-            for Disk in [InputFile, OutputFile]:
-                if BackendTools().GetDiskMountPoint(Disk) != None or DiskInfo[Disk]["Type"] == "Device":
-                    #The Disk is mounted.
+            for Disk in [Settings["InputFile"], Settings["OutputFile"]]:
+                if BackendTools().GetDiskMountPoint(Disk) != None or DevInfoTools().IsPartition(Disk) == False:
+                    #The Disk is mounted, or may have partitions that are mounted.
                     logger.info("MainWindow().OnStart(): Unmounting "+Disk+"...")
                     self.UpdateStatusBar("Unmounting "+Disk+". This may take a few moments...")
                     wx.Yield()
 
-                    if DiskInfo[Disk]["Type"] == "Partition":
+                    if DevInfoTools().IsPartition(Disk) == False:
                         #Unmount it.
                         logger.debug("MainWindow().OnStart(): "+Disk+" is a partition. Unmounting "+Disk+"...")
                         Retval = BackendTools().UnmountDisk(Disk)
@@ -1122,7 +1107,7 @@ class MainWindow(wx.Frame):
             BackendThread(self)
 
         else:
-            logger.error("MainWindow().OnStart(): One or more of InputFIle, OutputFile or LogFile hasn't been set! Aborting Recovery...")
+            logger.error("MainWindow().OnStart(): One or more of InputFile, OutputFile or LogFile hasn't been set! Aborting Recovery...")
             dlg = wx.MessageDialog(self.Panel, 'Please set the Input file, Log file and Output file correctly before starting!', 'DDRescue-GUI - Error!', wx.OK | wx.ICON_ERROR)
             dlg.ShowModal()
             dlg.Destroy()
@@ -1272,7 +1257,7 @@ class MainWindow(wx.Frame):
     def PromptToKillDdrescue(self):
         """Prompts the user to try killing ddrescue again if it's not exiting"""
         #If we're still recovering data, prompt the user to try killing ddrescue again.
-        if RecoveringData:
+        if Settings["RecoveringData"]:
             logger.warning("MainWindow().PromptToKillDdrescue(): ddrescue is still running 5 seconds after attempted abort! Asking user whether to wait or trying killing it again...")
             dlg = wx.MessageDialog(self.Panel, "Do you want to try to stop ddrescue again, or wait for five more seconds? Click yes to stop ddrescue and no to wait.", "DDRescue is still running!", wx.YES_NO|wx.ICON_QUESTION)
 
@@ -1425,7 +1410,7 @@ class MainWindow(wx.Frame):
         logger.info("MainWindow().OnExit(): Preparing to exit...")
 
         #Check if DDRescue-GUI is recovering data.
-        if RecoveringData:
+        if Settings["RecoveringData"]:
             logger.error("MainWindow().OnExit(): Can't exit while recovering data! Aborting exit attempt...")
             dlg = wx.MessageDialog(self.Panel, "You can't exit DDRescue-GUI while recovering data!", "DDRescue-GUI - Error!", wx.OK | wx.ICON_ERROR)
             dlg.ShowModal()
@@ -1525,7 +1510,7 @@ class DevInfoWindow(wx.Frame):
         self.RefreshButton = wx.Button(self.Panel, -1, "Refresh")
 
         #Disable the refresh button if we're recovering data.
-        if RecoveringData:
+        if Settings["RecoveringData"]:
             self.RefreshButton.Disable()
 
         #Create the animation for the throbber.
@@ -1630,10 +1615,10 @@ class DevInfoWindow(wx.Frame):
 
             for Heading in ("Name", "Type", "Vendor", "Product", "Capacity", "Description"):
                 if Column == 0:
-                    self.ListCtrl.InsertStringItem(index=Number, label=Heading)
+                    self.ListCtrl.InsertStringItem(index=Number, label=DiskInfo[Disk][Heading])
 
                 else:
-                    self.ListCtrl.SetStringItem(index=Number, col=Column, label=Heading)
+                    self.ListCtrl.SetStringItem(index=Number, col=Column, label=DiskInfo[Disk][Heading])
 
                 Column += 1
 
@@ -1658,8 +1643,7 @@ class SettingsWindow(wx.Frame):
 
         #Notify MainWindow that this has been run.
         logger.debug("SettingsWindow().__init__(): Setting CheckedSettings to True...")
-        global CheckedSettings
-        CheckedSettings = True
+        Settings["CheckedSettings"] = True
 
         #Create all of the widgets first.
         logger.debug("SettingsWindow().__init__(): Creating buttons...")
@@ -1783,31 +1767,35 @@ class SettingsWindow(wx.Frame):
         """Set all options in the window so we remember them if the user checks back"""
         #Checkboxes:
         #Direct disk access setting.
-        if DirectAccess == "-d":
+        if Settings["DirectAccess"] == "-d":
             self.DirectAccessCB.SetValue(True)
+
         else:
             self.DirectAccessCB.SetValue(False)
 
         #Overwrite output Disk setting.
-        if OverwriteOutputFile == "-f":
+        if Settings["OverwriteOutputFile"] == "-f":
             self.OverwriteCB.SetValue(True)
+
         else:
             self.OverwriteCB.SetValue(False)
 
         #Reverse (read data from the end to the start of the input file) setting.
-        if Reverse == "-R":
+        if Settings["Reverse"] == "-R":
             self.ReverseCB.SetValue(True)
+
         else:
             self.ReverseCB.SetValue(False)
 
         #Preallocate (preallocate space in the output file) setting.
-        if Preallocate == "-p":
+        if Settings["Preallocate"] == "-p":
             self.PreallocCB.SetValue(True)
+
         else:
             self.PreallocCB.SetValue(False)
 
         #NoSplit (Don't split failed blocks) option.
-        if NoSplit == "-n":
+        if Settings["NoSplit"] == "-n":
             self.NoSplitCB.SetValue(True)
 
             #Disable self.BadSectChoice.
@@ -1821,24 +1809,28 @@ class SettingsWindow(wx.Frame):
 
         #ChoiceBoxes:
         #Retry bad sectors option.
-        if BadSectorRetries == "-r 2":
+        if Settings["BadSectorRetries"] == "-r 2":
             self.BadSectChoice.SetSelection(2)
-        elif BadSectorRetries == "-r -1":
+
+        elif Settings["BadSectorRetries"] == "-r -1":
             self.BadSectChoice.SetSelection(5)
+
         else:
-            self.BadSectChoice.SetSelection(int(BadSectorRetries[3:]))
+            self.BadSectChoice.SetSelection(int(Settings["BadSectorRetries"][3:]))
 
         #Maximum errors before exiting option.
-        if MaxErrors == "":
+        if Settings["MaxErrors"] == "":
             self.MaxErrorsChoice.SetStringSelection("Default (Infinite)")
+
         else:
-            self.MaxErrorsChoice.SetStringSelection(MaxErrors[3:])
+            self.MaxErrorsChoice.SetStringSelection(Settings["MaxErrors"][3:])
 
         #ClusterSize (No. of sectors to copy at a time) option.
-        if ClusterSize == "-c 128":
+        if Settings["ClusterSize"] == "-c 128":
             self.ClustSizeChoice.SetStringSelection("Default (128)")
+
         else:
-            self.ClustSizeChoice.SetStringSelection(ClusterSize[3:])
+            self.ClustSizeChoice.SetStringSelection(Settings["ClusterSize"][3:])
 
     def SetSoftRun(self, Event=None):
         """Set up SettingsWindow based on the value of self.NoSplitCB (the "do soft run" CheckBox)"""
@@ -1847,6 +1839,7 @@ class SettingsWindow(wx.Frame):
         if self.NoSplitCB.IsChecked():
             self.BadSectChoice.SetSelection(0)
             self.BadSectChoice.Disable()
+
         else:
             self.BadSectChoice.Enable()
             self.SetDefaultRec()
@@ -1884,111 +1877,108 @@ class SettingsWindow(wx.Frame):
         """Save all options, and exit SettingsWindow"""
         logger.info("SettingsWindow().SaveOptions(): Saving Options...")
 
-        #Define global variables:
-        global DirectAccess
-        global OverwriteOutputFile
-        global DiskSize
-        global Reverse
-        global Preallocate
-        global NoSplit
-        global InputFileBlockSize
-        global BadSectorRetries
-        global MaxErrors
-        global ClusterSize
-
         #Checkboxes:
         #Direct disk access setting.
         if self.DirectAccessCB.IsChecked():
-            DirectAccess = "-d"
-        else:
-            DirectAccess = ""
+            Settings["DirectAccess"] = "-d"
 
-        logger.info("SettingsWindow().SaveOptions(): Use Direct Disk Access: "+unicode(bool(DirectAccess))+".")
+        else:
+            Settings["DirectAccess"] = ""
+
+        logger.info("SettingsWindow().SaveOptions(): Use Direct Disk Access: "+unicode(bool(Settings["DirectAccess"]))+".")
 
         #Overwrite output Disk setting.
         if self.OverwriteCB.IsChecked():
-            OverwriteOutputFile = "-f"
-        else:
-            OverwriteOutputFile = ""
+            Settings["OverwriteOutputFile"] = "-f"
 
-        logger.info("SettingsWindow().SaveOptions(): Overwriting output file: "+unicode(bool(OverwriteOutputFile))+".")
+        else:
+            Settings["OverwriteOutputFile"] = ""
+
+        logger.info("SettingsWindow().SaveOptions(): Overwriting output file: "+unicode(bool(Settings["OverwriteOutputFile"]))+".")
 
         #Disk Size setting (OS X only).
         if Linux == False:
-            DiskSize = "-s "+DiskInfo[InputFile]["Capacity"]
-            logger.info("SettingsWindow().SaveOptions(): Using disk size: "+DiskSize+".")
+            Settings["DiskSize"] = "-s "+DiskInfo[Settings["InputFile"]]["Capacity"]
+            logger.info("SettingsWindow().SaveOptions(): Using disk size: "+Settings["DiskSize"]+".")
 
         else:
-            DiskSize = ""
+            Settings["DiskSize"] = ""
 
         #Reverse (read data from the end to the start of the input file) setting.
         if self.ReverseCB.IsChecked():
-            Reverse = "-R"
-        else:
-            Reverse = ""
+            Settings["Reverse"] = "-R"
 
-        logger.info("SettingsWindow().SaveOptions(): Reverse direction of read operations: "+unicode(bool(Reverse))+".")
+        else:
+            Settings["Reverse"] = ""
+
+        logger.info("SettingsWindow().SaveOptions(): Reverse direction of read operations: "+unicode(bool(Settings["Reverse"]))+".")
 
         #Preallocate (preallocate space in the output file) setting.
         if self.PreallocCB.IsChecked():
-            Preallocate = "-p"
-        else:
-            Preallocate = ""
+            Settings["Preallocate"] = "-p"
 
-        logger.info("SettingsWindow().SaveOptions(): Preallocate disk space: "+unicode(bool(Preallocate))+".")
+        else:
+            Settings["Preallocate"] = ""
+
+        logger.info("SettingsWindow().SaveOptions(): Preallocate disk space: "+unicode(bool(Settings["Preallocate"]))+".")
 
         #NoSplit (Don't split failed blocks) option.
         if self.NoSplitCB.IsChecked():
-            NoSplit = "-n"
-        else:
-            NoSplit = ""
+            Settings["NoSplit"] = "-n"
 
-        logger.info("SettingsWindow().SaveOptions(): Split failed blocks: "+unicode(bool(NoSplit))+".")
+        else:
+            Settings["NoSplit"] = ""
+
+        logger.info("SettingsWindow().SaveOptions(): Split failed blocks: "+unicode(bool(Settings["NoSplit"]))+".")
 
         #ChoiceBoxes:
         #Retry bad sectors option.
         BadSectSelection = self.BadSectChoice.GetCurrentSelection()
 
         if BadSectSelection == 2:
-            BadSectorRetries = "-r 2"
-        elif BadSectSelection == 5:
-            BadSectorRetries = "-r -1"
-        else:
-            BadSectorRetries = "-r "+unicode(BadSectSelection)
+            Settings["BadSectorRetries"] = "-r 2"
 
-        logger.info("SettingsWindow().SaveOptions(): Retrying bad sectors "+BadSectorRetries[3:]+" times.")
+        elif BadSectSelection == 5:
+            Settings["BadSectorRetries"] = "-r -1"
+
+        else:
+            Settings["BadSectorRetries"] = "-r "+unicode(BadSectSelection)
+
+        logger.info("SettingsWindow().SaveOptions(): Retrying bad sectors "+Settings["BadSectorRetries"][3:]+" times.")
 
         #Maximum errors before exiting option.
         MaxErrorsSelection = self.MaxErrorsChoice.GetStringSelection()
 
         if MaxErrorsSelection == "Default (Infinite)":
-            MaxErrors = ""
-            logger.info("SettingsWindow().SaveOptions(): Allowing an infinite number of errors before exiting.") 
+            Settings["MaxErrors"] = ""
+            logger.info("SettingsWindow().SaveOptions(): Allowing an infinite number of errors before exiting.")
+
         else:
-            MaxErrors = "-e "+MaxErrorsSelection
-            logger.info("SettingsWindow().SaveOptions(): Allowing "+MaxErrors[3:]+" errors before exiting.")
+            Settings["MaxErrors"] = "-e "+MaxErrorsSelection
+            logger.info("SettingsWindow().SaveOptions(): Allowing "+Settings["MaxErrors"][3:]+" errors before exiting.")
 
         #ClusterSize (No. of sectors to copy at a time) option.
         ClustSizeSelection = self.ClustSizeChoice.GetStringSelection()
 
         if ClustSizeSelection == "Default (128)":
-            ClusterSize = "-c 128"
-        else:
-            ClusterSize = "-c "+ClustSizeSelection
+            Settings["ClusterSize"] = "-c 128"
 
-        logger.info("SettingsWindow().SaveOptions(): ClusterSize is "+ClusterSize[3:]+".")
+        else:
+            Settings["ClusterSize"] = "-c "+ClustSizeSelection
+
+        logger.info("SettingsWindow().SaveOptions(): ClusterSize is "+Settings["ClusterSize"][3:]+".")
 
         #BlockSize detection.
         logger.info("SettingsWindow().SaveOptions(): Determining blocksize of input file...")
-        InputFileBlockSize = DevInfoTools().GetBlockSize(InputFile)
+        Settings["InputFileBlockSize"] = DevInfoTools().GetBlockSize(Settings["InputFile"])
 
-        if InputFileBlockSize != None:
-            logger.info("SettingsWindow().SaveOptions(): BlockSize of input file: "+InputFileBlockSize+" (bytes).")
-            InputFileBlockSize = "-b "+InputFileBlockSize
+        if Settings["InputFileBlockSize"] != None:
+            logger.info("SettingsWindow().SaveOptions(): BlockSize of input file: "+Settings["InputFileBlockSize"]+" (bytes).")
+            Settings["InputFileBlockSize"] = "-b "+Settings["InputFileBlockSize"]
 
         else:
             #Input file is standard file, don't set blocksize, notify user.
-            InputFileBlockSize = ""
+            Settings["InputFileBlockSize"] = ""
             logger.info("SettingsWindow().SaveOptions(): Input file is a standard file, and therefore has no blocksize.")
 
         #Finally, exit
@@ -2096,7 +2086,7 @@ class FinishedWindow(wx.Frame):
     def CreateText(self):
         """Create all text for FinishedWindow"""
         self.TopText = wx.StaticText(self.Panel, -1, "Your recovered data is at:")
-        self.PathText = wx.StaticText(self.Panel, -1, OutputFile)
+        self.PathText = wx.StaticText(self.Panel, -1, Settings["OutputFile"])
         self.BottomText = wx.StaticText(self.Panel, -1, "What do you want to do now?")
     
     def SetupSizers(self):
@@ -2157,7 +2147,7 @@ class FinishedWindow(wx.Frame):
             #Change some stuff if it worked.
             if Success:
                 self.TopText.SetLabel("Your recovered data is at:")
-                self.PathText.SetLabel(OutputFile)
+                self.PathText.SetLabel(Settings["OutputFile"])
                 self.MountButton.SetLabel("Mount Image/Disk")
                 self.RestartButton.Enable()
                 self.QuitButton.Enable()
@@ -2215,7 +2205,7 @@ class FinishedWindow(wx.Frame):
         #Linux: Pull down loops if the OutputFile is a Device. OS X: Detach the image's device file.
         if self.OutputFileType == "Device" and Linux:
              logger.debug("FinishedWindow().UnmountOutputFile(): Pulling down loop device...")
-             BackendTools().StartProcess(Command="kpartx -d "+OutputFile, ReturnOutput=False)
+             BackendTools().StartProcess(Command="kpartx -d "+Settings["OutputFile"], ReturnOutput=False)
 
         elif Linux == False:
             logger.error("FinishedWindow().UnmountOutputFile(): Detaching the device that represents the image...")
@@ -2225,12 +2215,12 @@ class FinishedWindow(wx.Frame):
 
     def MountDiskOSX(self):
         """Mount the output file on OS X"""
-        logger.info("FinishedWindow().MountDiskOSX(): Mounting Disk: "+OutputFile+"...")
+        logger.info("FinishedWindow().MountDiskOSX(): Mounting Disk: "+Settings["OutputFile"]+"...")
         wx.CallAfter(self.ParentWindow.UpdateStatusBar, "Preparing to mount output file. Please Wait...")
         wx.Yield()
 
         #Determine if the OutputFile is a partition.
-        Output = BackendTools().StartProcess(Command="hdiutil imageinfo "+OutputFile+" -plist", ReturnOutput=True)[1]
+        Output = BackendTools().StartProcess(Command="hdiutil imageinfo "+Settings["OutputFile"]+" -plist", ReturnOutput=True)[1]
 
         if "whole disk" in Output:
             #The Output File must be a partition.
@@ -2240,7 +2230,7 @@ class FinishedWindow(wx.Frame):
             self.OutputFileType = "Partition"
 
             #Attempt to mount the disk.
-            Retval, Output = BackendTools().StartProcess(Command="hdiutil mount "+OutputFile+" -plist", ReturnOutput=True)
+            Retval, Output = BackendTools().StartProcess(Command="hdiutil mount "+Settings["OutputFile"]+" -plist", ReturnOutput=True)
 
             #Parse the plist (Property List).
             Plist = plistlib.readPlistFromString(Output)
@@ -2298,10 +2288,10 @@ class FinishedWindow(wx.Frame):
                 PartNum = Partition["partition-number"]
 
                 #Disk size.
-                DiskSize = (Partition["partition-length"] * Blocksize) / 1000000
+                Settings["DiskSize"] = (Partition["partition-length"] * Blocksize) / 1000000
 
                 #Add stuff in an intuitive way.
-                Choices.append("Partition "+unicode(PartNum)+" with size "+unicode(DiskSize)+" MB")
+                Choices.append("Partition "+unicode(PartNum)+" with size "+unicode(Settings["DiskSize"])+" MB")
 
             #Ask the user which partition to mount.
             logger.debug("FinishedWindow().MountDiskOSX(): Asking user which partition to mount...")
@@ -2319,8 +2309,8 @@ class FinishedWindow(wx.Frame):
             #Attempt to mount the disk.
             wx.CallAfter(self.ParentWindow.UpdateStatusBar, "Mounting output file. This may take a few moments...")
             wx.Yield()
-            logger.info("FinishedWindow().MountDiskOSX(): Mounting disk "+OutputFile+"...")
-            Retval, Output = BackendTools().StartProcess(Command="hdiutil mount "+OutputFile+" -plist", ReturnOutput=True)
+            logger.info("FinishedWindow().MountDiskOSX(): Mounting disk "+Settings["OutputFile"]+"...")
+            Retval, Output = BackendTools().StartProcess(Command="hdiutil mount "+Settings["OutputFile"]+" -plist", ReturnOutput=True)
 
             #Parse the plist (Property List).
             Plist = plistlib.readPlistFromString(Output)
@@ -2360,12 +2350,12 @@ class FinishedWindow(wx.Frame):
 
     def MountDiskLinux(self):
         """Mount the output file on Linux"""
-        logger.info("FinishedWindow().MountDiskLinux(): Mounting Disk: "+OutputFile+"...")
+        logger.info("FinishedWindow().MountDiskLinux(): Mounting Disk: "+Settings["OutputFile"]+"...")
         wx.CallAfter(self.ParentWindow.UpdateStatusBar, "Preparing to mount output file. Please Wait...")
         wx.Yield()
 
         #Determine if the OutputFile is a partition.
-        Output = BackendTools().StartProcess(Command="parted -s "+OutputFile+" print", ReturnOutput=True)[1]
+        Output = BackendTools().StartProcess(Command="parted -s "+Settings["OutputFile"]+" print", ReturnOutput=True)[1]
 
         if "loop" in Output:
             #The Output File must be a partition.
@@ -2373,10 +2363,10 @@ class FinishedWindow(wx.Frame):
             wx.CallAfter(self.ParentWindow.UpdateStatusBar, "Mounting output file. This may take a few moments...")
             wx.Yield()
             self.OutputFileType = "Partition"
-            self.OutputFileMountPoint = "/mnt"+InputFile
+            self.OutputFileMountPoint = "/mnt"+Settings["InputFile"]
 
             #Attempt to mount the disk.
-            Retval = BackendTools().MountDisk(Disk=OutputFile, MountPoint=self.OutputFileMountPoint)
+            Retval = BackendTools().MountDisk(Disk=Settings["OutputFile"], MountPoint=self.OutputFileMountPoint)
             
             #Check it worked.
             if Retval == 0:
@@ -2396,11 +2386,11 @@ class FinishedWindow(wx.Frame):
             self.OutputFileType = "Device"
 
             #Get the list of contained partitions.
-            Partitions = BackendTools().StartProcess(Command="kpartx -l "+OutputFile, ReturnOutput=True)[1].split('\n')
+            Partitions = BackendTools().StartProcess(Command="kpartx -l "+Settings["OutputFile"], ReturnOutput=True)[1].split('\n')
 
             #Create loop devices for all contained partitions.
             logger.info("FinishedWindow().MountDiskLinux(): Creating loop device...")
-            BackendTools().StartProcess(Command="kpartx -a "+OutputFile, ReturnOutput=False)
+            BackendTools().StartProcess(Command="kpartx -a "+Settings["OutputFile"], ReturnOutput=False)
 
             #Get some Disk information.
             Output = BackendTools().StartProcess(Command="lsblk -r -o NAME,FSTYPE,SIZE", ReturnOutput=True)[1].split('\n')
@@ -2431,7 +2421,7 @@ class FinishedWindow(wx.Frame):
             if dlg.ShowModal() != wx.ID_OK:
                 self.OutputFileMountPoint = None
                 logger.debug("FinishedWindow().MountDiskLinux(): Pulling down loop device...")
-                BackendTools().StartProcess(Command="kpartx -d "+OutputFile, ReturnOutput=False)
+                BackendTools().StartProcess(Command="kpartx -d "+Settings["OutputFile"], ReturnOutput=False)
                 return False
 
             else:
@@ -2489,7 +2479,7 @@ class ElapsedTimeThread(threading.Thread):
 
     def run(self):
         """Main body of the thread, started with self.start()"""
-        while RecoveringData:
+        while Settings["RecoveringData"]:
             #Elapsed time.
             self.RunTimeSecs += 1
 
@@ -2534,7 +2524,7 @@ class BackendThread(threading.Thread):
         """Main body of the thread, started with self.start()"""
         #Prepare to start ddrescue.
         logger.debug("MainBackendThread(): Preparing to start ddrescue...")
-        OptionsList = [DirectAccess, OverwriteOutputFile, DiskSize, Reverse, Preallocate, NoSplit, BadSectorRetries, MaxErrors, ClusterSize, InputFileBlockSize, InputFile, OutputFile, LogFile]
+        OptionsList = [Settings["DirectAccess"], Settings["OverwriteOutputFile"], Settings["DiskSize"], Settings["Reverse"], Settings["Preallocate"], Settings["NoSplit"], Settings["BadSectorRetries"], Settings["MaxErrors"], Settings["ClusterSize"], Settings["InputFileBlockSize"], Settings["InputFile"], Settings["OutputFile"], Settings["LogFile"]]
 
         if Linux:
             ExecList = ["ddrescue", "-v"]
@@ -2546,10 +2536,10 @@ class BackendThread(threading.Thread):
             #Handle direct disk access on OS X.
             if Linux == False and OptionsList.index(Option) == 0 and Option != "":
                 #If we're recovering from a file, don't enable direct disk access (it won't work).
-                if InputFile[0:5] == "/dev/":
+                if Settings["InputFile"][0:5] == "/dev/":
                     #Remove InputFile and switch it with a string that uses /dev/rdisk (raw disk) instead of /dev/disk.
                     OptionsList.pop(10)
-                    OptionsList.insert(10, "/dev/r" + InputFile.split("/dev/")[1])
+                    OptionsList.insert(10, "/dev/r" + Settings["InputFile"].split("/dev/")[1])
 
                 else:
                     #Make sure "-d" isn't added to the ExecList (continue to next iteration of loop).
@@ -2562,8 +2552,7 @@ class BackendThread(threading.Thread):
         logger.debug("MainBackendThread(): Running ddrescue with: '"+' '.join(ExecList)+"'...")
 
         #Ensure the rest of the program knows we are recovering data.
-        global RecoveringData
-        RecoveringData = True
+        Settings["RecoveringData"] = True
 
         cmd = subprocess.Popen(ExecList, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         Line = ""
@@ -2594,7 +2583,7 @@ class BackendThread(threading.Thread):
                 Line = ""
 
         #Let the GUI know that we are no longer recovering any data.
-        RecoveringData = False
+        Settings["RecoveringData"] = False
 
         #Check if we got ddrescue's init status, and if ddrescue exited with a status other than 0.
         if self.GotInitialStatus == False:

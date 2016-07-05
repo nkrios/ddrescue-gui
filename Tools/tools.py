@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*- 
-# Tools Package for DDRescue-GUI Version 1.5
+# Tools Package for DDRescue-GUI Version 1.6
 # This file is part of DDRescue-GUI.
 # Copyright (C) 2013-2016 Hamish McIntyre-Bhatty
 # DDRescue-GUI is free software: you can redistribute it and/or modify it
@@ -122,6 +122,7 @@ class Main():
             #Unmount it.
             if Linux:
                 Retval = self.StartProcess(Command="umount "+Disk, ReturnOutput=False)
+
             else:
                 Retval = self.StartProcess(Command="diskutil umount "+Disk, ReturnOutput=False)
 
@@ -129,6 +130,7 @@ class Main():
             if Retval != 0:
                 #It didn't, for some strange reason.
                 logger.warning("Tools: Main().UnmountDisk(): Unmounting "+Disk+": Failed!")
+
             else:
                 logger.info("Tools: Main().UnmountDisk(): Unmounting "+Disk+": Success!")
             
