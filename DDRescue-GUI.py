@@ -755,12 +755,6 @@ class MainWindow(wx.Frame):
         """Update the Disk entries in the choiceboxes"""
         logger.info("MainWindow().UpdateFileChoices(): Updating the GUI with the new Disk information...")
 
-        #Grab the Disk list from the other Disk info.
-        DiskList = []
-
-        for Disk in DiskInfo.keys():
-            DiskList.append(Disk)
-
         if self.Starting:
             #We are starting up, so do some extra stuff.
             #Prepare some choiceboxes using the newly created Disk list.
@@ -778,8 +772,8 @@ class MainWindow(wx.Frame):
         CurrentOutputStringSelection = self.OutputChoiceBox.GetStringSelection()
 
         #Set all the items.
-        self.InputChoiceBox.SetItems(['-- Please Select --', 'Select a File/Disk'] + sorted(DiskList + self.CustomInputPathsList))
-        self.OutputChoiceBox.SetItems(['-- Please Select --', 'Select a File/Disk'] + sorted(DiskList + self.CustomOutputPathsList))
+        self.InputChoiceBox.SetItems(['-- Please Select --', 'Select a File/Disk'] + sorted(DiskInfo.keys() + self.CustomInputPathsList))
+        self.OutputChoiceBox.SetItems(['-- Please Select --', 'Select a File/Disk'] + sorted(DiskInfo.keys() + self.CustomOutputPathsList))
 
         #Set the current selections again, if we can (if the selection is a Disk, it may have been removed).
         if self.InputChoiceBox.FindString(CurrentInputStringSelection) != -1:
@@ -812,8 +806,11 @@ class MainWindow(wx.Frame):
             if InputFileDlg.ShowModal() == wx.ID_OK:
                 Settings["InputFile"] = InputFileDlg.GetPath()
                 logger.info("MainWindow().SelectInputFile(): User selected custom file: "+Settings["InputFile"]+"...")
-                self.CustomInputPathsList.append(Settings["InputFile"])
-                self.InputChoiceBox.Append(Settings["InputFile"])
+
+                if Settings["InputFile"] not in self.CustomInputPathsList and Settings["InputFile"] not in DiskInfo.keys():
+                    self.CustomInputPathsList.append(Settings["InputFile"])
+                    self.InputChoiceBox.Append(Settings["InputFile"])
+
                 self.InputChoiceBox.SetStringSelection(Settings["InputFile"])
 
             else:
@@ -854,8 +851,11 @@ class MainWindow(wx.Frame):
 
                 else:
                     logger.info("MainWindow().SelectOutputFile(): User selected custom file: "+Settings["OutputFile"]+"...")
-                    self.CustomOutputPathsList.append(Settings["OutputFile"])
-                    self.OutputChoiceBox.Append(Settings["OutputFile"])
+
+                    if Settings["OutputFile"] not in self.CustomOutputPathsList and Settings["OutputFile"] not in DiskInfo.keys():
+                        self.CustomOutputPathsList.append(Settings["OutputFile"])
+                        self.OutputChoiceBox.Append(Settings["OutputFile"])
+
                     self.OutputChoiceBox.SetStringSelection(Settings["OutputFile"])
 
             else:
