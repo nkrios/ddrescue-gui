@@ -77,7 +77,7 @@ class AuthWindow(wx.Frame):
 
         Font = self.TitleText.GetFont()
         Font.SetWeight(wx.BOLD)
-        self.TitleText.SetFont(Font) 
+        #self.TitleText.SetFont(Font) 
         self.PasswordText.SetFont(Font)
 
     def CreateButtons(self):
