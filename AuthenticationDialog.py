@@ -146,6 +146,10 @@ class AuthWindow(wx.Frame):
 
         #Get the sizer set up for the frame.
         self.AuthPanel.SetSizer(MainSizer)
+
+        #Call Layout() on self.AuthPanel() to ensure it displays properly.
+        self.AuthPanel.Layout()
+
         MainSizer.SetSizeHints(self)
 
     def BindEvents(self):
@@ -230,11 +234,11 @@ class AuthWindow(wx.Frame):
         #Overwrite the password with a string of nonsense characters before deleting it, so the password cannot be read from memory when this script closes.
         Password = "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789!£$%^&*()_+"
         del Password
+        time.sleep(1)
         self.OnExit()
 
     def OnExit(self, Event=None):
         """Close AuthWindow() and exit"""
-        time.sleep(1)
         self.Destroy()
 
 #End Authentication Window.
