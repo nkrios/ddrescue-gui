@@ -117,8 +117,8 @@ class AuthWindow(wx.Frame):
         TopTextSizer = wx.BoxSizer(wx.VERTICAL)
 
         #Add items to the top text sizer.
-        TopTextSizer.Add(self.TitleText, 0, wx.ALIGN_LEFT)
-        TopTextSizer.Add(self.BodyText, 0, wx.TOP|wx.ALIGN_LEFT, 10)
+        TopTextSizer.Add(self.TitleText, 0, wx.ALIGN_LEFT|wx.EXPAND)
+        TopTextSizer.Add(self.BodyText, 0, wx.TOP|wx.ALIGN_LEFT|wx.EXPAND, 10)
 
         #Add items to the top sizer.
         TopSizer.Add(self.Image, 0, wx.LEFT|wx.ALIGN_CENTER, 18)
