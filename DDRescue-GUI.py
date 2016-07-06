@@ -40,7 +40,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "1.6"
-ReleaseDate = "5/7/2016"
+ReleaseDate = "6/7/2016"
 
 def usage():
     print("\nUsage: DDRescue-GUI.py [OPTION]\n\n")
@@ -368,8 +368,8 @@ class MainWindow(wx.Frame):
 
         #Set the wildcards and make it easy for the user to find his/her home directory (helps make DDRescue-GUI more user friendly).
         if Linux:
-            self.InputWildcard = "SATA HDDs/USB Drives|sd*|IDE/ATA HDDs|hd*|Optical Drives|sr*|Floppy Drives|fd*|IMG Disk Image (*.img)|*.img|ISO (CD/DVD) Disk Image (*.iso)|*.iso|All Files/Disks (*)|*"
-            self.OutputWildcard = "IMG Disk Image (*.img)|*.img|ISO (CD/DVD) Disk Image (*.iso)|*.iso|SATA HDDs/USB Drives|sd*|IDE/ATA HDDs|hd*|Floppy Drives|fd*|All Files/Disks (*)|*"
+            self.InputWildcard = "SATA HDDs/USB Drives|sd*|Optical Drives|sr*|Floppy Drives|fd*|IMG Disk Image (*.img)|*.img|ISO (CD/DVD) Disk Image (*.iso)|*.iso|All Files/Disks (*)|*"
+            self.OutputWildcard = "IMG Disk Image (*.img)|*.img|ISO (CD/DVD) Disk Image (*.iso)|*.iso|SATA HDDs/USB Drives|sd*|Floppy Drives|fd*|All Files/Disks (*)|*"
             self.UserHomeDir = "/home"
 
         else:
