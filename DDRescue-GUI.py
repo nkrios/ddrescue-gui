@@ -1029,6 +1029,10 @@ class MainWindow(wx.Frame):
                         Retvals = []
                         Retval = 0
 
+                        if Disk not in DiskInfo:
+                            logger.info("MainWindow().OnStart(): Disk is a file, ignoring it...")
+                            continue
+ 
                         for Partition in DiskInfo[Disk]["Partitions"]:
                             logger.info("MainWindow().OnStart(): Unmounting "+Partition+"...")
                             Retvals.append(BackendTools().UnmountDisk(Partition))
