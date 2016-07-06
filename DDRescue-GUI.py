@@ -617,7 +617,7 @@ class MainWindow(wx.Frame):
 
     def FocusOnControlButton(self, Event=None):
         """Focus on the control button instead of the TextCtrl, and reset the insertion point back after 30 milliseconds, preventing the user from changing the insertion point and messing the formatting up."""
-        #Just a slightly hacky way of trying to make sure the uer can't change the insertion point! Works unless you start doing silly stuff like tapping on the output box constantly :)
+        #Just a slightly hacky way of trying to make sure the user can't change the insertion point! Works unless you start doing silly stuff like tapping on the output box constantly :)
         self.ControlButton.SetFocus()
         InsertionPoint = self.OutputBox.GetInsertionPoint()
         wx.CallLater(30, self.OutputBox.SetInsertionPoint, InsertionPoint)
@@ -1609,7 +1609,10 @@ class DevInfoWindow(wx.Frame):
 
         #Do all of the data at the same time.
         Number = -1
-        for Disk in DiskInfo.keys():
+        Disks = DiskInfo.keys()
+        Disks.sort()
+
+        for Disk in Disks:
             Number += 1
             Column = 0
 
