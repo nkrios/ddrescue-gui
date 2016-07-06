@@ -1018,7 +1018,7 @@ class MainWindow(wx.Frame):
                     self.UpdateStatusBar("Unmounting "+Disk+". This may take a few moments...")
                     wx.Yield()
 
-                    if DevInfoTools().IsPartition(Disk) == False:
+                    if DevInfoTools().IsPartition(Disk):
                         #Unmount it.
                         logger.debug("MainWindow().OnStart(): "+Disk+" is a partition. Unmounting "+Disk+"...")
                         Retval = BackendTools().UnmountDisk(Disk)
