@@ -2158,6 +2158,7 @@ class FinishedWindow(wx.Frame):
             Success = self.UnmountOutputFile()
 
             #Change some stuff if it worked.
+            print(Success)
             if Success == [0, 0]:
                 self.TopText.SetLabel("Your recovered data is at:")
                 self.PathText.SetLabel(Settings["OutputFile"])
@@ -2357,10 +2358,20 @@ class FinishedWindow(wx.Frame):
         wx.Yield()
 
         #Determine if the OutputFile is a partition.
-        Partitions = BackendTools().StartProcess(Command="kpartx -l "+Settings["OutputFile"], ReturnOutput=True)[1].split('\n')
+        if Settings["InputFile"] in DiskInfo:
+            Type = DiskInfo[Settings["InputFile"]]["Type"]
+            Partitions = BackendTools().StartProcess(Command="kpartx -l "+Settings["OutputFile"], ReturnOutput=True)[1].split('\n')
 
-        if Partitions == [""]:
-            #The Output File must be a partition.
+        else:
+            Partitions = BackendTools().StartProcess(Command="kpartx -l "+Settings["OutputFile"], ReturnOutput=True)[1].split('\n')
+
+            if Partitions == [""] or len(Partitions) == 1:
+                Type = "Partition"
+
+            else:
+                Type = "Device"
+
+        if Type == "Partition":
             logger.debug("FinishedWindow().MountDiskLinux(): Output file is a partition! Continuing...")
             wx.CallAfter(self.ParentWindow.UpdateStatusBar, "Mounting output file. This may take a few moments...")
             wx.Yield()
