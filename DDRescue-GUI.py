@@ -835,6 +835,9 @@ class MainWindow(wx.Frame):
             logger.info("MainWindow().SelectInputFile(): Input file reset..")
             Settings["InputFile"] = None
 
+        #Call Layout() on self.Panel() to ensure it displays properly.
+        self.Panel.Layout()
+
     def SetOutputFile(self, Event=None):
         """Get the output file/Disk and set a variable to the selected value"""
         logger.debug("MainWindow().SelectOutputFile(): Getting user selection...")
@@ -906,6 +909,9 @@ class MainWindow(wx.Frame):
                 logger.info("MainWindow().SelectOutputFile(): OutputFile isn't a disk so disabling ddrescue's overwrite mode...")
                 Settings["OverwriteOutputFile"] = ""
 
+        #Call Layout() on self.Panel() to ensure it displays properly.
+        self.Panel.Layout()
+
     def SetLogFile(self, Event=None):
         """Get the log file position/name and set a variable to the selected value"""
         logger.debug("MainWindow().SelectLogFile(): Getting user selection...")
@@ -955,6 +961,9 @@ class MainWindow(wx.Frame):
         elif Settings["LogFile"] == "-- Please Select --":
             logger.debug("MainWindow().SelectLogFile(): LogFile reset.")
             Settings["LogFile"] = None
+
+        #Call Layout() on self.Panel() to ensure it displays properly.
+        self.Panel.Layout()
 
     def OnAbout(self, Event=None):
         """Show the about box"""
