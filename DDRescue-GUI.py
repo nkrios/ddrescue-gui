@@ -2155,11 +2155,10 @@ class FinishedWindow(wx.Frame):
                 dlg.Destroy()
 
         else:
-            Success = self.UnmountOutputFile()
+            Retvals = self.UnmountOutputFile()
 
             #Change some stuff if it worked.
-            print(Success)
-            if Success == [0, 0]:
+            if Retvals == [0, 0] or Retvals == [0]:
                 self.TopText.SetLabel("Your recovered data is at:")
                 self.PathText.SetLabel(Settings["OutputFile"])
                 self.MountButton.SetLabel("Mount Image/Disk")
