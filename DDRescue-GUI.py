@@ -44,7 +44,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "1.6"
-ReleaseDate = "6/7/2016"
+ReleaseDate = "7/7/2016"
 
 def usage():
     print("\nUsage: DDRescue-GUI.py [OPTION]\n\n")
@@ -2405,11 +2405,8 @@ class FinishedWindow(wx.Frame):
                 #Get the info related to this partition.
                 for Line in Output:
                     if Partition.split()[0] in Line:
-                        OutputLine = Line
-                        break
-
-                #Add stuff in an intuitive way.
-                Choices.append("Partition "+Partition.split()[0].split("p")[-1]+", Filesystem: "+OutputLine.split()[-2]+", Size: "+OutputLine.split()[-1])
+                        #Add stuff in an intuitive way.
+                        Choices.append("Partition "+Partition.split()[0].split("p")[-1]+", Filesystem: "+OutputLine.split()[-2]+", Size: "+OutputLine.split()[-1])
 
             #Ask the user which partition to mount.
             logger.debug("FinishedWindow().MountDiskLinux(): Asking user which partition to mount...")
