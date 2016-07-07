@@ -2154,10 +2154,6 @@ class FinishedWindow(wx.Frame):
                 dlg.ShowModal()
                 dlg.Destroy()
 
-            else:
-                #Otherwise, try to clean up and ignore errors.
-                self.UnmountOutputFile()
-
         else:
             Success = self.UnmountOutputFile()
 
@@ -2406,7 +2402,7 @@ class FinishedWindow(wx.Frame):
                 for Line in Output:
                     if Partition.split()[0] in Line:
                         #Add stuff in an intuitive way.
-                        Choices.append("Partition "+Partition.split()[0].split("p")[-1]+", Filesystem: "+OutputLine.split()[-2]+", Size: "+OutputLine.split()[-1])
+                        Choices.append("Partition "+Partition.split()[0].split("p")[-1]+", Filesystem: "+Line.split()[-2]+", Size: "+Line.split()[-1])
 
             #Ask the user which partition to mount.
             logger.debug("FinishedWindow().MountDiskLinux(): Asking user which partition to mount...")
