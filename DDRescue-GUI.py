@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with DDRescue-GUI.  If not, see <http://www.gnu.org/licenses/>.
 
+#*** Add package dependancy on beautifulsoup ***
 #*** Remove package dependancy on GNU parted ***
 #*** Figure out why device mounting can be erratic on Linux. ***
 #*** Check CPU usage (esp in virtualbox) ***
