@@ -263,7 +263,7 @@ class Main():
                 DiskInfo[Volume] = {}
                 DiskInfo[Volume]["Name"] = Volume
                 DiskInfo[Volume]["LVName"] = Volume.split("/")[-1].split("-")[-1]
-                DiskInfo[Volume]["VGName"] = Volume.split("/")[2].split("-")[0]
+                DiskInfo[Volume]["VGName"] = Volume.split("/")[-1].split("-")[0]
                 DiskInfo[Volume]["Type"] = "Partition"
                 DiskInfo[Volume]["Partitions"] = []
                 DiskInfo[Volume]["Vendor"] = "Linux"
