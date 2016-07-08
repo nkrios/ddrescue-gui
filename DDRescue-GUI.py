@@ -2445,7 +2445,7 @@ class FinishedWindow(wx.Frame):
 
             else:
                 for Partition in Partitions:
-                    if Partition[0:12] != "loop deleted" and Partition != "":
+                    if Partition[0:12] != "loop deleted" and "/dev/" in Partition:
                         CorrectDisk = Partition[0:6]+dlg.GetStringSelection().split()[1].replace(",", "")
                         break
 
