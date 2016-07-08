@@ -2687,7 +2687,7 @@ class BackendThread(threading.Thread):
             #We're on ddrescue 1.21.
             self.DDRescue121 = True
 
-        elif SplitLine[0] == "rescued:":
+        elif SplitLine[0] == "rescued:" and self.DDRescue121:
             #Recovered data and number of errors (ddrescue 1.21).
             self.RecoveredData = SplitLine[1]
             self.RecoveredDataUnit = SplitLine[2][:2]
@@ -2716,7 +2716,6 @@ class BackendThread(threading.Thread):
                 wx.CallAfter(self.ParentWindow.UpdateStatusBar, Status)
                 self.OldStatus = Status
 
-            #Line 1.
             SplitLine = Info.split()
 
             if self.DDRescue121:
