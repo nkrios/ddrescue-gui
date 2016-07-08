@@ -2688,7 +2688,7 @@ class BackendThread(threading.Thread):
 
             if self.DDRescue121:
                 self.CurrentReadRate = ' '.join(SplitLine[7:9])
-                self.NewInputPos = ' '.join(SplitLine[0:2]).replace(",", "")
+                self.InputPos = ' '.join(SplitLine[0:2]).replace(",", "")
 
             else:
                 self.CurrentReadRate = ' '.join(SplitLine[7:9])
@@ -2696,22 +2696,20 @@ class BackendThread(threading.Thread):
                 self.RecoveredData = SplitLine[0]
                 self.RecoveredDataUnit = SplitLine[1][:2]
 
-            #Change the unit of measurement of the current amount of recovered data if needed.
-            self.RecoveredData, self.RecoveredDataUnit = self.ChangeUnits(float(self.RecoveredData), self.RecoveredDataUnit, self.DiskCapacityUnit)
-            self.RecoveredData = round(self.RecoveredData,3)
+            try:
+                #Change the unit of measurement of the current amount of recovered data if needed.
+                self.RecoveredData, self.RecoveredDataUnit = self.ChangeUnits(float(self.RecoveredData), self.RecoveredDataUnit, self.DiskCapacityUnit)
+                self.RecoveredData = round(self.RecoveredData,3)
 
-            #Update the GUI.
-            if not self.DDRescue121:
-                self.InputPos = self.NewInputPos
+                self.TimeRemaining = self.CalculateTimeRemaining()
 
-            self.TimeRemaining = self.CalculateTimeRemaining()
+                wx.CallAfter(self.ParentWindow.UpdateProgress, self.RecoveredData, self.DiskCapacity)
+                wx.CallAfter(self.ParentWindow.UpdateLine1Info, unicode(self.RecoveredData)+" "+self.RecoveredDataUnit, self.ErrorSize, self.CurrentReadRate)
+                wx.CallAfter(self.ParentWindow.UpdateLine2Info, self.InputPos, unicode(self.AverageReadRate)+" "+self.AverageReadRateUnit, self.NumErrors, self.TimeRemaining)
+                wx.CallAfter(self.ParentWindow.UpdateLine3Info, self.OutputPos, self.TimeSinceLastRead)
 
-            wx.CallAfter(self.ParentWindow.UpdateProgress, self.RecoveredData, self.DiskCapacity)
-            wx.CallAfter(self.ParentWindow.UpdateLine1Info, unicode(self.RecoveredData)+" "+self.RecoveredDataUnit, self.ErrorSize, self.CurrentReadRate)
-            wx.CallAfter(self.ParentWindow.UpdateLine2Info, self.InputPos, unicode(self.AverageReadRate)+" "+self.AverageReadRateUnit, self.NumErrors, self.TimeRemaining)
-            wx.CallAfter(self.ParentWindow.UpdateLine3Info, self.OutputPos, self.TimeSinceLastRead)
-
-            self.InputPos = self.NewInputPos
+            except AttributeError:
+                pass
             
     def ChangeUnits(self, NumberToChange, CurrentUnit, RequiredUnit):
         """Convert data so it uses the correct unit of measurement"""
