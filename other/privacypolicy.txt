@@ -10,6 +10,6 @@ If you attempt to mount a finished output file or disk, information will be coll
 
 Additionally, DDRescue-GUI collects the Vendor names, Product names, Capacity and Description (if available), of devices on your system. For LVM/RAID disks, DDRescue-GUI also collects the volume group name, and the logical volume name. This information is not required for DDRescue-GUI to run (with the exception of Size information for supporting the Reverse and Preallocate options on OS X), but instead collected to help you identify the disks you wish to recover data to and from, which helps avoid accidental data loss. All of this information can be viewed in the Disk Information Window, accessible from the Main Window (both as a button and in the view menu).
 
-Finally, DDRescue-GUI spits the version of itself and that of python and wxpython on startup to aid debugging if the log file is later needed to resolve a problem, for example in a support request from a user.
+Finally, DDRescue-GUI spits the version of itself and that of python and wxpython into the log file on startup to aid debugging if the log file is later needed to resolve a problem, for example in a support request from a user.
 
 When DDRescue-GUI is closed, all of this information (including the logfile itself) is completely deleted, unless you decide to save it somewhere else when prompted.

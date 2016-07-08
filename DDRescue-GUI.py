@@ -17,8 +17,6 @@
 
 #*** Add package dependancy on beautifulsoup ***
 #*** Remove package dependancy on GNU parted ***
-#*** Figure out why device mounting can be erratic on Linux. ***
-#*** Check CPU usage (esp in virtualbox) ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -2627,13 +2625,12 @@ class BackendThread(threading.Thread):
             #Start time elapsed thread.
             ElapsedTimeThread(self.ParentWindow)
 
-        elif SplitLine[0] == "ipos:":
+        elif SplitLine[0] == "ipos:" and not self.DDRescue121:
             #Line 2
-            if not self.DDRescue121:
-                self.NewInputPos = ' '.join(SplitLine[1:3]).replace(",", "")
-                self.NumErrors = SplitLine[4].replace(",", "")
-                self.AverageReadRate = SplitLine[7]
-                self.AverageReadRateUnit = SplitLine[8]
+            self.NewInputPos = ' '.join(SplitLine[1:3]).replace(",", "")
+            self.NumErrors = SplitLine[4].replace(",", "")
+            self.AverageReadRate = SplitLine[7]
+            self.AverageReadRateUnit = SplitLine[8]
 
         elif SplitLine[0] == "opos:":
             #Line 3
