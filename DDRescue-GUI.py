@@ -1145,7 +1145,7 @@ class MainWindow(wx.Frame):
         self.TimeRemainingText.SetLabel("Time Remaining: "+TimeLeft)
 
     def UpdateRecoveredData(self, RecoveredData):
-        self.ListCtrl.SetStringItem(index=0, col=1, label=Recovered)
+        self.ListCtrl.SetStringItem(index=0, col=1, label=RecoveredData)
 
     def UpdateErrorSize(self, ErrorSize):
         self.ListCtrl.SetStringItem(index=1, col=1, label=ErrorSize)
