@@ -2697,9 +2697,12 @@ class BackendThread(threading.Thread):
             self.RecoveredData, self.RecoveredDataUnit = self.ChangeUnits(float(self.RecoveredData), self.RecoveredDataUnit, self.DiskCapacityUnit)
             self.RecoveredData = round(self.RecoveredData,3)
 
+            self.TimeRemaining = self.CalculateTimeRemaining()
+
             wx.CallAfter(self.ParentWindow.UpdateRecoveredData, unicode(self.RecoveredData)+" "+self.RecoveredDataUnit)
             wx.CallAfter(self.ParentWindow.UpdateNumErrors, self.NumErrors)
             wx.CallAfter(self.ParentWindow.UpdateProgress, self.RecoveredData, self.DiskCapacity)
+            wx.CallAfter(self.ParentWindow.UpdateTimeRemaining, self.TimeRemianing)
 
         elif ("rescued:" in Line and SplitLine[0] != "rescued:") or "ipos:" in Line:
             if self.DDRescue121:
@@ -2732,14 +2735,14 @@ class BackendThread(threading.Thread):
                 self.RecoveredData, self.RecoveredDataUnit = self.ChangeUnits(float(self.RecoveredData), self.RecoveredDataUnit, self.DiskCapacityUnit)
                 self.RecoveredData = round(self.RecoveredData,3)
 
+                self.TimeRemaining = self.CalculateTimeRemaining()
+
                 wx.CallAfter(self.ParentWindow.UpdateErrorSize, self.ErrorSize)
                 wx.CallAfter(self.ParentWindow.UpdateRecoveredData, unicode(self.RecoveredData)+" "+self.RecoveredDataUnit)
                 wx.CallAfter(self.ParentWindow.UpdateProgress, self.RecoveredData, self.DiskCapacity)
-
-            self.TimeRemaining = self.CalculateTimeRemaining()
+                wx.CallAfter(self.ParentWindow.UpdateTimeRemaining, self.TimeRemianing)
 
             wx.CallAfter(self.ParentWindow.UpdateCurrentReadRate, self.CurrentReadRate)
-            wx.CallAfter(self.ParentWindow.UpdateTimeRemaining, self.TimeRemianing)
             
     def ChangeUnits(self, NumberToChange, CurrentUnit, RequiredUnit):
         """Convert data so it uses the correct unit of measurement"""
