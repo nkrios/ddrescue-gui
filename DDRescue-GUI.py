@@ -2423,7 +2423,7 @@ class FinishedWindow(wx.Frame):
 
             for Partition in Partitions:
                 #Skip non-partition things.
-                if Partition[0:12] == "loop deleted" or Partition == "" or Partition[0] == " ":
+                if Partition[0:12] == "loop deleted" or "/dev/" not in Partition:
                     continue
 
                 #Get the info related to this partition.
