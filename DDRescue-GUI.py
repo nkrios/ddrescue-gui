@@ -2635,7 +2635,6 @@ class BackendThread(threading.Thread):
             ElapsedTimeThread(self.ParentWindow)
 
         elif SplitLine[0] == "ipos:" and not self.DDRescue121:
-            #Line 2
             self.InputPos = ' '.join(SplitLine[1:3]).replace(",", "")
             self.NumErrors = SplitLine[4].replace(",", "")
             self.AverageReadRate = SplitLine[7]
@@ -2646,10 +2645,11 @@ class BackendThread(threading.Thread):
             wx.CallAfter(self.ParentWindow.UpdateAverageReadRate, unicode(self.AverageReadRate)+" "+self.AverageReadRateUnit)
 
         elif SplitLine[0] == "opos:":
-            #Line 3
             self.OutputPos = ' '.join(SplitLine[1:3]).replace(",", "")
 
-            #Adds compatibility for newer versions of ddrescue (the output format changed when 'run time' was introduced with v1.18, and 'time remaining' in v1.20). Not on ddrescue 1.21.
+            wx.CallAfter(self.ParentWindow.UpdateOpos, self.OutputPos)
+
+            #Add compatibility for newer versions of ddrescue (the output format changed when 'run time' was introduced with v1.18, and 'time remaining' in v1.20). Not on ddrescue 1.21.
             if self.DDRescue121:
                 #Get average read rate (ddrescue 1.21).
                 self.AverageReadRate = SplitLine[8]
