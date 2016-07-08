@@ -2702,7 +2702,7 @@ class BackendThread(threading.Thread):
             wx.CallAfter(self.ParentWindow.UpdateRecoveredData, unicode(self.RecoveredData)+" "+self.RecoveredDataUnit)
             wx.CallAfter(self.ParentWindow.UpdateNumErrors, self.NumErrors)
             wx.CallAfter(self.ParentWindow.UpdateProgress, self.RecoveredData, self.DiskCapacity)
-            wx.CallAfter(self.ParentWindow.UpdateTimeRemaining, self.TimeRemianing)
+            wx.CallAfter(self.ParentWindow.UpdateTimeRemaining, self.TimeRemaining)
 
         elif ("rescued:" in Line and SplitLine[0] != "rescued:") or "ipos:" in Line:
             if self.DDRescue121:
@@ -2740,7 +2740,7 @@ class BackendThread(threading.Thread):
                 wx.CallAfter(self.ParentWindow.UpdateErrorSize, self.ErrorSize)
                 wx.CallAfter(self.ParentWindow.UpdateRecoveredData, unicode(self.RecoveredData)+" "+self.RecoveredDataUnit)
                 wx.CallAfter(self.ParentWindow.UpdateProgress, self.RecoveredData, self.DiskCapacity)
-                wx.CallAfter(self.ParentWindow.UpdateTimeRemaining, self.TimeRemianing)
+                wx.CallAfter(self.ParentWindow.UpdateTimeRemaining, self.TimeRemaining)
 
             wx.CallAfter(self.ParentWindow.UpdateCurrentReadRate, self.CurrentReadRate)
             
