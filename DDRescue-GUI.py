@@ -1137,27 +1137,36 @@ class MainWindow(wx.Frame):
         logger.debug("MainWindow().SetProgressBarRange(): Setting range "+unicode(Message)+" for self.ProgressBar...")
         self.ProgressBar.SetRange(Message)
 
-    def UpdateLine1Info(self, Recovered, Errsize, ReadRate):
-        """Update the items that display info on the current amount of recovered data, unreadable data, and the current read rate"""
-        self.ListCtrl.SetStringItem(index=0, col=1, label=Recovered)
-        self.ListCtrl.SetStringItem(index=1, col=1, label=Errsize)
-        self.ListCtrl.SetStringItem(index=2, col=1, label=ReadRate)
-
-    def UpdateLine2Info(self, IPos, AvgReadRate, NumErrs, TimeLeft):
-        """Update the items that display info on the current input position, average read rate, number of errors, and time remaining"""
-        self.ListCtrl.SetStringItem(index=5, col=1, label=IPos)
-        self.ListCtrl.SetStringItem(index=3, col=1, label=AvgReadRate)
-        self.ListCtrl.SetStringItem(index=4, col=1, label=NumErrs)
-        self.TimeRemainingText.SetLabel("Time Remaining: "+TimeLeft)
-
-    def UpdateLine3Info(self, OPos, LastRead):
-        """Update the items that display info on the current output position, and the time since the last successful read"""
-        self.ListCtrl.SetStringItem(index=6, col=1, label=OPos)
-        self.ListCtrl.SetStringItem(index=7, col=1, label=LastRead)
-
     def UpdateTimeElapsed(self, Line):
         """Update the time elapsed text"""
         self.TimeElapsedText.SetLabel(Line)
+
+    def UpdateTimeRemaining(self, TimeLeft):
+        self.TimeRemainingText.SetLabel("Time Remaining: "+TimeLeft)
+
+    def UpdateRecoveredData(self, RecoveredData):
+        self.ListCtrl.SetStringItem(index=0, col=1, label=Recovered)
+
+    def UpdateErrorSize(self, ErrorSize):
+        self.ListCtrl.SetStringItem(index=1, col=1, label=ErrorSize)
+
+    def UpdateCurrentReadRate(self, CurrentReadRate):
+        self.ListCtrl.SetStringItem(index=2, col=1, label=CurrentReadRate)
+
+    def UpdateAverageReadRate(self, AverageReadRate):
+        self.ListCtrl.SetStringItem(index=3, col=1, label=AverageReadRate)
+
+    def UpdateNumErrors(self, NumErrors):
+        self.ListCtrl.SetStringItem(index=4, col=1, label=NumErrors)
+
+    def UpdateIpos(self, Ipos):
+        self.ListCtrl.SetStringItem(index=5, col=1, label=Ipos)
+
+    def UpdateOpos(self, Opos):
+        self.ListCtrl.SetStringItem(index=6, col=1, label=Opos)
+
+    def UpdateTimeSinceLastRead(self, LastRead):
+        self.ListCtrl.SetStringItem(index=7, col=1, label=LastRead)
 
     def CarriageReturn(self):
         """Handles carriage returns in output"""
@@ -2627,10 +2636,14 @@ class BackendThread(threading.Thread):
 
         elif SplitLine[0] == "ipos:" and not self.DDRescue121:
             #Line 2
-            self.NewInputPos = ' '.join(SplitLine[1:3]).replace(",", "")
+            self.InputPos = ' '.join(SplitLine[1:3]).replace(",", "")
             self.NumErrors = SplitLine[4].replace(",", "")
             self.AverageReadRate = SplitLine[7]
             self.AverageReadRateUnit = SplitLine[8]
+
+            wx.CallAfter(self.ParentWindow.UpdateIpos, self.InputPos)
+            wx.CallAfter(self.ParentWindow.UpdateNumErrors, self.NumErrors)
+            wx.CallAfter(self.ParentWindow.UpdateAverageReadRate, unicode(self.AverageReadRate)+" "+self.AverageReadRateUnit)
 
         elif SplitLine[0] == "opos:":
             #Line 3
@@ -2641,6 +2654,7 @@ class BackendThread(threading.Thread):
                 #Get average read rate (ddrescue 1.21).
                 self.AverageReadRate = SplitLine[8]
                 self.AverageReadRateUnit = SplitLine[9]
+                wx.CallAfter(self.ParentWindow.UpdateAverageReadRate, unicode(self.AverageReadRate)+" "+self.AverageReadRateUnit)
 
             else:
                 if SplitLine[-1] == "ago":
@@ -2649,17 +2663,25 @@ class BackendThread(threading.Thread):
                 else:
                     self.TimeSinceLastRead = ' '.join(SplitLine[-2:]) #v1.18 to v1.20
 
+                wx.CallAfter(self.ParentWindow.UpdateTimeSinceLastRead, self.TimeSinceLastRead)
+
         elif SplitLine[0] == "non-tried:":
             #Unreadable data (ddrescue 1.21).
             self.ErrorSize = ' '.join(SplitLine[4:6]).replace(",", "")
+
+            wx.CallAfter(self.ParentWindow.UpdateErrorSize, self.ErrorSize)
 
         elif SplitLine[0] == "time":
             #Time since last read (ddrescue v1.20).
             self.TimeSinceLastRead = SplitLine[-1]
 
+            wx.CallAfter(self.ParentWindow.UpdateTimeSinceLastRead, self.TimeSinceLastRead)
+
         elif SplitLine[0] == "percent":
             #Time since last read (ddrescue 1.21).
             self.TimeSinceLastRead = SplitLine[-1]
+
+            wx.CallAfter(self.ParentWindow.UpdateTimeSinceLastRead, self.TimeSinceLastRead)
 
         elif SplitLine[-1] == "1.21":
             #We're on ddrescue 1.21.
@@ -2670,6 +2692,14 @@ class BackendThread(threading.Thread):
             self.RecoveredData = SplitLine[1]
             self.RecoveredDataUnit = SplitLine[2][:2]
             self.NumErrors = SplitLine[4].replace(",", "")
+
+            #Change the unit of measurement of the current amount of recovered data if needed.
+            self.RecoveredData, self.RecoveredDataUnit = self.ChangeUnits(float(self.RecoveredData), self.RecoveredDataUnit, self.DiskCapacityUnit)
+            self.RecoveredData = round(self.RecoveredData,3)
+
+            wx.CallAfter(self.ParentWindow.UpdateRecoveredData, unicode(self.RecoveredData)+" "+self.RecoveredDataUnit)
+            wx.CallAfter(self.ParentWindow.UpdateNumErrors, self.NumErrors)
+            wx.CallAfter(self.ParentWindow.UpdateProgress, self.RecoveredData, self.DiskCapacity)
 
         elif ("rescued:" in Line and SplitLine[0] != "rescued:") or "ipos:" in Line:
             if self.DDRescue121:
@@ -2690,26 +2720,26 @@ class BackendThread(threading.Thread):
                 self.CurrentReadRate = ' '.join(SplitLine[7:9])
                 self.InputPos = ' '.join(SplitLine[0:2]).replace(",", "")
 
+                wx.CallAfter(self.ParentWindow.UpdateIpos, self.InputPos)
+
             else:
                 self.CurrentReadRate = ' '.join(SplitLine[7:9])
                 self.ErrorSize = ' '.join(SplitLine[3:5]).replace(",", "")
                 self.RecoveredData = SplitLine[0]
                 self.RecoveredDataUnit = SplitLine[1][:2]
 
-            try:
                 #Change the unit of measurement of the current amount of recovered data if needed.
                 self.RecoveredData, self.RecoveredDataUnit = self.ChangeUnits(float(self.RecoveredData), self.RecoveredDataUnit, self.DiskCapacityUnit)
                 self.RecoveredData = round(self.RecoveredData,3)
 
-                self.TimeRemaining = self.CalculateTimeRemaining()
-
+                wx.CallAfter(self.ParentWindow.UpdateErrorSize, self.ErrorSize)
+                wx.CallAfter(self.ParentWindow.UpdateRecoveredData, unicode(self.RecoveredData)+" "+self.RecoveredDataUnit)
                 wx.CallAfter(self.ParentWindow.UpdateProgress, self.RecoveredData, self.DiskCapacity)
-                wx.CallAfter(self.ParentWindow.UpdateLine1Info, unicode(self.RecoveredData)+" "+self.RecoveredDataUnit, self.ErrorSize, self.CurrentReadRate)
-                wx.CallAfter(self.ParentWindow.UpdateLine2Info, self.InputPos, unicode(self.AverageReadRate)+" "+self.AverageReadRateUnit, self.NumErrors, self.TimeRemaining)
-                wx.CallAfter(self.ParentWindow.UpdateLine3Info, self.OutputPos, self.TimeSinceLastRead)
 
-            except AttributeError:
-                pass
+            self.TimeRemaining = self.CalculateTimeRemaining()
+
+            wx.CallAfter(self.ParentWindow.UpdateCurrentReadRate, self.CurrentReadRate)
+            wx.CallAfter(self.ParentWindow.UpdateTimeRemaining, self.TimeRemianing)
             
     def ChangeUnits(self, NumberToChange, CurrentUnit, RequiredUnit):
         """Convert data so it uses the correct unit of measurement"""
