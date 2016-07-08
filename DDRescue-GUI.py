@@ -43,7 +43,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "1.6"
-ReleaseDate = "7/7/2016"
+ReleaseDate = "8/7/2016"
 
 def usage():
     print("\nUsage: DDRescue-GUI.py [OPTION]\n\n")
@@ -2422,7 +2422,8 @@ class FinishedWindow(wx.Frame):
             Choices = []
 
             for Partition in Partitions:
-                if Partition[0:12] == "loop deleted" or Partition == "":
+                #Skip non-partition things.
+                if Partition[0:12] == "loop deleted" or Partition == "" or Partition[0] == " ":
                     continue
 
                 #Get the info related to this partition.
