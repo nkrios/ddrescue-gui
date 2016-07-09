@@ -153,9 +153,7 @@ class Main():
         logger.debug("Tools: Main().UnmountDisk(): Checking if "+Disk+" is mounted...")
 
         #Check if it is mounted.
-        MountPoint = self.IsMounted(Disk)
-
-        if MountPoint == None:
+        if self.IsMounted(Disk) == False:
             #The disk isn't mounted.
             #Set Retval to 0 and log this.
             Retval = 0
