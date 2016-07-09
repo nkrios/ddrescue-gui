@@ -1639,11 +1639,18 @@ class DevInfoWindow(wx.Frame):
         Disks = DiskInfo.keys()
         Disks.sort()
 
+        #Make sure we display human-readable sizes on OS X.
+        if Linux:
+            Headings = ("Name", "Type", "Vendor", "Product", "Capacity", "Description")
+
+        else:
+            Headings = ("Name", "Type", "Vendor", "Product", "HumanCapacity", "Description")
+
         for Disk in Disks:
             Number += 1
             Column = 0
 
-            for Heading in ("Name", "Type", "Vendor", "Product", "Capacity", "Description"):
+            for Heading in Headings:
                 if Column == 0:
                     self.ListCtrl.InsertStringItem(index=Number, label=DiskInfo[Disk][Heading])
 

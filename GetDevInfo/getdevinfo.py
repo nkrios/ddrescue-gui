@@ -351,7 +351,9 @@ class Main():
 
             #Parse the plist (Property List).
             Plist = plistlib.readPlistFromString(stdout)
-            
+
+            UnitList = [None, "B", "KB", "MB", "GB", "TB", "PB"]
+
             #Get disk info.
             for Disk in Plist["AllDisks"]:
                 DiskInfo["/dev/"+Disk] = {}
@@ -403,6 +405,25 @@ class Main():
 
                 else:
                     DiskInfo["/dev/"+Disk]["Capacity"] = "Unknown"
+
+                #Round the sizes to make them human-readable.
+                Unit = "B"
+
+                #Catch an error in case Size is unknown.
+                try:
+                    HumanSize = int(Size)
+
+                except ValueError:
+                    DiskInfo["/dev/"+Disk]["HumanCapacity"] = "Unknown"
+
+                else:
+                    while len(unicode(HumanSize)) > 3:
+                        #Shift up one unit.
+                        Unit = UnitList[UnitList.index(Unit)+1]
+                        HumanSize = HumanSize//1000
+
+                    #Include the unit in the result for both exact and human-readable sizes.
+                    DiskInfo["/dev/"+Disk]["HumanCapacity"] = unicode(HumanSize)+" "+Unit
 
                 Description = self.GetDescription(Disk)
 
