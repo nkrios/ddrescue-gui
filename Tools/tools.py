@@ -41,64 +41,110 @@ class Main():
         if ReturnOutput == False:
             #Return the return code back to whichever function ran this process, so it can handle any errors.
             return Retval
+
         else:
             #Return the return code, as well as the output.
             return Retval, ''.join(Output)
 
-    def GetDiskMountPoint(self, Device):
-        """Find if the given device or file is mounted or not, and return the mount point, or None if it isn't mounted"""
-        #Run a command to get filesystem info.
-        Retval, Output = self.StartProcess(Command="df", ReturnOutput=True)
+    def IsMounted(self, Partition, MountPoint=None):
+        """Checks if the given partition is mounted.
+        Partition is the given partition to check.
+        If MountPoint is specified, check if the partition is mounted there, rather than just if it's mounted.
+        Return boolean True/False.
+        """
+        if MountPoint == None:
+            logger.debug("Tools: Main().IsMounted(): Checking if "+Partition+" is mounted...")
+            MountInfo = self.StartProcess("mount", ReturnOutput=True)[1]
 
-        #Read the output and find the info. ('None' will be returned automatically if we don't return anything, for example if the device isn't found in Output)
-        for Line in Output.split("\n"):
-            try:
-                #Grab the device.
-                Dev = Line.split()[0]
-                if Linux:
-                    MountPoint = ' '.join(Line.split()[5:]).replace(' ', '\\ ').replace("x20", " ")
+            Mounted = False
 
-                else:
-                    MountPoint = ' '.join(Line.split()[8:]).replace(' ', '\\ ').replace("x20", " ")
-
-            except IndexError:
-                #Ignore IndexErrors.
-                continue
-
-            else:
-                try:
-                    #Check if we have the right mountpoint for a device.
-                    if Dev == Device and MountPoint[0] == "/":
-                        return MountPoint
-
-                    #In case we were given a mountpont, also check if the MountPoint equals the Device.
-                    elif MountPoint == Device:
-                        return MountPoint
-
-                except: continue
-
-    def MountDisk(self, Disk, MountPoint):
-        """Mount the given disk (partition)"""
-        #Also, check that it isn't already mounted, and that nothing else is already mounted there.
-        CurrentMountPoint = self.GetDiskMountPoint(Disk)
-
-        if CurrentMountPoint != None:
-            #Unmount the disk.
-            self.UnmountDisk(Disk)
-
-        #Create the mountpoint if needed.
-        if os.path.isdir(MountPoint) == False:
-            os.makedirs(MountPoint)
-
-        #Mount the disk to the mount point.
-        Retval = self.StartProcess(Command="mount "+Disk+" "+MountPoint, ReturnOutput=False)
-
-        #Check it worked.
-        if Retval == 0:
-            logger.debug("Tools() Main().MountDisk(): Mounting "+Disk+" to "+MountPoint+" Succeeded!")
+            for Line in MountInfo.split("\n"):
+                if len(Line) != 0:
+                    if Line.split()[0] == Partition:
+                        Mounted = True
 
         else:
-            logger.warning("Tools() Main().MountDisk(): Mounting "+Disk+" to "+MountPoint+" Failed! Retval: "+unicode(Retval))
+            #Check where it's mounted to.
+            logger.debug("Tools: Main().IsMounted(): Checking if "+Partition+" is mounted at "+MountPoint+"...")
+
+            Mounted = False
+
+            if self.GetMountPointOf(Partition) == MountPoint:
+                Mounted = True
+
+        if Mounted:
+            logger.debug("Tools: Main().IsMounted(): It is. Returning True...")
+            return True
+
+        else:
+            logger.debug("Tools: Main().IsMounted(): It isn't. Returning False...")
+            return False
+
+    def GetMountPointOf(self, Partition):
+        """Returns the mountpoint of the given partition, if any.
+        Otherwise, return None"""
+        logger.info("Tools: Main().GetMountPointOf(): Trying to get mount point of partition "+Partition+"...")
+
+        MountInfo = self.StartProcess("mount", ReturnOutput=True)[1]
+        MountPoint = None
+
+        for Line in MountInfo.split("\n"):
+            SplitLine = Line.split()
+
+            if len(SplitLine) != 0:
+                if Partition == SplitLine[0]:
+                    MountPoint = SplitLine[2]
+
+        if MountPoint != None:
+            logger.info("Tools: Main().GetMountPointOf(): Found it! MountPoint is "+MountPoint+"...")
+
+        else:
+            logger.info("Tools: Main().GetMountPointOf(): Didn't find it...")
+
+        return MountPoint
+
+    def MountPartition(self, Partition, MountPoint, Options=""):
+        """Mounts the given partition.
+        Partition is the partition to mount.
+        MountPoint is where you want to mount the partition.
+        Options is non-mandatory and contains whatever options you want to pass to the mount command.
+        The default value for Options is an empty string.
+        """
+        if Options != "":
+            logger.info("Tools: Main().MountPartition(): Preparing to mount "+Partition+" at "+MountPoint+" with extra options "+Options+"...")
+
+        else:
+            logger.info("Tools: Main().MountPartition(): Preparing to mount "+Partition+" at "+MountPoint+" with no extra options...")
+            
+        MountInfo = self.StartProcess("mount", ReturnOutput=True)[1]
+
+        #There is a partition mounted here. Check if our partition is already mounted in the right place.
+        if MountPoint == self.GetMountPointOf(Partition):
+            #The correct partition is already mounted here.
+            logger.debug("Tools: Main().MountPartition(): Partition: "+Partition+" was already mounted at: "+MountPoint+". Continuing...")
+            return 0
+
+        elif MountPoint in MountInfo:
+            #Something else is in the way. Unmount that partition, and continue.
+            logger.warning("Tools: Main().MountPartition(): Unmounting filesystem in the way at "+MountPoint+"...")
+            Retval = self.Unmount(MountPoint)
+
+            if Retval != 0:
+                logger.error("Tools: Main().MountPartition(): Couldn't unmount "+MountPoint+", preventing the mounting of "+Partition+"! Skipping mount attempt.")
+                return False
+
+        #Create the dir if needed.
+        if os.path.isdir(MountPoint) == False:
+            os.makedirs(MountPoint)
+    
+        #Mount the device to the mount point.
+        Retval = self.StartProcess("mount "+Options+" "+Partition+" "+MountPoint)
+
+        if Retval == 0:
+            logger.debug("Tools: Main().MountPartition(): Successfully mounted partition!")
+
+        else:
+            logger.warning("Tools: Main().MountPartition(): Failed to mount partition!")
 
         return Retval
 
@@ -107,7 +153,7 @@ class Main():
         logger.debug("Tools: Main().UnmountDisk(): Checking if "+Disk+" is mounted...")
 
         #Check if it is mounted.
-        MountPoint = self.GetDiskMountPoint(Disk)
+        MountPoint = self.GetMountPointOf(Disk)
 
         if MountPoint == None:
             #The disk isn't mounted.

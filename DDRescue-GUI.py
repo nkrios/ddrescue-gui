@@ -1029,7 +1029,7 @@ class MainWindow(wx.Frame):
                     logger.info("MainWindow().OnStart(): "+Disk+" is a file (or not in collected disk info), ignoring it...")
                     continue
 
-                if BackendTools().GetDiskMountPoint(Disk) != None or DevInfoTools().IsPartition(Disk) == False:
+                if BackendTools().IsMounted(Disk) or DevInfoTools().IsPartition(Disk) == False:
                     #The Disk is mounted, or may have partitions that are mounted.
                     if DevInfoTools().IsPartition(Disk):
                         #Unmount the disk.
@@ -2406,7 +2406,7 @@ class FinishedWindow(wx.Frame):
             self.OutputFileMountPoint = "/mnt"+Settings["InputFile"]
 
             #Attempt to mount the disk.
-            if BackendTools().MountDisk(Disk=Settings["OutputFile"], MountPoint=self.OutputFileMountPoint) == 0:
+            if BackendTools().MountPartition(Partition=Settings["OutputFile"], MountPoint=self.OutputFileMountPoint) == 0:
                 logger.info("FinishedWindow().MountDiskLinux(): Success! Waiting for user to finish with it and prompt to unmount it...")
                 return True
 
@@ -2467,7 +2467,7 @@ class FinishedWindow(wx.Frame):
             logger.info("FinishedWindow().MountDiskLinux(): Mounting disk "+PartitionToMount+"...")
             wx.CallAfter(self.ParentWindow.UpdateStatusBar, "Mounting output file. This may take a few moments...")
             wx.Yield()
-            Retval = BackendTools().MountDisk(Disk=PartitionToMount, MountPoint=self.OutputFileMountPoint)
+            Retval = BackendTools().MountPartition(Partition=PartitionToMount, MountPoint=self.OutputFileMountPoint)
             
             #Check it worked.
             if Retval == 0:
