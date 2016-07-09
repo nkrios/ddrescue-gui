@@ -88,7 +88,7 @@ class Main():
 
             else:
                 try:
-                    Product = self.Plist["MediaName"].split()[1:]
+                    Product = ' '.join(self.Plist["MediaName"].split()[1:])
                     logger.info("GetDevInfo: Main().GetProduct(): Found product info: "+Product)
 
                 except KeyError:
@@ -135,7 +135,7 @@ class Main():
 
             return Size
 
-    def GetDescription(self):
+    def GetDescription(self, Disk):
         """Find description information for the given Disk."""
         logger.info("GetDevInfo: Main().GetDescription(): Getting description info for Disk: "+Disk+"...")
 
@@ -355,6 +355,7 @@ class Main():
             #Get disk info.
             for Disk in Plist["AllDisks"]:
                 DiskInfo["/dev/"+Disk] = {}
+                DiskInfo["/dev/"+Disk]["Name"] = "/dev/"+Disk
 
                 #Run diskutil info to get Disk info.
                 logger.debug("GetDevInfo: Main().GetInfo(): Running 'diskutil info -plist "+Disk+"'...")
@@ -365,12 +366,11 @@ class Main():
                 self.Plist = plistlib.readPlistFromString(stdout)
 
                 #Check if the Disk is a partition.
-                DiskIsPartition = self.IsPartition(Disk, DiskList)
+                DiskIsPartition = self.IsPartition(Disk)
 
                 if DiskIsPartition:
                     DiskInfo["/dev/"+Disk]["Type"] = "Partition"
-                    Temp = "/dev/"+Disk.split("disk")[1].split("s")[0]
-                    DiskInfo["/dev/"+Disk]["HostDevice"] = "/dev/disk"+Temp
+                    DiskInfo["/dev/"+Disk]["HostDevice"] = "/dev/disk"+Disk.split("disk")[1].split("s")[0]
                     DiskInfo["/dev/"+Disk]["Partitions"] = []
                     DiskInfo[DiskInfo["/dev/"+Disk]["HostDevice"]]["Partitions"].append("/dev/"+Disk)
 
@@ -396,7 +396,7 @@ class Main():
                 else:
                     DiskInfo["/dev/"+Disk]["Product"] = "Unknown"
 
-                Size = self.GetSize()
+                Size = self.GetCapacity()
 
                 if Size != None:
                     DiskInfo["/dev/"+Disk]["Capacity"] = Size
@@ -404,7 +404,7 @@ class Main():
                 else:
                     DiskInfo["/dev/"+Disk]["Capacity"] = "Unknown"
 
-                Description = self.GetDescription()
+                Description = self.GetDescription(Disk)
 
                 if Description != None:
                     DiskInfo["/dev/"+Disk]["Description"] = Description
