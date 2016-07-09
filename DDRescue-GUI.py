@@ -2209,7 +2209,7 @@ class FinishedWindow(wx.Frame):
         try:
             return MountFunction()
 
-        except:
+        except ZeroDivisionError:
             #An error has occured!
             Error = sys.exc_info()[0]
             logger.error("FinishedWindow().MountOutputFile(): Couldn't mount output file. The error was: "+unicode(Error)+". Warning user...")
@@ -2317,10 +2317,10 @@ class FinishedWindow(wx.Frame):
                 PartNum = Partition["partition-number"]
 
                 #Disk size.
-                DiskSize = (Partition["partition-length"] * Blocksize) / 1000000
+                DiskSize = (Partition["partition-length"] * Blocksize) // 1000000
 
                 #Add stuff in an intuitive way.
-                Choices.append("Partition "+unicode(PartNum)+" with size "+unicode(Settings["DiskSize"])+" MB")
+                Choices.append("Partition "+unicode(PartNum)+" with size "+unicode(DiskSize)+" MB")
 
             #Ask the user which partition to mount.
             logger.debug("FinishedWindow().MountDiskOSX(): Asking user which partition to mount...")
@@ -2341,26 +2341,30 @@ class FinishedWindow(wx.Frame):
             logger.info("FinishedWindow().MountDiskOSX(): Mounting disk "+Settings["OutputFile"]+"...")
             Retval, Output = BackendTools().StartProcess(Command="hdiutil mount "+Settings["OutputFile"]+" -plist", ReturnOutput=True)
 
-            #Parse the plist (Property List).
-            Plist = plistlib.readPlistFromString(Output)
-            Temp = Plist["system-entities"]
+            try:
+                #Parse the plist (Property List).
+                Plist = plistlib.readPlistFromString(Output)
+                Temp = Plist["system-entities"]
 
-            #Get the device name (it doesn't matter which partition Temp[0] is, as hdiutil detach removes all of them anyway).
-            self.OutputFileDeviceName = Temp[0]["dev-entry"]
+                #Get the device name (it doesn't matter which partition Temp[0] is, as hdiutil detach removes all of them anyway).
+                self.OutputFileDeviceName = Temp[0]["dev-entry"]
 
-            for Partition in Temp:
-                Disk = Partition["dev-entry"]
+                for Partition in Temp:
+                    Disk = Partition["dev-entry"]
 
-                if Disk.split("s")[-1] == SelectedPartNum:
-                    #Check if the partition we want was mounted (hdiutil mounts all mountable partitions in the image automatically).
-                    if "mount-point" in Partition:
-                        self.OutputFileMountPoint = Partition["mount-point"]
-                        Retval = 0
+                    if Disk.split("s")[-1] == SelectedPartNum:
+                        #Check if the partition we want was mounted (hdiutil mounts all mountable partitions in the image automatically).
+                        if "mount-point" in Partition:
+                            self.OutputFileMountPoint = Partition["mount-point"]
+                            Retval = 0
 
-                    else:
-                        #It wasn't! Set Retval to 1 so we can handle the error and unmount the image again
-                        Retval = 1
-                        self.UnmountOutputFile()
+                        else:
+                            #It wasn't! Set Retval to 1 so we can handle the error and unmount the image again
+                            Retval = 1
+                            self.UnmountOutputFile()
+
+            except:
+                Retval = 1
 
             #Check it worked.
             if Retval == 0:
@@ -2532,6 +2536,7 @@ class ElapsedTimeThread(threading.Thread):
             #Wait for a second.
             time.sleep(1)
 
+#End Elapsed Time Thread
 #Begin Backend Thread
 class BackendThread(threading.Thread):
     def __init__(self, ParentWindow):
@@ -2697,20 +2702,25 @@ class BackendThread(threading.Thread):
 
         elif SplitLine[0] == "rescued:" and self.DDRescue121:
             #Recovered data and number of errors (ddrescue 1.21).
-            self.RecoveredData = SplitLine[1]
-            self.RecoveredDataUnit = SplitLine[2][:2]
-            self.NumErrors = SplitLine[4].replace(",", "")
+            #Don't crash if we're reading the initial status from the logfile.
+            try:
+                self.RecoveredData = SplitLine[1]
+                self.RecoveredDataUnit = SplitLine[2][:2]
+                self.NumErrors = SplitLine[4].replace(",", "")
 
-            #Change the unit of measurement of the current amount of recovered data if needed.
-            self.RecoveredData, self.RecoveredDataUnit = self.ChangeUnits(float(self.RecoveredData), self.RecoveredDataUnit, self.DiskCapacityUnit)
-            self.RecoveredData = round(self.RecoveredData,3)
+                #Change the unit of measurement of the current amount of recovered data if needed.
+                self.RecoveredData, self.RecoveredDataUnit = self.ChangeUnits(float(self.RecoveredData), self.RecoveredDataUnit, self.DiskCapacityUnit)
+                self.RecoveredData = round(self.RecoveredData,3)
 
-            self.TimeRemaining = self.CalculateTimeRemaining()
+                self.TimeRemaining = self.CalculateTimeRemaining()
 
-            wx.CallAfter(self.ParentWindow.UpdateRecoveredData, unicode(self.RecoveredData)+" "+self.RecoveredDataUnit)
-            wx.CallAfter(self.ParentWindow.UpdateNumErrors, self.NumErrors)
-            wx.CallAfter(self.ParentWindow.UpdateProgress, self.RecoveredData, self.DiskCapacity)
-            wx.CallAfter(self.ParentWindow.UpdateTimeRemaining, self.TimeRemaining)
+                wx.CallAfter(self.ParentWindow.UpdateRecoveredData, unicode(self.RecoveredData)+" "+self.RecoveredDataUnit)
+                wx.CallAfter(self.ParentWindow.UpdateNumErrors, self.NumErrors)
+                wx.CallAfter(self.ParentWindow.UpdateProgress, self.RecoveredData, self.DiskCapacity)
+                wx.CallAfter(self.ParentWindow.UpdateTimeRemaining, self.TimeRemaining)
+
+            except AttributeError:
+                pass
 
         elif ("rescued:" in Line and SplitLine[0] != "rescued:") or "ipos:" in Line:
             if self.DDRescue121:
