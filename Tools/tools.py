@@ -58,9 +58,10 @@ class Main():
 
             Mounted = False
 
+            #Linux fix: Accept a mountpoint when called with just one argument.
             for Line in MountInfo.split("\n"):
                 if len(Line) != 0:
-                    if Line.split()[0] == Partition:
+                    if Line.split()[0] == Partition or Line.split()[2] == Partition:
                         Mounted = True
 
         else:
