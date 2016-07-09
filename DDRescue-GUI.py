@@ -847,6 +847,11 @@ class MainWindow(wx.Frame):
 
             if OutputFileDlg.ShowModal() == wx.ID_OK:
                 Settings["OutputFile"] = OutputFileDlg.GetPath()
+
+                #Automatically add a file extension of .img if there isn't one (fixes bugs on OS X).
+                if Settings["OutputFile"][-4] != ".":
+                    Settings["OutputFile"] += ".img"
+
                 if PartedMagic and "/root" in Settings["OutputFile"]:
                     logger.warning("MainWindow().SelectOutputFile(): OutputFile is in root's home directory on Parted Magic! There is no space here, warning user and declining selection...")
                     dlg = wx.MessageDialog(self.Panel, "You can't save the output file in root's home directory in Parted Magic! There's not enough space there, please select a new file.", 'DDRescue-GUI - Error!', wx.OK | wx.ICON_ERROR)
