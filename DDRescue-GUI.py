@@ -43,7 +43,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "1.6"
-ReleaseDate = "8/7/2016"
+ReleaseDate = "9/7/2016"
 
 def usage():
     print("\nUsage: DDRescue-GUI.py [OPTION]\n\n")
@@ -2209,7 +2209,7 @@ class FinishedWindow(wx.Frame):
         try:
             return MountFunction()
 
-        except ZeroDivisionError:
+        except:
             #An error has occured!
             Error = sys.exc_info()[0]
             logger.error("FinishedWindow().MountOutputFile(): Couldn't mount output file. The error was: "+unicode(Error)+". Warning user...")
@@ -2251,7 +2251,7 @@ class FinishedWindow(wx.Frame):
         return Retvals
 
     def MountDiskOSX(self):
-        """Mount the output file on OS X""" #*** Refactor this on OS X ***
+        """Mount the output file on OS X"""
         logger.info("FinishedWindow().MountDiskOSX(): Mounting Disk: "+Settings["OutputFile"]+"...")
         wx.CallAfter(self.ParentWindow.UpdateStatusBar, "Preparing to mount output file. Please Wait...")
         wx.Yield()
