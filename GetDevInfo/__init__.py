@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# Device Information Obtainer for DDRescue-GUI Version 1.6
+# Device Information Obtainer for DDRescue-GUI Version 1.6.1
 # This file is part of DDRescue-GUI.
 # Copyright (C) 2013-2016 Hamish McIntyre-Bhatty
 # DDRescue-GUI is free software: you can redistribute it and/or modify it

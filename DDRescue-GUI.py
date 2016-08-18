@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*- 
-# DDRescue-GUI Main Script Version 1.6
+# DDRescue-GUI Main Script Version 1.6.1
 # This file is part of DDRescue-GUI.
 # Copyright (C) 2013-2016 Hamish McIntyre-Bhatty
 # DDRescue-GUI is free software: you can redistribute it and/or modify it
@@ -14,9 +14,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with DDRescue-GUI.  If not, see <http://www.gnu.org/licenses/>.
-
-#*** Add package dependancy on beautifulsoup ***
-#*** Remove package dependancy on GNU parted ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -42,8 +39,8 @@ import plistlib
 from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
-Version = "1.6"
-ReleaseDate = "9/7/2016"
+Version = "1.6.1"
+ReleaseDate = "18/8/2016"
 
 def usage():
     print("\nUsage: DDRescue-GUI.py [OPTION]\n\n")
@@ -85,6 +82,7 @@ elif "wxMac" in wx.PlatformInfo:
 #Check all cmdline options are valid.
 try:
     opts, args = getopt.getopt(sys.argv[1:], "hqvd", ["help", "quiet", "verbose", "debug"])
+
 except getopt.GetoptError as err:
     #Invalid option. Show the help message and then exit.
     #Show the error.
@@ -1940,8 +1938,14 @@ class SettingsWindow(wx.Frame):
 
         #Disk Size setting (OS X only).
         if Linux == False:
-            Settings["DiskSize"] = "-s "+DiskInfo[Settings["InputFile"]]["Capacity"]
-            logger.info("SettingsWindow().SaveOptions(): Using disk size: "+Settings["DiskSize"]+".")
+            #If the input file is in DiskInfo, use the Capacity from that.
+            if Settings["InputFile"] in DiskInfo:
+                Settings["DiskSize"] = "-s "+DiskInfo[Settings["InputFile"]]["Capacity"]
+                logger.info("SettingsWindow().SaveOptions(): Using disk size: "+Settings["DiskSize"]+".")
+
+            #Otherwise, it isn't needed.
+            else:
+                Settings["DiskSize"] = ""
 
         else:
             Settings["DiskSize"] = ""

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*- 
-# Device Information Obtainer for DDRescue-GUI 1.6
+# Device Information Obtainer for DDRescue-GUI 1.6.1
 # This file is part of DDRescue-GUI 1.6.
 # Copyright (C) 2013-2016 Hamish McIntyre-Bhatty
 # DDRescue-GUI is free software: you can redistribute it and/or modify it
@@ -445,6 +445,7 @@ class Main():
     	    #Run /sbin/blockdev to try and get blocksize information.
             logger.debug("GetDevInfo: Main().GetBlockSize(): Running 'blockdev --getpbsz "+Disk+"'...")
             runcmd = subprocess.Popen("blockdev --getpbsz "+Disk, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+
         else:
             #Run diskutil list to get Disk names.
             logger.debug("GetDevInfo: Main().GetBlockSize(): Running 'diskutil info "+Disk+"'...")
@@ -459,10 +460,12 @@ class Main():
             #Check it worked (it should be convertable to an integer if it did).
             try:
                 tmp = int(Result)
+
             except ValueError:
                 #It didn't, this is probably a file, not a Disk.
                 logger.warning("GetDevInfo: Main().GetBlockSize(): Couldn't get blocksize for Disk: "+Disk+"! Returning None...")
                 return None
+
             else:
                 #It did.
                 logger.info("GetDevInfo: Main().GetBlockSize(): Blocksize for Disk: "+Disk+": "+Result+". Returning it...")
@@ -470,21 +473,27 @@ class Main():
 
         else:
             #Parse the plist (Property List).
-            Plist = plistlib.readPlistFromString(stdout)
+            try:
+                Plist = plistlib.readPlistFromString(stdout)
 
-            if "DeviceBlockSize" in Plist:
-                Result = unicode(Plist["DeviceBlockSize"])
-                logger.info("GetDevInfo: Main().GetBlockSize(): Blocksize for Disk: "+Disk+": "+Result+". Returning it...")
-
-            elif "VolumeBlockSize" in Plist:
-                Result = unicode(Plist["VolumeBlockSize"])
-                logger.info("GetDevInfo: Main().GetBlockSize(): Blocksize for Disk: "+Disk+": "+Result+". Returning it...")
+            except:
+                logger.warning("GetDevInfo: Main().GetBlockSize(): Couldn't get blocksize for Disk: "+Disk+"! Returning None...")
+                return None
 
             else:
-                logger.warning("GetDevInfo: Main().GetBlockSize(): Couldn't get blocksize for Disk: "+Disk+"! Returning None...")
-                Result = None
+                if "DeviceBlockSize" in Plist:
+                    Result = unicode(Plist["DeviceBlockSize"])
+                    logger.info("GetDevInfo: Main().GetBlockSize(): Blocksize for Disk: "+Disk+": "+Result+". Returning it...")
 
-            return Result
+                elif "VolumeBlockSize" in Plist:
+                    Result = unicode(Plist["VolumeBlockSize"])
+                    logger.info("GetDevInfo: Main().GetBlockSize(): Blocksize for Disk: "+Disk+": "+Result+". Returning it...")
+
+                else:
+                    logger.warning("GetDevInfo: Main().GetBlockSize(): Couldn't get blocksize for Disk: "+Disk+"! Returning None...")
+                    Result = None
+
+                return Result
 
 #End Main Class.
 if __name__ == "__main__":
