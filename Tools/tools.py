@@ -182,4 +182,45 @@ class Main():
         #Return the return value
         return Retval
 
+    def EmergencyExit(self, Message):
+        """Handle emergency exits. Warn the user, log, and exit to terminal with the given message"""
+        logger.critical("CoreTools: Main().EmergencyExit(): Emergency exit has been triggered! Giving user message dialog and saving the logfile...")
+        logger.critical("CoreTools: Main().EmergencyExit(): The error is: "+Message)
+
+        #Warn the user.
+        Dlg = wx.MessageDialog(None, "Emergency exit triggered.\n\n"+Message+"\n\nYou'll now be asked for a location to save the log file.\nIf you email me at hamishmb@live.co.uk with the contents of that file I'll be happy to help you fix this problem.", "DDRescue-GUI - Emergency Exit!", wx.OK | wx.ICON_ERROR)
+        Dlg.ShowModal()
+        Dlg.Destroy()
+
+        #Shut down the logger.
+        logging.shutdown()
+
+        #Save the log file.
+        while True:
+            Dlg = wx.FileDialog(None, "Enter File Name", defaultDir="/home", style=wx.SAVE)
+
+            #Change the default dir on OS X.
+            if Linux == False:
+                InputFileDlg.SetDirectory("/Users")
+
+            if Dlg.ShowModal() == wx.ID_OK:
+                LogFile = Dlg.GetPath()
+                break
+
+            else:
+                #Warn the user.
+                Dlg = wx.MessageDialog(None, "Please enter a file name.", "DDRescue-GUI - Emergency Exit!", wx.OK | wx.ICON_ERROR)
+                Dlg.ShowModal()
+                Dlg.Destroy()
+
+        self.StartProcess("mv -v /tmp/ddrescue-gui.log "+LogFile)
+
+        #Exit.
+        Dlg = wx.MessageDialog(None, "Done. DDRescue-GUI will now exit.", "DDRescue-GUI - Emergency Exit!", wx.OK | wx.ICON_INFORMATION)
+        Dlg.ShowModal()
+        Dlg.Destroy()
+
+        wx.Exit()
+        sys.exit(Message)
+
 #End Main Class.

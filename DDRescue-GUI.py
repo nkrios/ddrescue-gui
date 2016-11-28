@@ -36,6 +36,7 @@ import re
 import os
 import sys
 import plistlib
+import traceback
 from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
@@ -142,9 +143,11 @@ GetDevInfo.getdevinfo.Linux = Linux
 GetDevInfo.getdevinfo.plistlib = plistlib
 GetDevInfo.getdevinfo.BeautifulSoup = BeautifulSoup
 
+Tools.tools.wx = wx
 Tools.tools.os = os
 Tools.tools.subprocess = subprocess
 Tools.tools.logger = logger
+Tools.tools.logging = logging
 Tools.tools.time = time
 Tools.tools.Linux = Linux
 
@@ -1124,8 +1127,15 @@ class MainWindow(wx.Frame):
             self.MenuSettings.Enable(False)
             self.ControlButton.SetLabel("Abort")
 
-            #Start the backend thread.
-            BackendThread(self)
+            #Handle any unexpected errors.
+            try:
+                #Start the backend thread.
+                raise RuntimeError
+                BackendThread(self)
+
+            except:
+                logger.critical("Unexpected error \n\n"+unicode(traceback.format_exc())+"\n\n while recovering data. Warning user and exiting.")
+                BackendTools().EmergencyExit("There was an unexpected error:\n\n"+unicode(traceback.format_exc())+"\n\nWhile recovering data!")
 
         else:
             logger.error("MainWindow().OnStart(): One or more of InputFile, OutputFile or LogFile hasn't been set! Aborting Recovery...")
@@ -1466,9 +1476,7 @@ class MainWindow(wx.Frame):
 
                 if Answer == wx.ID_YES:
                     #Trap pogram in loop in case same log file as Recovery log file is picked for destination.
-                    Saved = False
-
-                    while not Saved:
+                    while True:
                         #Ask the user where to save it.
                         dlg = wx.FileDialog(self.Panel, "Save log file to...", defaultDir=self.UserHomeDir, wildcard="Log Files (*.log)|*.log" , style=wx.SAVE)
                         Answer = dlg.ShowModal()
@@ -1480,16 +1488,15 @@ class MainWindow(wx.Frame):
                                 dlg = wx.MessageDialog(self.Panel, 'Error! Your chosen file is the same as the recovery log file! This log file contains only debugging information for DDRescue-GUI, and you must not overwrite the recovery log file with this one. Please select a new destination file.', 'DDRescue-GUI - Error', wx.OK | wx.ICON_ERROR)
                                 dlg.ShowModal()
                                 dlg.Destroy()
-                                continue
 
                             else:
                                 #Copy it to the specified path, using a one-liner, and don't bother handling any errors, because this is run as root.
                                 BackendTools().StartProcess(Command="cp /tmp/ddrescue-gui.log "+File, ReturnOutput=False)
-                                Saved = True
 
                                 dlg = wx.MessageDialog(self.Panel, 'Done! DDRescue-GUI will now exit.', 'DDRescue-GUI - Information', wx.OK | wx.ICON_INFORMATION)
                                 dlg.ShowModal()
                                 dlg.Destroy()
+                                break
 
                         else:
                             dlg = wx.MessageDialog(self.Panel, 'Okay, DDRescue-GUI will now exit without saving the log file.', 'DDRescue-GUI - Information', wx.OK | wx.ICON_INFORMATION)
