@@ -390,7 +390,7 @@ class MainWindow(wx.Frame):
         """Create all text for MainWindow"""
         self.TitleText = wx.StaticText(self.Panel, -1, "Welcome to DDRescue-GUI!")
         self.InputText = wx.StaticText(self.Panel, -1, "Image Source:")
-        self.LogFileText = wx.StaticText(self.Panel, -1, "Log File:")
+        self.LogFileText = wx.StaticText(self.Panel, -1, "Recovery Log File:")
         self.OutputText = wx.StaticText(self.Panel, -1, "Image Destination:") 
 
         #Also create special text for showing and hiding recovery info and terminal output.
@@ -1465,24 +1465,36 @@ class MainWindow(wx.Frame):
                 dlg.Destroy()
 
                 if Answer == wx.ID_YES:
-                    #Ask the user where to save it.
-                    dlg = wx.FileDialog(self.Panel, "Save log file to...", defaultDir=self.UserHomeDir, wildcard="Log Files (*.log)|*.log" , style=wx.SAVE)
-                    Answer = dlg.ShowModal()
-                    File = dlg.GetPath()
-                    dlg.Destroy()
+                    #Trap pogram in loop in case same log file as Recovery log file is picked for destination.
+                    Saved = False
 
-                    if Answer == wx.ID_OK:
-                        #Copy it to the specified path, using a one-liner, and don't bother handling any errors, because this is run as root.
-                        BackendTools().StartProcess(Command="cp /tmp/ddrescue-gui.log "+File, ReturnOutput=False)
-
-                        dlg = wx.MessageDialog(self.Panel, 'Done! DDRescue-GUI will now exit.', 'DDRescue-GUI - Information', wx.OK | wx.ICON_INFORMATION)
-                        dlg.ShowModal()
+                    while not Saved:
+                        #Ask the user where to save it.
+                        dlg = wx.FileDialog(self.Panel, "Save log file to...", defaultDir=self.UserHomeDir, wildcard="Log Files (*.log)|*.log" , style=wx.SAVE)
+                        Answer = dlg.ShowModal()
+                        File = dlg.GetPath()
                         dlg.Destroy()
 
-                    else:
-                        dlg = wx.MessageDialog(self.Panel, 'Okay, DDRescue-GUI will now exit without saving the log file.', 'DDRescue-GUI - Information', wx.OK | wx.ICON_INFORMATION)
-                        dlg.ShowModal()
-                        dlg.Destroy()
+                        if Answer == wx.ID_OK:
+                            if File == Settings["LogFile"]:
+                                dlg = wx.MessageDialog(self.Panel, 'Error! Your chosen file is the same as the recovery log file! This log file contains only debugging information for DDRescue-GUI, and you must not overwrite the recovery log file with this one. Please select a new destination file.', 'DDRescue-GUI - Error', wx.OK | wx.ICON_ERROR)
+                                dlg.ShowModal()
+                                dlg.Destroy()
+                                continue
+
+                            else:
+                                #Copy it to the specified path, using a one-liner, and don't bother handling any errors, because this is run as root.
+                                BackendTools().StartProcess(Command="cp /tmp/ddrescue-gui.log "+File, ReturnOutput=False)
+                                Saved = True
+
+                                dlg = wx.MessageDialog(self.Panel, 'Done! DDRescue-GUI will now exit.', 'DDRescue-GUI - Information', wx.OK | wx.ICON_INFORMATION)
+                                dlg.ShowModal()
+                                dlg.Destroy()
+
+                        else:
+                            dlg = wx.MessageDialog(self.Panel, 'Okay, DDRescue-GUI will now exit without saving the log file.', 'DDRescue-GUI - Information', wx.OK | wx.ICON_INFORMATION)
+                            dlg.ShowModal()
+                            dlg.Destroy()
 
                 else:
                     dlg = wx.MessageDialog(self.Panel, 'Okay, DDRescue-GUI will now exit without saving the log file.', 'DDRescue-GUI - Information', wx.OK | wx.ICON_INFORMATION)
