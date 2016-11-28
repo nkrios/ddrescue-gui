@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*- 
-# DDRescue-GUI Main Script Version 1.6.1
+# DDRescue-GUI Main Script Version 1.6.2
 # This file is part of DDRescue-GUI.
 # Copyright (C) 2013-2016 Hamish McIntyre-Bhatty
 # DDRescue-GUI is free software: you can redistribute it and/or modify it
@@ -39,8 +39,8 @@ import plistlib
 from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
-Version = "1.6.1"
-ReleaseDate = "18/8/2016"
+Version = "1.6.2"
+ReleaseDate = "28/11/2016"
 
 def usage():
     print("\nUsage: DDRescue-GUI.py [OPTION]\n\n")
@@ -1975,7 +1975,7 @@ class SettingsWindow(wx.Frame):
         else:
             Settings["NoSplit"] = ""
 
-        logger.info("SettingsWindow().SaveOptions(): Split failed blocks: "+unicode(bool(Settings["NoSplit"]))+".")
+        logger.info("SettingsWindow().SaveOptions(): Split failed blocks: "+unicode(bool(Settings["NoSplit"]))+".") #*** Wrong way around? ***
 
         #ChoiceBoxes:
         #Retry bad sectors option.

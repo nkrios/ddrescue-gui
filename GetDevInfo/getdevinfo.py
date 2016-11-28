@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*- 
-# Device Information Obtainer for DDRescue-GUI 1.6.1
+# Device Information Obtainer for DDRescue-GUI Version 1.6.2
 # This file is part of DDRescue-GUI.
 # Copyright (C) 2013-2016 Hamish McIntyre-Bhatty
 # DDRescue-GUI is free software: you can redistribute it and/or modify it
@@ -23,7 +23,7 @@ from __future__ import unicode_literals
 
 #Begin Main Class.
 class Main():
-    def IsPartition(self, Disk, DiskList=None):
+    def IsPartition(self, Disk, DiskList=None): #*** Required? ***
         """Check if the given Disk is a partition"""
         logger.debug("GetDevInfo: Main().IsPartition(): Checking if Disk: "+Disk+" is a partition...")
 
@@ -45,7 +45,7 @@ class Main():
 
         return Result
 
-    def GetVendor(self, Node=None, Disk=None):
+    def GetVendor(self, Node):
         """Get the vendor"""
         if Linux:
             try:
@@ -71,7 +71,7 @@ class Main():
 
                 return Vendor
 
-    def GetProduct(self, Node=None, Disk=None):
+    def GetProduct(self, Node):
         """Get the product"""
         if Linux:
             try:
@@ -97,7 +97,7 @@ class Main():
 
                 return Product
 
-    def GetCapacity(self, Node=None):
+    def GetCapacity(self, Node):
         """Get the capacity and human-readable capacity"""
         if Linux:
             try:
@@ -135,58 +135,6 @@ class Main():
 
             return Size
 
-    def GetDescription(self, Disk):
-        """Find description information for the given Disk."""
-        logger.info("GetDevInfo: Main().GetDescription(): Getting description info for Disk: "+Disk+"...")
-
-        #Gather info from diskutil to create some descriptions.
-        #Internal or external.
-        try:
-            if self.Plist["Internal"]:
-                InternalOrExternal = "Internal "
-
-            else:
-                InternalOrExternal = "External "
-
-        except KeyError:
-            InternalOrExternal = ""
-
-        #Type SSD or HDD.
-        try:
-            if self.Plist["SolidState"]:
-                Type = "Solid State Drive "
-
-            else:
-                Type = "Hard Disk Drive "
-
-        except KeyError:
-            Type = ""
-
-        #Bus protocol.
-        try:
-            BusProtocol = unicode(self.Plist["BusProtocol"])
-
-        except KeyError:
-            BusProtocol = "Unknown"
-
-        if [InternalOrExternal, Type] is not ["", ""]:
-            if BusProtocol != "Unknown":
-                return InternalOrExternal+Type+"(Connected through "+BusProtocol+")"
-
-            else:
-                return InternalOrExternal+Type
-
-        else:
-            return "N/A"
-
-    def GetLVFileSystem(self, Disk):
-        """Get the filesystem type of a logical volume."""
-        cmd = subprocess.Popen("LC_ALL=C blkid "+Disk, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-        Output = cmd.communicate()[0]
-        Retval = cmd.returncode
-
-        return Output.split("=")[-1].replace("\"", "").replace("\n", "")
-
     def GetDeviceInfo(self, Node):
         """Get Device Information"""
         HostDisk = unicode(Node.logicalname.string)
@@ -195,8 +143,8 @@ class Main():
         DiskInfo[HostDisk]["Type"] = "Device"
         DiskInfo[HostDisk]["HostDevice"] = "N/A"
         DiskInfo[HostDisk]["Partitions"] = []
-        DiskInfo[HostDisk]["Vendor"] = self.GetVendor(Node=Node)
-        DiskInfo[HostDisk]["Product"] = self.GetProduct(Node=Node)
+        DiskInfo[HostDisk]["Vendor"] = self.GetVendor(Node)
+        DiskInfo[HostDisk]["Product"] = self.GetProduct(Node)
 
         #Ignore capacities for all optical media.
         if "/dev/cdrom" in HostDisk or "/dev/sr" in HostDisk or "/dev/dvd" in HostDisk:
@@ -227,7 +175,7 @@ class Main():
         DiskInfo[Volume]["HostDevice"] = HostDisk
         DiskInfo[Volume]["Partitions"] = []
         DiskInfo[HostDisk]["Partitions"].append(Volume)
-        DiskInfo[Volume]["Vendor"] = self.GetVendor(Node=SubNode)
+        DiskInfo[Volume]["Vendor"] = self.GetVendor(SubNode)
         DiskInfo[Volume]["Product"] = "Host Device: "+DiskInfo[HostDisk]["Product"]
         DiskInfo[Volume]["RawCapacity"], DiskInfo[Volume]["Capacity"] = self.GetCapacity(SubNode)
         DiskInfo[Volume]["Description"] = unicode(SubNode.description.string)
@@ -262,8 +210,8 @@ class Main():
                 Volume = "/dev/mapper/"+'-'.join(Temp.split("/")[2:])
                 DiskInfo[Volume] = {}
                 DiskInfo[Volume]["Name"] = Volume
-                DiskInfo[Volume]["LVName"] = Volume.split("/")[-1].split("-")[-1]
-                DiskInfo[Volume]["VGName"] = Volume.split("/")[-1].split("-")[0]
+                DiskInfo[Volume]["LVName"] = Volume.split("/")[-1]
+                DiskInfo[Volume]["VGName"] = Volume.split("/")[2]
                 DiskInfo[Volume]["Type"] = "Partition"
                 DiskInfo[Volume]["Partitions"] = []
                 DiskInfo[Volume]["Vendor"] = "Linux"
@@ -433,6 +381,11 @@ class Main():
                 else:
                     DiskInfo["/dev/"+Disk]["Description"] = "Unknown"
 
+        #Check we found some disks.
+        if len(DiskInfo) == 0:
+            logger.info("GetDevInfo: Main().GetInfo(): Didn't find any disks, throwing RuntimeError!")
+            raise RuntimeError("No Disks found!")
+
         logger.info("GetDevInfo: Main().GetInfo(): Finished!")
 
         return DiskInfo
@@ -520,10 +473,6 @@ if __name__ == "__main__":
     logger.info("Running on Linux: "+str(Linux))
 
     Main().GetInfo(Standalone=True)
-
-    #Get blocksizes.
-    for Disk in DiskInfo.keys():
-        DiskInfo[Disk]["BlockSize"] = Main().GetBlockSize(Disk)
 
     #Print the info in a (semi :D) readable way.
     Keys = DiskInfo.keys()
