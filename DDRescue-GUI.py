@@ -1309,7 +1309,7 @@ class MainWindow(wx.Frame):
 
             dlg.Destroy()
 
-    def RecoveryEnded(self, Result, ReturnCode=None):
+    def RecoveryEnded(self, Result, DiskCapacity, RecoveredData, ReturnCode=None):
         """Called to show FinishedWindow when a recovery is completed or aborted by the user"""
         #Stop the throbber.
         self.Throbber.Stop()
@@ -1386,7 +1386,7 @@ class MainWindow(wx.Frame):
         #Disable the control button.
         self.ControlButton.Disable()
 
-        FinishedWindow(self).Show()
+        FinishedWindow(self, DiskCapacity, RecoveredData).Show()
 
     def Reload(self):
         """Reload and reset MainWindow, so MainWindow is as it was when DDRescue-GUI was started""" 
@@ -2108,12 +2108,14 @@ class PrivPolWindow(wx.Frame):
 #End Privacy Policy Window.
 #Begin Finished Window
 class FinishedWindow(wx.Frame):  
-    def __init__(self,ParentWindow):
+    def __init__(self, ParentWindow, DiskCapacity, RecoveredData):
         """Initialize FinishedWindow"""
         wx.Frame.__init__(self, wx.GetApp().TopWindow, title="DDRescue-GUI - Finished!", size=(350,120), style=wx.DEFAULT_FRAME_STYLE)
         self.Panel = wx.Panel(self)
         self.SetClientSize(wx.Size(350,120))
         self.ParentWindow = ParentWindow
+        self.DiskCapacity = DiskCapacity
+        self.RecoveredData = RecoveredData
         self.OutputFileType = None
         self.OutputFileMountPoint = None
         wx.Frame.SetIcon(self, AppIcon)
@@ -2143,6 +2145,7 @@ class FinishedWindow(wx.Frame):
 
     def CreateText(self):
         """Create all text for FinishedWindow"""
+        self.StatsText = wx.StaticText(self.Panel, -1, "Successfully recovered "+self.RecoveredData+" out of "+self.DiskCapacity+".")
         self.TopText = wx.StaticText(self.Panel, -1, "Your recovered data is at:")
         self.PathText = wx.StaticText(self.Panel, -1, Settings["OutputFile"])
         self.BottomText = wx.StaticText(self.Panel, -1, "What do you want to do now?")
@@ -2163,6 +2166,7 @@ class FinishedWindow(wx.Frame):
         MainSizer = wx.BoxSizer(wx.VERTICAL)
 
         #Add each object to the main sizer.
+        MainSizer.Add(self.StatsText, 1, wx.ALL ^ wx.BOTTOM|wx.CENTER, 10)
         MainSizer.Add(self.TopText, 1, wx.ALL ^ wx.BOTTOM|wx.CENTER, 10)
         MainSizer.Add(self.PathText, 1, wx.ALL ^ wx.BOTTOM|wx.CENTER, 10)
         MainSizer.Add(self.BottomText, 1, wx.ALL ^ wx.BOTTOM|wx.CENTER, 10)
@@ -2640,15 +2644,15 @@ class BackendThread(threading.Thread):
         #Check if we got ddrescue's init status, and if ddrescue exited with a status other than 0.
         if self.GotInitialStatus == False:
             logger.error("MainBackendThread(): We didn't get the initial status before ddrescue exited! Something has gone wrong. Telling MainWindow and exiting...")
-            wx.CallAfter(self.ParentWindow.RecoveryEnded, Result="NoInitialStatus", ReturnCode=int(cmd.returncode))
+            wx.CallAfter(self.ParentWindow.RecoveryEnded, DiskCapacity=unicode(self.DiskCapacity)+" "+self.DiskCapacityUnit, RecoveredData=unicode(int(self.RecoveredData))+" "+self.RecoveredDataUnit, Result="NoInitialStatus", ReturnCode=int(cmd.returncode))
 
         elif int(cmd.returncode) != 0:
             logger.error("MainBackendThread(): ddrescue exited with exit status "+unicode(cmd.returncode)+"! Something has gone wrong. Telling MainWindow and exiting...")
-            wx.CallAfter(self.ParentWindow.RecoveryEnded, Result="BadReturnCode", ReturnCode=int(cmd.returncode))
+            wx.CallAfter(self.ParentWindow.RecoveryEnded, DiskCapacity=unicode(self.DiskCapacity)+" "+self.DiskCapacityUnit, RecoveredData=unicode(int(self.RecoveredData))+" "+self.RecoveredDataUnit, Result="BadReturnCode", ReturnCode=int(cmd.returncode))
 
         else:
             logger.info("MainBackendThread(): ddrescue finished recovering data. Telling MainWindow and exiting...")
-            wx.CallAfter(self.ParentWindow.RecoveryEnded, Result="Success", ReturnCode=int(cmd.returncode))
+            wx.CallAfter(self.ParentWindow.RecoveryEnded, DiskCapacity=unicode(self.DiskCapacity)+" "+self.DiskCapacityUnit, RecoveredData=unicode(int(self.RecoveredData))+" "+self.RecoveredDataUnit, Result="Success", ReturnCode=int(cmd.returncode))
 
     def ProcessLine(self, Line):
         """Process a given line to get ddrescue's current status and recovery information and send it to the GUI Thread""" 
