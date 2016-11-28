@@ -39,8 +39,9 @@ elif "wxMac" in wx.PlatformInfo:
     try:
         #Set the resource path from an environment variable, as mac .apps can be found in various places.
         RescourcePath = os.environ['RESOURCEPATH']
+
     except KeyError:
-        #Use '.' as the rescource path instead as a fallback.
+        #Use '.' as the resource path instead as a fallback.
         RescourcePath = "."
 
     Linux = False
@@ -181,8 +182,9 @@ class AuthWindow(wx.Frame):
         Output = Cmd.stdout.read()
 
         if "Authentication Succeeded" in Output:
-            #Set the password field colour to green.
+            #Set the password field colour to green and disable the auth button.
             self.PasswordField.SetBackgroundColour((192,255,192))
+            self.AuthButton.Disable()
 
             #Play the green pulse for one second.
             self.Throbber.SetAnimation(self.GreenPulse)
