@@ -46,6 +46,54 @@ class Main():
             #Return the return code, as well as the output.
             return Retval, ''.join(Output)
 
+    def CreateUniqueKey(self, Dict, Data, Length):
+        """Create a unqiue dictionary key of Length for dictionary Dict for the item Data.
+        The unique key is created by adding a number on the the end of Data, while keeping it at the correct length.
+        The key will also start with '...'."""
+        #Only add numbers to the key if needed.
+        if "..."+Data[-Length:] in Dict.keys():
+            #Digit to add to the end of the key.
+            Digit = 0
+            Key = Data
+
+            while True:
+                #Add a digit to the end of the key to get a new key, repeat until the key is unique.
+                DigitLength = len(unicode(Digit))
+
+                if Key[-DigitLength:] == Digit and Key[-DigitLength-1] == "~":
+                   #Remove the old non-unique digit and underscore at the end.
+                   Key = Key[0:-DigitLength-1]
+
+                #Add 1 to the digit.
+                Digit += 1
+
+                Key = Key+unicode(Digit)
+                Key = Key[-Length:]
+
+                if "..."+Key not in Dict.keys():
+                   #Yay! Unique!
+                   Key = "..."+Key
+
+        else:
+            Key = Data[-Length:]
+            Key = "..."+Key
+
+        #Remove '...' if Key is shorter than Length+3 chars (to account for...).
+        if len(Key) < Length+3:
+            Key = Key[3:]
+
+        return Key
+
+    def FindDataValueInDict(self, Dict, DataValue):
+        """Find a data value in a dicionary, returning True for found, and False for not found."""
+        Found = False
+
+        for Key in Dict.keys():
+            if DataValue == Dict[Key]:
+                Found = True
+
+        return Found
+
     def IsMounted(self, Partition, MountPoint=None):
         """Checks if the given partition is mounted.
         Partition is the given partition to check.

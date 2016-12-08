@@ -766,7 +766,7 @@ class MainWindow(wx.Frame):
             logger.info("MainWindow().UpdateFileChoices(): Preparing choiceboxes...")
 
             #Make note that there are no custom selections yet, because we haven't even finished the startup routine yet!
-            self.CustomInputPathsList = []
+            self.CustomInputPathsList = {}
             self.CustomOutputPathsList = []
 
         #Keep the user's current selections and any custom paths added to the choiceboxes while we update them.
@@ -777,7 +777,7 @@ class MainWindow(wx.Frame):
         CurrentOutputStringSelection = self.OutputChoiceBox.GetStringSelection()
 
         #Set all the items.
-        self.InputChoiceBox.SetItems(['-- Please Select --', 'Select a File/Disk'] + sorted(DiskInfo.keys() + self.CustomInputPathsList))
+        self.InputChoiceBox.SetItems(['-- Please Select --', 'Select a File/Disk'] + sorted(DiskInfo.keys() + self.CustomInputPathsList.keys()))
         self.OutputChoiceBox.SetItems(['-- Please Select --', 'Select a File/Disk'] + sorted(DiskInfo.keys() + self.CustomOutputPathsList))
 
         #Set the current selections again, if we can (if the selection is a Disk, it may have been removed).
@@ -812,11 +812,22 @@ class MainWindow(wx.Frame):
                 Settings["InputFile"] = InputFileDlg.GetPath()
                 logger.info("MainWindow().SelectInputFile(): User selected custom file: "+Settings["InputFile"]+"...")
 
-                if Settings["InputFile"] not in self.CustomInputPathsList and Settings["InputFile"] not in DiskInfo.keys():
-                    self.CustomInputPathsList.append(Settings["InputFile"])
-                    self.InputChoiceBox.Append(Settings["InputFile"])
+                #If it's in the dictionary or in DiskInfo, don't add it.
+                if BackendTools().FindDataValueInDict(self.CustomInputPathsList, Settings["InputFile"]):
+                    #No need to add it or anything.
+                    self.InputChoiceBox.SetStringSelection(Settings["InputFile"][-15:])
 
-                self.InputChoiceBox.SetStringSelection(Settings["InputFile"])
+                elif Settings["InputFile"] in DiskInfo.keys():
+                    #No need to add it or anything.
+                    self.InputChoiceBox.SetStringSelection(Settings["InputFile"])
+
+                else:
+                    #Get a unqiue key for the dictionary using the tools function.
+                    Key = BackendTools().CreateUniqueKey(self.CustomInputPathsList, Settings["InputFile"], 30)
+
+                    self.CustomInputPathsList[Key] = Settings["InputFile"]
+                    self.InputChoiceBox.Append(Key)
+                    self.InputChoiceBox.SetStringSelection(Key)
 
             else:
                 logger.info("MainWindow().SelectInputFile(): User declined custom file selection. Resetting InputFile...")
@@ -1130,7 +1141,6 @@ class MainWindow(wx.Frame):
             #Handle any unexpected errors.
             try:
                 #Start the backend thread.
-                raise RuntimeError
                 BackendThread(self)
 
             except:
@@ -2610,6 +2620,12 @@ class BackendThread(threading.Thread):
  
             elif Option != "":
                 ExecList.append(Option)
+
+        #Set initial values for some variables.
+        self.DiskCapacity = "An unknown amount of"
+        self.DiskCapacityUnit = "data."
+        self.RecoveredData = 0
+        self.RecoveredDataUnit = "B"
 
         #Start ddrescue.
         logger.debug("MainBackendThread(): Running ddrescue with: '"+' '.join(ExecList)+"'...")
