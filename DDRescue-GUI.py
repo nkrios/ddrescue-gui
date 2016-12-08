@@ -41,7 +41,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "1.6.2"
-ReleaseDate = "28/11/2016"
+ReleaseDate = "8/12/2016"
 
 def usage():
     print("\nUsage: DDRescue-GUI.py [OPTION]\n\n")
@@ -767,7 +767,8 @@ class MainWindow(wx.Frame):
 
             #Make note that there are no custom selections yet, because we haven't even finished the startup routine yet!
             self.CustomInputPathsList = {}
-            self.CustomOutputPathsList = []
+            self.CustomOutputPathsList = {}
+            self.CustomLogPaths = {}
 
         #Keep the user's current selections and any custom paths added to the choiceboxes while we update them.
         logger.info("MainWindow().UpdateFileChoices(): Updating choiceboxes...")
@@ -778,7 +779,7 @@ class MainWindow(wx.Frame):
 
         #Set all the items.
         self.InputChoiceBox.SetItems(['-- Please Select --', 'Select a File/Disk'] + sorted(DiskInfo.keys() + self.CustomInputPathsList.keys()))
-        self.OutputChoiceBox.SetItems(['-- Please Select --', 'Select a File/Disk'] + sorted(DiskInfo.keys() + self.CustomOutputPathsList))
+        self.OutputChoiceBox.SetItems(['-- Please Select --', 'Select a File/Disk'] + sorted(DiskInfo.keys() + self.CustomOutputPathsList.keys()))
 
         #Set the current selections again, if we can (if the selection is a Disk, it may have been removed).
         if self.InputChoiceBox.FindString(CurrentInputStringSelection) != -1:
@@ -814,8 +815,8 @@ class MainWindow(wx.Frame):
 
                 #If it's in the dictionary or in DiskInfo, don't add it.
                 if BackendTools().FindDataValueInDict(self.CustomInputPathsList, Settings["InputFile"]):
-                    #No need to add it or anything.
-                    self.InputChoiceBox.SetStringSelection(Settings["InputFile"][-15:])
+                    #Set the selection using the unique key.
+                    self.InputChoiceBox.SetStringSelection(BackendTools().CreateUniqueKey(self.CustomInputPathsList, Settings["InputFile"], 30))
 
                 elif Settings["InputFile"] in DiskInfo.keys():
                     #No need to add it or anything.
@@ -841,6 +842,10 @@ class MainWindow(wx.Frame):
             dlg.Destroy()
             Settings["InputFile"] = None
             self.InputChoiceBox.SetStringSelection("-- Please Select --")
+
+        elif Settings["InputFile"][0:3] == "...":
+            #Get the full path name to set the inputfile to.
+            Settings["InputFile"] = self.CustomInputPathsList[Settings["InputFile"]]
 
         elif Settings["InputFile"] == "-- Please Select --":
             logger.info("MainWindow().SelectInputFile(): Input file reset..")
@@ -876,11 +881,22 @@ class MainWindow(wx.Frame):
                 else:
                     logger.info("MainWindow().SelectOutputFile(): User selected custom file: "+Settings["OutputFile"]+"...")
 
-                    if Settings["OutputFile"] not in self.CustomOutputPathsList and Settings["OutputFile"] not in DiskInfo.keys():
-                        self.CustomOutputPathsList.append(Settings["OutputFile"])
-                        self.OutputChoiceBox.Append(Settings["OutputFile"])
+                    #If it's in the dictionary or in DiskInfo, don't add it.
+                    if BackendTools().FindDataValueInDict(self.CustomOutputPathsList, Settings["OutputFile"]):
+                        #Set the selection using the unique key.
+                        self.OutputChoiceBox.SetStringSelection(BackendTools().CreateUniqueKey(self.CustomOutputPathsList, Settings["InputFile"], 30))
 
-                    self.OutputChoiceBox.SetStringSelection(Settings["OutputFile"])
+                    elif Settings["OutputFile"] in DiskInfo.keys():
+                        #No need to add it or anything.
+                        self.OutputChoiceBox.SetStringSelection(Settings["OutputFile"])
+
+                    else:
+                        #Get a unqiue key for the dictionary using the tools function.
+                        Key = BackendTools().CreateUniqueKey(self.CustomOutputPathsList, Settings["OutputFile"], 30)
+
+                        self.CustomOutputPathsList[Key] = Settings["OutputFile"]
+                        self.OutputChoiceBox.Append(Key)
+                        self.OutputChoiceBox.SetStringSelection(Key)
 
             else:
                 logger.info("MainWindow().SelectOutputFile(): User declined custom file selection. Resetting OutputFile...")
@@ -894,6 +910,10 @@ class MainWindow(wx.Frame):
             dlg.Destroy()
             Settings["OutputFile"] = None
             self.OutputChoiceBox.SetStringSelection("-- Please Select --")
+
+        elif Settings["OutputFile"][0:3] == "...":
+            #Get the full path name to set the outputfile to.
+            Settings["OutputFile"] = self.CustomOutputPathsList[Settings["OutputFile"]]
 
         elif Settings["OutputFile"] == "-- Please Select --":
             logger.debug("MainWindow().SelectInputFile(): Output file reset...")
@@ -964,8 +984,27 @@ class MainWindow(wx.Frame):
 
                 else:
                     logger.debug("MainWindow().SelectLogFile(): User selected custom file: "+Settings["LogFile"]+"...")
-                    self.LogChoiceBox.Append(Settings["LogFile"])
-                    self.LogChoiceBox.SetStringSelection(Settings["LogFile"])
+
+                    #If it's in the dictionary already, don't add it again.
+                    if BackendTools().FindDataValueInDict(self.CustomLogPaths, Settings["LogFile"]):
+                        #Set the selection using the unique key.
+                        self.LogChoiceBox.SetStringSelection(BackendTools().CreateUniqueKey(self.CustomLogPaths, Settings["LogFile"], 30))
+
+                    elif Settings["LogFile"] in DiskInfo.keys():
+                        #Warn user and reject selection.
+                        Dlg = wx.MessageDialog(self.Panel, "You can't save the log file to a device! Please make an appropriate selection.", "DDRescue-GUI - Error!", wx.OK | wx.ICON_ERROR)
+                        Dlg.ShowModal()
+                        Dlg.Destroy()
+
+                        self.LogChoiceBox.SetStringSelection("-- Please Select --")
+
+                    else:
+                        #Get a unqiue key for the dictionary using the tools function.
+                        Key = BackendTools().CreateUniqueKey(self.CustomLogPaths, Settings["LogFile"], 30)
+
+                        self.CustomLogPaths[Key] = Settings["LogFile"]
+                        self.LogChoiceBox.Append(Key)
+                        self.LogChoiceBox.SetStringSelection(Key)
 
             else:
                 logger.debug("MainWindow().SelectLogFile(): User declined custom file selection. Resetting LogFile...")
@@ -973,6 +1012,10 @@ class MainWindow(wx.Frame):
                 self.LogChoiceBox.SetStringSelection("-- Please Select --")
 
             LogFileDlg.Destroy()
+
+        elif Settings["LogFile"][0:3] == "...":
+            #Get the full path name to set the logfile to.
+            Settings["LogFile"] = self.CustomLogPaths[Settings["LogFile"]]
 
         elif Settings["LogFile"] == "-- Please Select --":
             logger.debug("MainWindow().SelectLogFile(): LogFile reset.")
