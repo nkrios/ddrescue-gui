@@ -1533,7 +1533,8 @@ class MainWindow(wx.Frame):
         if SessionEnding:
             #Stop the backend thread, delete the log file and exit ASAP.
             self.OnAbort()
-            #os.remove("/tmp/ddrescue-gui.log")
+            logging.shutdown()
+            os.remove("/tmp/ddrescue-gui.log")
             self.Destroy()
 
         #Check if DDRescue-GUI is recovering data.
