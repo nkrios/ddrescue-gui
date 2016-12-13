@@ -1508,15 +1508,19 @@ class MainWindow(wx.Frame):
     def SessionEnding(self, Event):
         """Attempt to veto e.g. a shutdown/logout event if recovering data."""
         #Check if we can veto the shutdown.
-        if Event.CanVeto():
+        logging.warning("MainWindow().SessionEnding(): Attempting to veto system shutdown / logoff...")
+
+        if Event.CanVeto() and RecoveringData:
             #Veto the shutdown and warn the user.
             Event.Veto(True)
+            logging.info("MainWindow().SessionEnding(): Vetoed system shutdown / logoff...")
             dlg = wx.MessageDialog(self.Panel, "You can't shutdown or logoff while recovering data!", "DDRescue-GUI - Error!", wx.OK | wx.ICON_ERROR)
             dlg.ShowModal()
             dlg.Destroy()
 
         else:
             #Set SessionEnding to True, call OnExit.
+            logging.critical("MainWindow().SessionEnding(): Cannot veto system shutdown / logoff! Cleaning up...")
             global SessionEnding
             SessionEnding = True
             self.OnExit()
@@ -1529,7 +1533,7 @@ class MainWindow(wx.Frame):
         if SessionEnding:
             #Stop the backend thread, delete the log file and exit ASAP.
             self.OnAbort()
-            os.remove("/tmp/ddrescue-gui.log")
+            #os.remove("/tmp/ddrescue-gui.log")
             self.Destroy()
 
         #Check if DDRescue-GUI is recovering data.
