@@ -41,7 +41,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "1.6.2"
-ReleaseDate = "8/12/2016"
+ReleaseDate = "13/12/2016"
 SessionEnding = False
 
 def usage():
@@ -617,7 +617,7 @@ class MainWindow(wx.Frame):
         self.Bind(wx.EVT_SIZE, self.OnSize)
 
         #OnExit events.
-        self.Bind(wx.EVT_QUERY_END_SESSION, self.SessionEnding)
+        self.Bind(wx.EVT_END_SESSION, self.SessionEnding)
         self.Bind(wx.EVT_MENU, self.OnExit, self.MenuExit)
         self.Bind(wx.EVT_CLOSE, self.OnExit)
 
@@ -1510,7 +1510,7 @@ class MainWindow(wx.Frame):
         #Check if we can veto the shutdown.
         if Event.CanVeto():
             #Veto the shutdown and warn the user.
-            Event.Veto()
+            Event.Veto(True)
             dlg = wx.MessageDialog(self.Panel, "You can't shutdown or logoff while recovering data!", "DDRescue-GUI - Error!", wx.OK | wx.ICON_ERROR)
             dlg.ShowModal()
             dlg.Destroy()
