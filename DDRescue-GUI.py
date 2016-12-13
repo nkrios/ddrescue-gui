@@ -42,6 +42,7 @@ from bs4 import BeautifulSoup
 #Define the version number and the release date as global variables.
 Version = "1.6.2"
 ReleaseDate = "8/12/2016"
+SessionEnding = False
 
 def usage():
     print("\nUsage: DDRescue-GUI.py [OPTION]\n\n")
@@ -1341,11 +1342,12 @@ class MainWindow(wx.Frame):
         #Disable control button.
         self.ControlButton.Disable()
 
-        #Notify user with throbber.
-        self.Throbber.Play()
+        if not SessionEnding:
+            #Notify user with throbber.
+            self.Throbber.Play()
 
-        #Prompt user to try again in 5 seconds time.
-        wx.CallLater(5000, self.PromptToKillDdrescue)
+            #Prompt user to try again in 5 seconds time.
+            wx.CallLater(5000, self.PromptToKillDdrescue)
 
     def PromptToKillDdrescue(self):
         """Prompts the user to try killing ddrescue again if it's not exiting"""
@@ -1374,6 +1376,10 @@ class MainWindow(wx.Frame):
 
     def RecoveryEnded(self, Result, DiskCapacity, RecoveredData, ReturnCode=None):
         """Called to show FinishedWindow when a recovery is completed or aborted by the user"""
+        #Return immediately if session is ending.
+        if SessionEnding:
+            return True
+
         #Stop the throbber.
         self.Throbber.Stop()
 
@@ -1498,9 +1504,32 @@ class MainWindow(wx.Frame):
         logger.info("MainWindow().Reload(): Done. Waiting for events...")
         self.UpdateStatusBar("Ready.")
 
+    def SessionEnding(self, Event):
+        """Attempt to veto e.g. a shutdown/logout event if recovering data."""
+        #Check if we can veto the shutdown.
+        if Event.CanVeto():
+            #Veto the shutdown and warn the user.
+            Event.Veto()
+            dlg = wx.MessageDialog(self.Panel, "You can't shutdown or logoff while recovering data!", "DDRescue-GUI - Error!", wx.OK | wx.ICON_ERROR)
+            dlg.ShowModal()
+            dlg.Destroy()
+
+        else:
+            #Set SessionEnding to True, call OnExit.
+            global SessionEnding
+            SessionEnding = True
+            self.OnExit()
+
     def OnExit(self, Event=None, JustFinishedRec=False):
         """Exit DDRescue-GUI, if certain conditions are met"""
         logger.info("MainWindow().OnExit(): Preparing to exit...")
+
+        #Check if the session is ending.
+        if SessionEnding:
+            #Stop the backend thread, delete the log file and exit ASAP.
+            self.OnAbort()
+            os.remove("/tmp/ddrescue-gui.log")
+            self.Destroy()
 
         #Check if DDRescue-GUI is recovering data.
         if Settings["RecoveringData"]:
