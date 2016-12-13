@@ -46,7 +46,7 @@ class Main():
             #Return the return code, as well as the output.
             return Retval, ''.join(Output)
 
-    def CreateUniqueKey(self, Dict, Data, Length):
+    def CreateUniqueKey(self, Dict, Data, Length): #*** Test this thoroughly ***
         """Create a unqiue dictionary key of Length for dictionary Dict for the item Data.
         The unique key is created by adding a number on the the end of Data, while keeping it at the correct length.
         The key will also start with '...'."""
@@ -84,7 +84,7 @@ class Main():
 
         return Key
 
-    def FindDataValueInDict(self, Dict, DataValue):
+    def FindDataValueInDict(self, Dict, DataValue): #*** Test this thoroughly ***
         """Find a data value in a dicionary, returning True for found, and False for not found."""
         Found = False
 

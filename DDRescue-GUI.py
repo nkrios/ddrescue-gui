@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with DDRescue-GUI.  If not, see <http://www.gnu.org/licenses/>.
 
+#*** Implement notification handler function rather than cluttering up the code doing this over and over ***
+#*** Refactor in specified places ***
+
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
 from __future__ import division
@@ -108,7 +111,7 @@ for o, a in opts:
     else:
         assert False, "unhandled option"
 
-#If we aren't running as root, relaunch immediately.
+#If we aren't running as root, relaunch immediately. #*** Make sure options are passed when doing this ***
 if os.geteuid() != 0:
     #Relaunch as root.
     execfile(RescourcePath+"/AuthenticationDialog.py")
@@ -617,7 +620,7 @@ class MainWindow(wx.Frame):
         self.Bind(wx.EVT_SIZE, self.OnSize)
 
         #OnExit events.
-        self.Bind(wx.EVT_QUERY_END_SESSION, self.SessionEnding)
+        self.Bind(wx.EVT_QUERY_END_SESSION, self.SessionEnding) #*** Test this works ***
         self.Bind(wx.EVT_MENU, self.OnExit, self.MenuExit)
         self.Bind(wx.EVT_CLOSE, self.OnExit)
 
@@ -662,6 +665,7 @@ class MainWindow(wx.Frame):
 
             if self.OutputBox.IsShown() == False:
                 self.SetClientSize(wx.Size(Width,360))
+
                 #Insert some empty space.
                 self.InfoSizer.Add((1,1), 1, wx.EXPAND)
 
@@ -670,6 +674,7 @@ class MainWindow(wx.Frame):
 
             #Arrow1 is now vertical, so show self.ListCtrl2
             if self.OutputBox.IsShown() == False:
+
                 #Remove the empty space.
                 self.InfoSizer.Clear()
 
@@ -799,7 +804,7 @@ class MainWindow(wx.Frame):
         #Notify the user with the statusbar.
         self.UpdateStatusBar("Ready.")
 
-    def SetInputFile(self, Event=None):
+    def SetInputFile(self, Event=None): #*** Try to refactor this with the other related functions because the code is very similar ***
         """Get the input file/Disk and set a variable to the selected value"""
         logger.debug("MainWindow().SelectInputFile(): Getting user selection...")
         Settings["InputFile"] = self.InputChoiceBox.GetStringSelection()
@@ -1044,7 +1049,7 @@ class MainWindow(wx.Frame):
         wx.AboutBox(aboutbox)
 
     def ShowSettings(self, Event=None):
-        """Show the Settings Window"""
+        """Show the Settings Window, but only if input and otput files have already been selected"""
         #If input and output files are set (do not equal None) then continue.
         if None not in [Settings["InputFile"], Settings["OutputFile"]]:
             SettingsWindow(self).Show()
@@ -1236,7 +1241,7 @@ class MainWindow(wx.Frame):
     def UpdateTimeSinceLastRead(self, LastRead):
         self.ListCtrl.SetStringItem(index=7, col=1, label=LastRead)
 
-    def CarriageReturn(self):
+    def CarriageReturn(self): #*** Should this and related functions be part of a custom wx.TextCtrl class? ***
         """Handles carriage returns in output"""
         #Go back until the last newline character, and overwrite anything in the way on the next write.
         #Get the current insertion point.
@@ -1510,7 +1515,7 @@ class MainWindow(wx.Frame):
         #Check if we can veto the shutdown.
         logging.warning("MainWindow().SessionEnding(): Attempting to veto system shutdown / logoff...")
 
-        if Event.CanVeto() and RecoveringData:
+        if Event.CanVeto() and Settings["RecoveringData"]:
             #Veto the shutdown and warn the user.
             Event.Veto(True)
             logging.info("MainWindow().SessionEnding(): Vetoed system shutdown / logoff...")
@@ -1525,7 +1530,7 @@ class MainWindow(wx.Frame):
             SessionEnding = True
             self.OnExit()
 
-    def OnExit(self, Event=None, JustFinishedRec=False):
+    def OnExit(self, Event=None, JustFinishedRec=False): #*** Reduce nesting ***
         """Exit DDRescue-GUI, if certain conditions are met"""
         logger.info("MainWindow().OnExit(): Preparing to exit...")
 
@@ -2281,10 +2286,8 @@ class FinishedWindow(wx.Frame):
     def OnMountButton(self, Event=None):
         """Triggered when mount button is pressed"""
         if self.MountButton.GetLabel() == "Mount Image/Disk":
-            Success = self.MountOutputFile()
-
             #Change some stuff if it worked.
-            if Success:
+            if self.MountOutputFile():
                 self.TopText.SetLabel("Your recovered data is now mounted at:")
                 self.PathText.SetLabel(self.OutputFileMountPoint)
                 self.MountButton.SetLabel("Unmount Image/Disk")
@@ -2324,7 +2327,6 @@ class FinishedWindow(wx.Frame):
 
         else:
             MountFunction = self.MountDiskOSX
-
 
         try:
             return MountFunction()
@@ -2370,7 +2372,7 @@ class FinishedWindow(wx.Frame):
 
         return Retvals
 
-    def MountDiskOSX(self):
+    def MountDiskOSX(self): #*** Refactor with Linux function *** *** Make both of these more reliable in error circumstances ***
         """Mount the output file on OS X"""
         logger.info("FinishedWindow().MountDiskOSX(): Mounting Disk: "+Settings["OutputFile"]+"...")
         wx.CallAfter(self.ParentWindow.UpdateStatusBar, "Preparing to mount output file. Please Wait...")
