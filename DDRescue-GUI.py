@@ -617,7 +617,7 @@ class MainWindow(wx.Frame):
         self.Bind(wx.EVT_SIZE, self.OnSize)
 
         #OnExit events.
-        self.Bind(wx.EVT_END_SESSION, self.SessionEnding)
+        self.Bind(wx.EVT_QUERY_END_SESSION, self.SessionEnding)
         self.Bind(wx.EVT_MENU, self.OnExit, self.MenuExit)
         self.Bind(wx.EVT_CLOSE, self.OnExit)
 
