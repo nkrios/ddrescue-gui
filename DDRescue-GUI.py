@@ -44,7 +44,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "1.6.2"
-ReleaseDate = "13/12/2016"
+ReleaseDate = "3/1/2016"
 SessionEnding = False
 
 def usage():
@@ -111,7 +111,7 @@ for o, a in opts:
     else:
         assert False, "unhandled option"
 
-#If we aren't running as root, relaunch immediately. #*** Make sure options are passed when doing this ***
+#If we aren't running as root, relaunch immediately.
 if os.geteuid() != 0:
     #Relaunch as root.
     execfile(RescourcePath+"/AuthenticationDialog.py")
@@ -417,9 +417,9 @@ class MainWindow(wx.Frame):
 
     def CreateChoiceBoxes(self):
         """Create all choiceboxes for MainWindow"""
-        self.InputChoiceBox = wx.Choice(self.Panel, -1, choices=['-- Please Select --', 'Select a File/Disk'])
-        self.LogChoiceBox = wx.Choice(self.Panel, -1, choices=['-- Please Select --', 'Select a File', 'None (not recommended)'])
-        self.OutputChoiceBox = wx.Choice(self.Panel, -1, choices=['-- Please Select --', 'Select a File/Disk'])
+        self.InputChoiceBox = wx.Choice(self.Panel, -1, choices=['-- Please Select --', 'Specify Path/File'])
+        self.LogChoiceBox = wx.Choice(self.Panel, -1, choices=['-- Please Select --', 'Specify Path/File', 'None (not recommended)'])
+        self.OutputChoiceBox = wx.Choice(self.Panel, -1, choices=['-- Please Select --', 'Specify Path/File'])
 
         #Set the default value.
         self.InputChoiceBox.SetStringSelection("-- Please Select --")
@@ -785,8 +785,8 @@ class MainWindow(wx.Frame):
         CurrentOutputStringSelection = self.OutputChoiceBox.GetStringSelection()
 
         #Set all the items.
-        self.InputChoiceBox.SetItems(['-- Please Select --', 'Select a File/Disk'] + sorted(DiskInfo.keys() + self.CustomInputPathsList.keys()))
-        self.OutputChoiceBox.SetItems(['-- Please Select --', 'Select a File/Disk'] + sorted(DiskInfo.keys() + self.CustomOutputPathsList.keys()))
+        self.InputChoiceBox.SetItems(['-- Please Select --', 'Specify Path/File'] + sorted(DiskInfo.keys() + self.CustomInputPathsList.keys()))
+        self.OutputChoiceBox.SetItems(['-- Please Select --', 'Specify Path/File'] + sorted(DiskInfo.keys() + self.CustomOutputPathsList.keys()))
 
         #Set the current selections again, if we can (if the selection is a Disk, it may have been removed).
         if self.InputChoiceBox.FindString(CurrentInputStringSelection) != -1:
@@ -804,232 +804,166 @@ class MainWindow(wx.Frame):
         #Notify the user with the statusbar.
         self.UpdateStatusBar("Ready.")
 
-    def SetInputFile(self, Event=None): #*** Try to refactor this with the other related functions because the code is very similar ***
-        """Get the input file/Disk and set a variable to the selected value"""
-        logger.debug("MainWindow().SelectInputFile(): Getting user selection...")
-        Settings["InputFile"] = self.InputChoiceBox.GetStringSelection()
+    def FileChoiceHandler(self, Type, UserSelection, DefaultDir, Wildcard, Style):
+        """Handle file dialogs for SetInputFile, SetOutputFile, and SetLogFile"""
+        #Setup. *** DEBUGGING REQUIRED ***
+        SettingsKey = Type+"File"
 
-        if Settings["InputFile"] == "Select a File/Disk":
-            InputFileDlg = wx.FileDialog(self.Panel, "Select Input File/Disk...", defaultDir="/dev", wildcard=self.InputWildcard, style=wx.OPEN)
+        if Type == "Input":
+            ChoiceBox = self.InputChoiceBox
+            Paths = self.CustomInputPathsList
+            Others = ["OutputFile", "LogFile"]
 
-            #Change the default dir on OS X.
-            if Linux == False:
-                InputFileDlg.SetDirectory("/Users")
+        elif Type == "Output":
+            ChoiceBox = self.OutputChoiceBox
+            Paths = self.CustomOutputPathsList
+            Others = ["InputFile", "LogFile"]
 
-            if InputFileDlg.ShowModal() == wx.ID_OK:
-                Settings["InputFile"] = InputFileDlg.GetPath()
-                logger.info("MainWindow().SelectInputFile(): User selected custom file: "+Settings["InputFile"]+"...")
+        else:
+            ChoiceBox = self.LogChoiceBox
+            Paths = self.CustomLogPaths
+            Others = ["InputFile", "OutputFile"]
+    
+        if UserSelection == "-- Please Select --":
+            logger.info("MainWindow().FileChoiceHandler(): "+Type+" file reset..")
+            Settings[SettingsKey] = None
 
-                #If it's in the dictionary or in DiskInfo, don't add it.
-                if BackendTools().FindDataValueInDict(self.CustomInputPathsList, Settings["InputFile"]):
-                    #Set the selection using the unique key.
-                    self.InputChoiceBox.SetStringSelection(BackendTools().CreateUniqueKey(self.CustomInputPathsList, Settings["InputFile"], 30))
+            #Return to prevent TypeErrors later.
+            return True
 
-                elif Settings["InputFile"] in DiskInfo.keys():
-                    #No need to add it or anything.
-                    self.InputChoiceBox.SetStringSelection(Settings["InputFile"])
+        #Handle having no log file.
+        elif UserSelection == "None (not recommended)":
+            Dlg = wx.MessageDialog(self.Panel, "You have not chosen to use a log file. If you do not use one, you will have to start from scratch in the event of a power outage, or if DDRescue-GUI is interrupted. Additionally, you can't do a multi-stage recovery without a log file.\n\nAre you really sure you do not want to use a logfile?", "DDRescue-GUI - Warning", wx.YES_NO | wx.ICON_EXCLAMATION)
 
-                else:
-                    #Get a unqiue key for the dictionary using the tools function.
-                    Key = BackendTools().CreateUniqueKey(self.CustomInputPathsList, Settings["InputFile"], 30)
-
-                    self.CustomInputPathsList[Key] = Settings["InputFile"]
-                    self.InputChoiceBox.Append(Key)
-                    self.InputChoiceBox.SetStringSelection(Key)
+            if Dlg.ShowModal() == wx.ID_YES:
+                logger.warning("MainWindow().FileChoiceHandler(): User isn't using a log file, despite our warning!")
+                Settings[SettingsKey] = ""
 
             else:
-                logger.info("MainWindow().SelectInputFile(): User declined custom file selection. Resetting InputFile...")
-                Settings["InputFile"] = None
-                self.InputChoiceBox.SetStringSelection("-- Please Select --")
+                logger.info("MainWindow().FileChoiceHandler(): User decided against not using a log file. Good!")
+                Settings[SettingsKey] = None
+                ChoiceBox.SetStringSelection("-- Please Select --")
 
-        elif Settings["InputFile"] not in [None, "-- Please Select --"] and Settings["InputFile"] == Settings["OutputFile"]:
-            logger.warning("MainWindow().SelectInputFile(): InputFile equals OutputFile!, resetting to None and warning user...")
-            dlg = wx.MessageDialog(self.Panel, "You can't use the same disk/file as both the source and the destination!", 'DDRescue-GUI - Error!', wx.OK | wx.ICON_ERROR)
-            dlg.ShowModal()
-            dlg.Destroy()
-            Settings["InputFile"] = None
-            self.InputChoiceBox.SetStringSelection("-- Please Select --")
+            Dlg.Destroy()
 
-        elif Settings["InputFile"][0:3] == "...":
-            #Get the full path name to set the inputfile to.
-            Settings["InputFile"] = self.CustomInputPathsList[Settings["InputFile"]]
+        elif UserSelection == "Specify Path/File":
+            FileDlg = wx.FileDialog(self.Panel, "Select "+Type+" Path/File...", defaultDir=DefaultDir, wildcard=Wildcard, style=Style)
 
-        elif Settings["InputFile"] == "-- Please Select --":
-            logger.info("MainWindow().SelectInputFile(): Input file reset..")
-            Settings["InputFile"] = None
+            #Gracefully handle it if the user closed the dialog without selecting a file.
+            if FileDlg.ShowModal() != wx.ID_OK:
+                logger.info("MainWindow().FileChoiceHandler(): User declined custom file selection. Resetting choice box for "+SettingsKey+"...")
+                ChoiceBox.SetStringSelection("-- Please Select --")
+                Settings[SettingsKey] = None
+                return True
 
-        #Call Layout() on self.Panel() to ensure it displays properly.
-        self.Panel.Layout()
+            #Get the file.
+            UserSelection = FileDlg.GetPath()
 
-    def SetOutputFile(self, Event=None):
-        """Get the output file/Disk and set a variable to the selected value"""
-        logger.debug("MainWindow().SelectOutputFile(): Getting user selection...")
-        Settings["OutputFile"] = self.OutputChoiceBox.GetStringSelection()
+            #Handle it according to cases depending on its type.
+            if Type in ["Output", "Log"]:
+                if Type == "Output":
+                    #Automatically add a file extension of .img if there isn't any file extension (fixes bugs on OS X).
+                    if UserSelection[-4] != ".":
+                        UserSelection += ".img"
 
-        if Settings["OutputFile"] == "Select a File/Disk":
-            OutputFileDlg = wx.FileDialog(self.Panel, "Select Output File/Disk...", defaultDir=self.UserHomeDir, wildcard=self.OutputWildcard, style=wx.SAVE)
-
-            if OutputFileDlg.ShowModal() == wx.ID_OK:
-                Settings["OutputFile"] = OutputFileDlg.GetPath()
-
-                #Automatically add a file extension of .img if there isn't one (fixes bugs on OS X).
-                if Settings["OutputFile"][-4] != ".":
-                    Settings["OutputFile"] += ".img"
-
-                if PartedMagic and "/root" in Settings["OutputFile"]:
-                    logger.warning("MainWindow().SelectOutputFile(): OutputFile is in root's home directory on Parted Magic! There is no space here, warning user and declining selection...")
-                    dlg = wx.MessageDialog(self.Panel, "You can't save the output file in root's home directory in Parted Magic! There's not enough space there, please select a new file.", 'DDRescue-GUI - Error!', wx.OK | wx.ICON_ERROR)
+                #Don't allow user to save output or log files in root's home dir on Pmagic.
+                if PartedMagic and "/root" in UserSelection:
+                    logger.warning("MainWindow().FileChoiceHandler(): "+Type+"File is in root's home directory on Parted Magic! There is no space here, warning user and declining selection...")
+                    dlg = wx.MessageDialog(self.Panel, "You can't save the "+Type+" file in root's home directory in Parted Magic! There's not enough space there, please select a new file.", 'DDRescue-GUI - Error!', wx.OK | wx.ICON_ERROR)
                     dlg.ShowModal()
                     dlg.Destroy()
+                    ChoiceBox.SetStringSelection("-- Please Select --")
+                    Settings[SettingsKey] = None
+                    return True
 
-                    Settings["OutputFile"] = None
-                    self.OutputChoiceBox.SetStringSelection("-- Please Select --")
+            logger.info("MainWindow().FileChoiceHandler(): User selected custom file: "+UserSelection+"...")
+            Settings[SettingsKey] = UserSelection
+            print(SettingsKey, UserSelection)
 
-                else:
-                    logger.info("MainWindow().SelectOutputFile(): User selected custom file: "+Settings["OutputFile"]+"...")
+            #Handle custom paths properly.
+            #If it's in the dictionary or in DiskInfo, don't add it.
+            if BackendTools().FindDataValueInDict(Paths, UserSelection):
+                #Set the selection using the unique key.
+                ChoiceBox.SetStringSelection(BackendTools().CreateUniqueKey(Paths, UserSelection, 30))
 
-                    #If it's in the dictionary or in DiskInfo, don't add it.
-                    if BackendTools().FindDataValueInDict(self.CustomOutputPathsList, Settings["OutputFile"]):
-                        #Set the selection using the unique key.
-                        self.OutputChoiceBox.SetStringSelection(BackendTools().CreateUniqueKey(self.CustomOutputPathsList, Settings["InputFile"], 30))
-
-                    elif Settings["OutputFile"] in DiskInfo.keys():
-                        #No need to add it or anything.
-                        self.OutputChoiceBox.SetStringSelection(Settings["OutputFile"])
-
-                    else:
-                        #Get a unqiue key for the dictionary using the tools function.
-                        Key = BackendTools().CreateUniqueKey(self.CustomOutputPathsList, Settings["OutputFile"], 30)
-
-                        self.CustomOutputPathsList[Key] = Settings["OutputFile"]
-                        self.OutputChoiceBox.Append(Key)
-                        self.OutputChoiceBox.SetStringSelection(Key)
+            elif UserSelection in DiskInfo.keys():
+                #No need to add it to the choice box.
+                ChoiceBox.SetStringSelection(UserSelection)
 
             else:
-                logger.info("MainWindow().SelectOutputFile(): User declined custom file selection. Resetting OutputFile...")
-                Settings["OutputFile"] = None
-                self.OutputChoiceBox.SetStringSelection("-- Please Select --")
+                #Get a unqiue key for the dictionary using the tools function.
+                Key = BackendTools().CreateUniqueKey(Paths, UserSelection, 30)
 
-        elif Settings["OutputFile"] not in [None, "-- Please Select --"] and Settings["OutputFile"] == Settings["InputFile"]:
-            logger.warning("MainWindow().SelectOutputFile(): OutputFile equals InputFile!, resetting to None and warning user...")
-            dlg = wx.MessageDialog(self.Panel, "You can't use the same Disk/file as both the source and the destination!", 'DDRescue-GUI - Error!', wx.OK | wx.ICON_ERROR)
+                #Use it to organise the data.
+                Paths[Key] = UserSelection
+                ChoiceBox.Append(Key)
+                ChoiceBox.SetStringSelection(Key)
+
+        print(Settings[Others[0]], Settings[Others[1]])
+
+        if UserSelection not in [None, "-- Please Select --"] and UserSelection in [Settings[Others[0]], Settings[Others[1]]]:
+            #Has same value as one of the other main settings! Declining user suggestion.
+            logger.warning("MainWindow().FileChoiceHandler(): Current setting has the same value as one of the other main settings! Resetting and warning user...")
+            dlg = wx.MessageDialog(self.Panel, "Your selection is the same as one of the other file selection choiceboxes!", 'DDRescue-GUI - Error!', wx.OK | wx.ICON_ERROR)
             dlg.ShowModal()
             dlg.Destroy()
-            Settings["OutputFile"] = None
-            self.OutputChoiceBox.SetStringSelection("-- Please Select --")
+            ChoiceBox.SetStringSelection("-- Please Select --")
+            Settings[SettingsKey] = None
+                
+        if UserSelection[0:3] == "...":
+            #Get the full path name to set the inputfile to.
+            Settings[SettingsKey] = Paths[UserSelection]
 
-        elif Settings["OutputFile"][0:3] == "...":
-            #Get the full path name to set the outputfile to.
-            Settings["OutputFile"] = self.CustomOutputPathsList[Settings["OutputFile"]]
-
-        elif Settings["OutputFile"] == "-- Please Select --":
-            logger.debug("MainWindow().SelectInputFile(): Output file reset...")
-            Settings["OutputFile"] = None
-
-        #Check with the user if the output file already exists.
-        if Settings["OutputFile"] != None:
-            if os.path.exists(Settings["OutputFile"]):
-                logger.info("MainWindow().SelectInputFile(): Selected file already exists! Showing warning to user...")
-                Dlg = wx.MessageDialog(self.Panel, "The file you selected already exists!\n\nIf you're doing a two-stage recovery, *and you've selected a logfile*, DDRescue-GUI will resume where it left off on the previous run, and it is safe to continue.\n\nOtherwise, you will lose data on this file or device.\n\nPlease be sure you selected the right file. Do you want to accept this file as your output file?", 'DDRescue-GUI -- Warning!', wx.YES_NO | wx.ICON_EXCLAMATION)
+        #Handle special cases if the file is the output file.
+        if Type == "Output":
+            #Check with the user if the output file already exists.
+            if os.path.exists(Settings[SettingsKey]):
+                logger.info("MainWindow().FileChoiceHandler(): Selected file already exists! Showing warning to user...")
+                Dlg = wx.MessageDialog(self.Panel, "The file you selected already exists!\n\nIf you're doing a multi-stage recovery, *and you've selected a logfile*, DDRescue-GUI will resume where it left off on the previous run, and it is safe to continue.\n\nOtherwise, you will lose data on this file or device.\n\nPlease be sure you selected the right file. Do you want to accept this file as your output file?", 'DDRescue-GUI -- Warning!', wx.YES_NO | wx.ICON_EXCLAMATION)
 
                 if Dlg.ShowModal() == wx.ID_YES:
-                    logger.warning("MainWindow().SelectOutputFile(): Accepted already-present file as output file!")
+                    logger.warning("MainWindow().FileChoiceHandler(): Accepted already-present file as output file!")
 
                 else:
-                    logger.info("MainWindow().SelectOutputFile(): User declined the selection. Resetting OutputFile...")
-                    Settings["OutputFile"] = None
-                    self.OutputChoiceBox.SetStringSelection("-- Please Select --")
+                    logger.info("MainWindow().FileChoiceHandler(): User declined the selection. Resetting OutputFile...")
+                    Settings[SettingsKey] = None
+                    ChoiceBox.SetStringSelection("-- Please Select --")
 
                 Dlg.Destroy()
 
-        #If the file selected is a Disk, enable the overwrite output file option, else disable it.
-        if Settings["OutputFile"] != None:
-            if Settings["OutputFile"][0:5] == "/dev/":
-                logger.info("MainWindow().SelectOutputFile(): OutputFile is a disk so enabling ddrescue's overwrite mode...")
+            #If the file selected is a Disk, enable the overwrite output file option, else disable it.
+            if Settings[SettingsKey][0:5] == "/dev/":
+                logger.info("MainWindow().FileChoiceHandler(): OutputFile is a disk so enabling ddrescue's overwrite mode...")
                 Settings["OverwriteOutputFile"] = "-f"
 
             else:
-                logger.info("MainWindow().SelectOutputFile(): OutputFile isn't a disk so disabling ddrescue's overwrite mode...")
+                logger.info("MainWindow().FileChoiceHandler(): OutputFile isn't a disk so disabling ddrescue's overwrite mode...")
                 Settings["OverwriteOutputFile"] = ""
 
         #Call Layout() on self.Panel() to ensure it displays properly.
         self.Panel.Layout()
 
+    def SetInputFile(self, Event=None):
+        """Get the input file/Disk and set a variable to the selected value"""
+        logger.debug("MainWindow().SelectInputFile(): Calling File Choice Handler...")
+
+        if Linux:
+            DefaultDir = "/dev"
+
+        else:
+            DefaultDir = "/Users"
+
+        self.FileChoiceHandler(Type="Input", UserSelection=self.InputChoiceBox.GetStringSelection(), DefaultDir=DefaultDir, Wildcard=self.InputWildcard, Style=wx.OPEN)
+
+    def SetOutputFile(self, Event=None):
+        """Get the output file/Disk and set a variable to the selected value"""
+        logger.debug("MainWindow().SelectInputFile(): Calling File Choice Handler...")
+        self.FileChoiceHandler(Type="Output", UserSelection=self.OutputChoiceBox.GetStringSelection(), DefaultDir=self.UserHomeDir, Wildcard=self.OutputWildcard, Style=wx.SAVE)
+
     def SetLogFile(self, Event=None):
         """Get the log file position/name and set a variable to the selected value"""
-        logger.debug("MainWindow().SelectLogFile(): Getting user selection...")
-        Settings["LogFile"] = self.LogChoiceBox.GetStringSelection()
-
-        if Settings["LogFile"] == "None (not recommended)":
-            Dlg = wx.MessageDialog(self.Panel, "You have not chosen to use a log file. If you do not use one, you will have to start from scratch in the event of a power outage, or if DDRescue-GUI is interrupted. Additionally, you can't do a two-stage recovery without a log file.\n\nAre you really sure you do not want to use a logfile?", "DDRescue-GUI - Warning", wx.YES_NO | wx.ICON_EXCLAMATION)
-
-            if Dlg.ShowModal() == wx.ID_YES:
-                logger.warning("MainWindow().SelectLogFile(): User isn't using a log file, despite our warning!")
-                Settings["LogFile"] = ""
-
-            else:
-                logger.info("MainWindow().SelectLogFile(): User decided against not using a log file. Good!")
-                Settings["LogFile"] = None
-                self.LogChoiceBox.SetStringSelection("-- Please Select --")
-
-            Dlg.Destroy()
-
-        elif Settings["LogFile"] == "Select a File":
-            LogFileDlg = wx.FileDialog(self.Panel, "Select Log File Position & Name...", defaultDir=self.UserHomeDir, wildcard="Log Files (*.log)|*.log", style=wx.SAVE)
-
-            if LogFileDlg.ShowModal() == wx.ID_OK:
-                Settings["LogFile"] = LogFileDlg.GetPath()
-
-                if PartedMagic and "/root" in Settings["LogFile"]:
-                    logger.warning("MainWindow().SelectLogFile(): LogFile is in root's home directory on Parted Magic! There is no space here, warning user and declining selection...")
-                    dlg = wx.MessageDialog(self.Panel, "You can't save the log file in root's home directory in Parted Magic! There's not enough space there, please select a new file.", 'DDRescue-GUI - Error!', wx.OK | wx.ICON_ERROR)
-                    dlg.ShowModal()
-                    dlg.Destroy()
-
-                    Settings["LogFile"] = None
-                    self.LogChoiceBox.SetStringSelection("-- Please Select --")
-
-                else:
-                    logger.debug("MainWindow().SelectLogFile(): User selected custom file: "+Settings["LogFile"]+"...")
-
-                    #If it's in the dictionary already, don't add it again.
-                    if BackendTools().FindDataValueInDict(self.CustomLogPaths, Settings["LogFile"]):
-                        #Set the selection using the unique key.
-                        self.LogChoiceBox.SetStringSelection(BackendTools().CreateUniqueKey(self.CustomLogPaths, Settings["LogFile"], 30))
-
-                    elif Settings["LogFile"] in DiskInfo.keys():
-                        #Warn user and reject selection.
-                        Dlg = wx.MessageDialog(self.Panel, "You can't save the log file to a device! Please make an appropriate selection.", "DDRescue-GUI - Error!", wx.OK | wx.ICON_ERROR)
-                        Dlg.ShowModal()
-                        Dlg.Destroy()
-
-                        self.LogChoiceBox.SetStringSelection("-- Please Select --")
-
-                    else:
-                        #Get a unqiue key for the dictionary using the tools function.
-                        Key = BackendTools().CreateUniqueKey(self.CustomLogPaths, Settings["LogFile"], 30)
-
-                        self.CustomLogPaths[Key] = Settings["LogFile"]
-                        self.LogChoiceBox.Append(Key)
-                        self.LogChoiceBox.SetStringSelection(Key)
-
-            else:
-                logger.debug("MainWindow().SelectLogFile(): User declined custom file selection. Resetting LogFile...")
-                Settings["LogFile"] = None
-                self.LogChoiceBox.SetStringSelection("-- Please Select --")
-
-            LogFileDlg.Destroy()
-
-        elif Settings["LogFile"][0:3] == "...":
-            #Get the full path name to set the logfile to.
-            Settings["LogFile"] = self.CustomLogPaths[Settings["LogFile"]]
-
-        elif Settings["LogFile"] == "-- Please Select --":
-            logger.debug("MainWindow().SelectLogFile(): LogFile reset.")
-            Settings["LogFile"] = None
-
-        #Call Layout() on self.Panel() to ensure it displays properly.
-        self.Panel.Layout()
+        logger.debug("MainWindow().SelectLogFile(): Calling File Choice Handler...")
+        self.FileChoiceHandler(Type="Log", UserSelection=self.LogChoiceBox.GetStringSelection(), DefaultDir=self.UserHomeDir, Wildcard="Log Files (*.log)|*.log", Style=wx.SAVE)
 
     def OnAbout(self, Event=None):
         """Show the about box"""
