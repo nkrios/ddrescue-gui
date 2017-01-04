@@ -31,12 +31,16 @@ class Main():
         while runcmd.poll() == None:
             time.sleep(0.25)
 
-        #Save runcmd.stdout.readlines, and runcmd.returncode, as they tend to reset fairly quickly.
-        Output = runcmd.stdout.readlines()
+        #Save runcmd.stdout.readlines, and runcmd.returncode, as they tend to reset fairly quickly. Handle unicode properly.
+        Output = []
+
+        for line in runcmd.stdout.readlines():
+            Output.append(line.decode("UTF-8", errors="ignore"))
+
         Retval = int(runcmd.returncode)
 
         #Log this info in a debug message.
-        logger.debug("Tools: Main().StartProcess(): Process: "+Command+": Return Value: "+unicode(Retval)+", Output: \"\n\n"+''.join(Output.decode("UTF-8", errors="ignore"))+"\"\n") #*** Test this ***
+        logger.debug("Tools: Main().StartProcess(): Process: "+Command+": Return Value: "+unicode(Retval)+", Output: \"\n\n"+''.join(Output)+"\"\n") #*** Test this ***
 
         if ReturnOutput == False:
             #Return the return code back to whichever function ran this process, so it can handle any errors.
