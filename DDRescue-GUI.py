@@ -44,7 +44,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "1.6.2"
-ReleaseDate = "3/1/2016"
+ReleaseDate = "4/1/2016"
 SessionEnding = False
 
 def usage():
@@ -276,6 +276,54 @@ class CustomTextCtrl(wx.TextCtrl):
         Position = LastNewLine + Column
 
         return Position
+
+    def CarriageReturn(self):
+        """Handles carriage returns in output"""
+        #Go back until the last newline character, and overwrite anything in the way on the next write.
+        #Get the current insertion point.
+        CurrentInsertionPoint = self.GetInsertionPoint()
+
+        #Get the text up to the current insertion point.
+        Text = self.GetRange(0, CurrentInsertionPoint)
+
+        #Find the last newline char in the text.
+        NewlineNos = []
+        Counter = 0
+
+        for Char in Text:
+            if Char == "\n":
+                NewlineNos.append(Counter)
+
+            Counter += 1
+
+        if NewlineNos != []:
+            LastNewline = NewlineNos[-1]
+
+        else:
+            #Hacky bit to make the new insertion point 0 :)
+            LastNewline = -1
+
+        #Set the insertion point to just after that newline, unless we're already there, and in that case set the insertion point just after the previous newline.
+        NewInsertionPoint = LastNewline + 1
+
+        self.SetInsertionPoint(NewInsertionPoint)
+
+    def UpOneLine(self):
+        """Handles '\x1b[A' (up one line) in output"""
+        #Go up one line.
+        #Get our Column and Line numbers.
+        Column, Line = self.CustomPositionToXY(self.GetInsertionPoint())
+
+        #We go up one line, but stay in the same column, so find the integer position of the new insertion point.
+        NewInsertionPoint = self.CustomXYToPosition(Column, Line-1)
+
+        if NewInsertionPoint == -1:
+            #Invalid Column/Line! Maybe we reached the start of the text in self.OutputBox? Do nothing but log the error.
+            logger.warning("CustomTextCtrl().UpOneLine(): Invalid new insertion point when trying to move up one line! This might mean we've reached that start of the text in the output box.")
+
+        else:
+            #Set the new insertion point.
+            self.SetInsertionPoint(NewInsertionPoint)
 
 #End Custom wx.TextCtrl Class.
 #Begin Main Window   
@@ -1184,53 +1232,6 @@ class MainWindow(wx.Frame):
     def UpdateTimeSinceLastRead(self, LastRead):
         self.ListCtrl.SetStringItem(index=7, col=1, label=LastRead)
 
-    def CarriageReturn(self): #*** Should this and related functions be part of a custom wx.TextCtrl class? ***
-        """Handles carriage returns in output"""
-        #Go back until the last newline character, and overwrite anything in the way on the next write.
-        #Get the current insertion point.
-        CurrentInsertionPoint = self.OutputBox.GetInsertionPoint()
-
-        #Get the text up to the current insertion point.
-        Text = self.OutputBox.GetRange(0, CurrentInsertionPoint)
-
-        #Find the last newline char in the text.
-        NewlineNos = []
-        Counter = 0
-        for Char in Text:
-            if Char == "\n":
-                NewlineNos.append(Counter)
-
-            Counter += 1
-
-        if NewlineNos != []:
-            LastNewline = NewlineNos[-1]
-
-        else:
-            #Hacky bit to make the new insertion point 0 :)
-            LastNewline = -1
-
-        #Set the insertion point to just after that newline, unless we're already there, and in that case set the insertion point just after the previous newline.
-        NewInsertionPoint = LastNewline + 1
-
-        self.OutputBox.SetInsertionPoint(NewInsertionPoint)
-
-    def UpOneLine(self):
-        """Handles '\x1b[A' (up one line) in output"""
-        #Go up one line.
-        #Get our Column and Line numbers.
-        Column, Line = self.OutputBox.CustomPositionToXY(self.OutputBox.GetInsertionPoint())
-
-        #We go up one line, but stay in the same column, so find the integer position of the new insertion point.
-        NewInsertionPoint = self.OutputBox.CustomXYToPosition(Column, Line-1)
-
-        if NewInsertionPoint == -1:
-            #Invalid Column/Line! Maybe we reached the start of the text in self.OutputBox? Do nothing but log the error.
-            logger.warning("MainWindow().UpOneLine(): Invalid new insertion point when trying to move up one line! This might mean we've reached that start of the text in the output box.")
-
-        else:
-            #Set the new insertion point.
-            self.OutputBox.SetInsertionPoint(NewInsertionPoint)
-
     def UpdateOutputBox(self, Line):
         """Update the output box"""
         CRs = []
@@ -1266,10 +1267,10 @@ class MainWindow(wx.Frame):
         self.OutputBox.Replace(InsertionPoint, InsertionPoint+len(Line), Line)
 
         if CharNo in CRs:
-            self.CarriageReturn()
+            self.OutputBox.CarriageReturn()
 
         elif CharNo in UOLs:
-            self.UpOneLine()
+            self.OutputBox.UpOneLine()
 
     def UpdateStatusBar(self, Message):
         """Update the statusbar with a new message"""
@@ -2260,7 +2261,7 @@ class FinishedWindow(wx.Frame):
 
         wx.CallAfter(self.ParentWindow.UpdateStatusBar, "Finished")
 
-    def MountOutputFile(self, Event=None):
+    def MountOutputFile(self, Event=None): #*** Refactor all of these and make them handle errors better and more user friendily. ***
         """Handle errors and call the platform-dependent mounter function to mount the output file"""
         logger.debug("FinishedWindow().MountOutputFile(): Preparing to mount the output file...")
 
@@ -2275,10 +2276,10 @@ class FinishedWindow(wx.Frame):
         try:
             return MountFunction()
 
-        except:
+        except Exception as Error:
             #An error has occurred!
-            logger.error("Unexpected error \n\n"+unicode(traceback.format_exc())+"\n\n while mounting output file. Warning user...")
-            dlg = wx.MessageDialog(self.Panel, "Your output file could not be mounted!\n\nThe most likely reason for this is that the disk image is incomplete. If the disk image is complete, it may use an unsupported filesystem.\n\nIf you were asked which partition to mount, try again and choose a different one.\n\nThe error was:\n\n"+unicode(traceback.format_exc()), "DDRescue-GUI - Error!", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
+            logger.error("Unexpected error: \n\n"+unicode(traceback.format_exc())+"\n\n While mounting output file. Warning user...\n")
+            dlg = wx.MessageDialog(self.Panel, "Your output file could not be mounted!\n\nThe most likely reason for this is that the disk image is incomplete. If the disk image is complete, it may use an unsupported filesystem.\n\nIf you were asked which partition to mount, try again and choose a different one.\n\nThe error was:\n\n"+unicode(Error), "DDRescue-GUI - Error!", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
             dlg.ShowModal()
             dlg.Destroy()
             return False
