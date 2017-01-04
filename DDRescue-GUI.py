@@ -806,7 +806,7 @@ class MainWindow(wx.Frame):
 
     def FileChoiceHandler(self, Type, UserSelection, DefaultDir, Wildcard, Style):
         """Handle file dialogs for SetInputFile, SetOutputFile, and SetLogFile"""
-        #Setup. *** DEBUGGING REQUIRED ***
+        #Setup.
         SettingsKey = Type+"File"
 
         if Type == "Input":
@@ -823,7 +823,9 @@ class MainWindow(wx.Frame):
             ChoiceBox = self.LogChoiceBox
             Paths = self.CustomLogPaths
             Others = ["InputFile", "OutputFile"]
-    
+
+        Settings[SettingsKey] = UserSelection
+
         if UserSelection == "-- Please Select --":
             logger.info("MainWindow().FileChoiceHandler(): "+Type+" file reset..")
             Settings[SettingsKey] = None
@@ -878,7 +880,6 @@ class MainWindow(wx.Frame):
 
             logger.info("MainWindow().FileChoiceHandler(): User selected custom file: "+UserSelection+"...")
             Settings[SettingsKey] = UserSelection
-            print(SettingsKey, UserSelection)
 
             #Handle custom paths properly.
             #If it's in the dictionary or in DiskInfo, don't add it.
@@ -898,8 +899,6 @@ class MainWindow(wx.Frame):
                 Paths[Key] = UserSelection
                 ChoiceBox.Append(Key)
                 ChoiceBox.SetStringSelection(Key)
-
-        print(Settings[Others[0]], Settings[Others[1]])
 
         if UserSelection not in [None, "-- Please Select --"] and UserSelection in [Settings[Others[0]], Settings[Others[1]]]:
             #Has same value as one of the other main settings! Declining user suggestion.
@@ -928,6 +927,11 @@ class MainWindow(wx.Frame):
                     logger.info("MainWindow().FileChoiceHandler(): User declined the selection. Resetting OutputFile...")
                     Settings[SettingsKey] = None
                     ChoiceBox.SetStringSelection("-- Please Select --")
+
+                    #Disable this too to prevent accidental enabling if previous selection was a device.
+                    Settings["OverwriteOutputFile"] = ""
+
+                    return True
 
                 Dlg.Destroy()
 
