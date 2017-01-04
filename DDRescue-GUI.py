@@ -868,6 +868,11 @@ class MainWindow(wx.Frame):
                     if UserSelection[-4] != ".":
                         UserSelection += ".img"
 
+                else:
+                    #Automatically add a file extension of .log for log files if extension is wrong or missing.
+                    if UserSelection[-4:] != ".log":
+                        UserSelection += ".log"
+
                 #Don't allow user to save output or log files in root's home dir on Pmagic.
                 if PartedMagic and "/root" in UserSelection:
                     logger.warning("MainWindow().FileChoiceHandler(): "+Type+"File is in root's home directory on Parted Magic! There is no space here, warning user and declining selection...")
