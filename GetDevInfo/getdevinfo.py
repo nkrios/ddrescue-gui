@@ -45,7 +45,7 @@ class Main():
 
         return Result
 
-    def GetVendor(self, Node):
+    def GetVendor(self, Node=None, Disk=None):
         """Get the vendor"""
         if Linux:
             try:
@@ -71,7 +71,7 @@ class Main():
 
                 return Vendor
 
-    def GetProduct(self, Node):
+    def GetProduct(self, Node=None, Disk=None):
         """Get the product"""
         if Linux:
             try:
@@ -97,7 +97,7 @@ class Main():
 
                 return Product
 
-    def GetCapacity(self, Node):
+    def GetCapacity(self, Node=None):
         """Get the capacity and human-readable capacity"""
         if Linux:
             try:
