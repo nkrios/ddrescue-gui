@@ -2271,14 +2271,14 @@ class FinishedWindow(wx.Frame):
         else:
             MountFunction = self.MountDiskOSX
 
+        #Handle any unexpected errors.
         try:
             return MountFunction()
 
         except:
-            #An error has occured!
-            Error = sys.exc_info()[0]
-            logger.error("FinishedWindow().MountOutputFile(): Couldn't mount output file. The error was: "+unicode(Error)+". Warning user...")
-            dlg = wx.MessageDialog(self.Panel, "Your output file could not be mounted!\n\nThe most likely reason for this is that the disk image is incomplete. If the disk image is complete, it may use an unsupported filesystem.\n\nIf you were asked which partition to mount, try again and choose a different one.\n\nThe error was: "+unicode(Error)+".", "DDRescue-GUI - Error!", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
+            #An error has occurred!
+            logger.error("Unexpected error \n\n"+unicode(traceback.format_exc())+"\n\n while mounting output file. Warning user...")
+            dlg = wx.MessageDialog(self.Panel, "Your output file could not be mounted!\n\nThe most likely reason for this is that the disk image is incomplete. If the disk image is complete, it may use an unsupported filesystem.\n\nIf you were asked which partition to mount, try again and choose a different one.\n\nThe error was:\n\n"+unicode(traceback.format_exc()), "DDRescue-GUI - Error!", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
             dlg.ShowModal()
             dlg.Destroy()
             return False
