@@ -36,7 +36,7 @@ class Main():
         Retval = int(runcmd.returncode)
 
         #Log this info in a debug message.
-        logger.debug("Tools: Main().StartProcess(): Process: "+Command+": Return Value: "+unicode(Retval)+", Output: \"\n\n"+''.join(Output).decode("UTF-8", errors="ignore")+"\"\n") #*** Test this ***
+        logger.debug("Tools: Main().StartProcess(): Process: "+Command+": Return Value: "+unicode(Retval)+", Output: \"\n\n"+''.join(Output.decode("UTF-8", errors="ignore"))+"\"\n") #*** Test this ***
 
         if ReturnOutput == False:
             #Return the return code back to whichever function ran this process, so it can handle any errors.
