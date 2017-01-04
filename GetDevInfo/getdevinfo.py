@@ -135,6 +135,50 @@ class Main():
 
             return Size
 
+    def GetDescription(self, Disk):
+        """Find description information for the given Disk. (OS X Only)"""
+        logger.info("GetDevInfo: Main().GetDescription(): Getting description info for Disk: "+Disk+"...")
+
+        #Gather info from diskutil to create some descriptions.
+        #Internal or external.
+        try:
+            if self.Plist["Internal"]:
+                InternalOrExternal = "Internal "
+
+            else:
+                InternalOrExternal = "External "
+
+        except KeyError:
+            InternalOrExternal = ""
+
+        #Type SSD or HDD.
+        try:
+            if self.Plist["SolidState"]:
+                Type = "Solid State Drive "
+
+            else:
+                Type = "Hard Disk Drive "
+
+        except KeyError:
+            Type = ""
+
+        #Bus protocol.
+        try:
+            BusProtocol = unicode(self.Plist["BusProtocol"])
+
+        except KeyError:
+            BusProtocol = "Unknown"
+
+        if [InternalOrExternal, Type] is not ["", ""]:
+            if BusProtocol != "Unknown":
+                return InternalOrExternal+Type+"(Connected through "+BusProtocol+")"
+
+            else:
+                return InternalOrExternal+Type
+
+        else:
+            return "N/A"
+
     def GetDeviceInfo(self, Node):
         """Get Device Information"""
         HostDisk = unicode(Node.logicalname.string)
