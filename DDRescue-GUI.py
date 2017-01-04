@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*- 
 # DDRescue-GUI Main Script Version 1.6.2
 # This file is part of DDRescue-GUI.
-# Copyright (C) 2013-2016 Hamish McIntyre-Bhatty
+# Copyright (C) 2013-2017 Hamish McIntyre-Bhatty
 # DDRescue-GUI is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 3 or,
 # at your option, any later version.
@@ -44,7 +44,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "1.6.2"
-ReleaseDate = "4/1/2016"
+ReleaseDate = "4/1/2017"
 SessionEnding = False
 
 def usage():
@@ -57,7 +57,7 @@ def usage():
     print("       -d, --debug:                  Log lots of boring debug messages, as well as information, warnings, errors and critical errors. Usually used for diagnostic purposes.")
     print("                                     The default, as it's very helpful if problems are encountered, and the user needs help\n")
     print("DDRescue-GUI "+Version+" is released under the GNU GPL Version 3")
-    print("Copyright (C) Hamish McIntyre-Bhatty 2013-2016")
+    print("Copyright (C) Hamish McIntyre-Bhatty 2013-2017")
 
 #Determine if running on Linux or Mac.
 if "wxGTK" in wx.PlatformInfo:
@@ -1029,7 +1029,7 @@ class MainWindow(wx.Frame):
         aboutbox.SetIcon(AppIcon)
         aboutbox.Name = "DDRescue-GUI"
         aboutbox.Version = Version
-        aboutbox.Copyright = "(C) 2013-2016 Hamish McIntyre-Bhatty"
+        aboutbox.Copyright = "(C) 2013-2017 Hamish McIntyre-Bhatty"
         aboutbox.Description = "GUI frontend for GNU ddrescue"
         aboutbox.WebSite = ("https://launchpad.net/ddrescue-gui", "Launchpad page")
         aboutbox.Developers = ["Hamish McIntyre-Bhatty", "Minnie McIntyre-Bhatty (GUI Design)"]
