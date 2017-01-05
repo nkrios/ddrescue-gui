@@ -23,7 +23,7 @@ from __future__ import unicode_literals
 
 #Begin Main Class.
 class Main():
-    def IsPartition(self, Disk, DiskList=None): #*** Required? ***
+    def IsPartition(self, Disk, DiskList=None):
         """Check if the given Disk is a partition"""
         logger.debug("GetDevInfo: Main().IsPartition(): Checking if Disk: "+Disk+" is a partition...")
 

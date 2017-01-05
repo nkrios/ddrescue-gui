@@ -2298,7 +2298,7 @@ class FinishedWindow(wx.Frame):
             dlg.Destroy()
             return False
 
-        #Linux: Pull down loops if the OutputFile is a Device. OS X: Detach the image's device file.
+        #Linux: Pull down loops if the OutputFile is a Device. OS X: Always detach the image's device file.
         if self.OutputFileType == "Device" and Linux:
             logger.debug("FinishedWindow().UnmountOutputFile(): Pulling down loop device...")
             Command = "kpartx -d "+Settings["OutputFile"]
@@ -2329,71 +2329,93 @@ class FinishedWindow(wx.Frame):
         wx.CallAfter(self.ParentWindow.UpdateStatusBar, "Preparing to mount output file. Please Wait...")
         wx.Yield()
 
-        #Determine if the OutputFile is a partition.
-        Output = BackendTools().StartProcess(Command="hdiutil imageinfo "+Settings["OutputFile"]+" -plist", ReturnOutput=True)[1]
+        #Determine what type of OutputFile we have (Partition or Device).
+        if Settings["InputFile"] in DiskInfo:
+			#Read from DiskInfo if possible (OutputFile type = InputFile type)
+            self.OutputFileType = DiskInfo[Settings["InputFile"]]["Type"]
 
-        if "whole disk" in Output:
-            #The Output File must be a partition.
+			#Get imageinfo if Device.
+            if self.OutputFileType == "Device":
+                Output = BackendTools().StartProcess(Command="hdiutil imageinfo "+Settings["OutputFile"]+" -plist", ReturnOutput=True)[1]
+
+        else:
+            #If not use hdiutil imageinfo to get it.
+            Output = BackendTools().StartProcess(Command="hdiutil imageinfo "+Settings["OutputFile"]+" -plist", ReturnOutput=True)[1]
+
+            if "whole disk" in Output:
+                self.OutputFileType = "Partition"
+
+            else:
+                self.OutputFileType = "Device"
+
+        if self.OutputFileType == "Partition":
+            #We have a partition.
             logger.debug("FinishedWindow().MountDiskOSX(): Output file is a partition! Continuing...")
             wx.CallAfter(self.ParentWindow.UpdateStatusBar, "Mounting output file. This may take a few moments...")
             wx.Yield()
-            self.OutputFileType = "Partition"
 
-            #Attempt to mount the disk.
+            #Attempt to mount the disk. Bypass global mount function so we run with plist option *** Allow this in global function? ***
             Retval, Output = BackendTools().StartProcess(Command="hdiutil mount "+Settings["OutputFile"]+" -plist", ReturnOutput=True)
 
-            #Parse the plist (Property List).
-            Plist = plistlib.readPlistFromString(Output)
-
-            #Get the mountpoint.
-            MountedDisk = Plist["system-entities"][0]
-
-            self.OutputFileDeviceName = MountedDisk["dev-entry"]
-            self.OutputFileMountPoint = MountedDisk["mount-point"]
-
             #Check it worked.
-            if Retval == 0:
-                logger.info("FinishedWindow().MountDiskOSX(): Success! Waiting for user to finish with it and prompt to unmount it...")
-                return True
-
-            else:
+            if Retval != 0:
                 logger.error("FinishedWindow().MountDiskOSX(): Error! Warning the user...")
-                dlg = wx.MessageDialog(self.Panel, "Couldn't mount your output file. Perhaps it uses an unsupported filesystem?", "DDRescue-GUI - Error!", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
+                dlg = wx.MessageDialog(self.Panel, "Couldn't mount your output file. Most probably, the filesystem is damaged or and you'll need to use another tool to read it from here. It could also be that macOS doesn't support this filesystem type, or that your recovery is incomplete, as that can sometimes cause this problem.", "DDRescue-GUI - Error!", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
                 dlg.ShowModal()
                 dlg.Destroy()
                 return False
 
-        else:
-            #The Output File must NOT be a partition!
-            logger.debug("FinishedWindow().MountDiskOSX(): Output file isn't a partition! Getting list of contained partitions...")
-            self.OutputFileType = "Device"
-
             #Parse the plist (Property List).
-            Plist = plistlib.readPlistFromString(Output)
+            try:
+                HdiutilOutput = plistlib.readPlistFromString(Output)
 
-            Partitions = []
+            except UnicodeDecodeError:
+                logger.error("FinishedWindow().MountDiskOSX(): FIXME: Couldn't parse output of hdiutil mount due to UnicodeDecodeError. Cleaning up and warning user...")
+                self.UnmountOutputFile()
+                dlg = wx.MessageDialog(self.Panel, "FIXME: Couldn't parse output of hdiutil mount due to UnicodeDecodeError.", "DDRescue-GUI - Error", style=wx.OK | wx.ICON_ERROR)
+                dlg.ShowModal()
+                dlg.Destroy()
 
-            #Find real partitions, not GPT headers and similar. If there's no partition number, ignore it.
-            for Partition in Plist["partitions"]["partitions"]:
-                if "partition-number" in Partition:
-                     Partitions.append(Partition)
+            #Get the mountpoint.
+            MountedDisk = HdiutilOutput["system-entities"][0]
+
+            self.OutputFileDeviceName = MountedDisk["dev-entry"]
+            self.OutputFileMountPoint = MountedDisk["mount-point"]
+
+            logger.info("FinishedWindow().MountDiskOSX(): Success! Waiting for user to finish with it and prompt to unmount it...")
+            return True
+
+        else:
+            #We have a device.
+            logger.debug("FinishedWindow().MountDiskOSX(): Output file isn't a partition! Getting list of contained partitions...")
+
+            #Attempt to mount the image (this mounts all partitions inside).
+            wx.CallAfter(self.ParentWindow.UpdateStatusBar, "Mounting output file. This may take a few moments...")
+            wx.Yield()
+            logger.info("FinishedWindow().MountDiskOSX(): Mounting disk "+Settings["OutputFile"]+"...")
+            Retval, Output = BackendTools().StartProcess(Command="hdiutil mount "+Settings["OutputFile"]+" -plist", ReturnOutput=True)
+
+            #Check it worked.
+            if Retval != 0:
+                logger.error("FinishedWindow().MountDiskOSX(): Error! Warning the user...")
+                dlg = wx.MessageDialog(self.Panel, "Couldn't mount your output file. Most probably, the file is damaged or and you'll need to use another tool to read it from here. It could also be that your recovery is incomplete, as that can sometimes cause this problem.", "DDRescue-GUI - Error!", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
+                dlg.ShowModal()
+                dlg.Destroy()
+                return False
 
             #Get the block size of the image.
             Blocksize = Plist["partitions"]["block-size"]
 
-            #Smarten this list up, and make it appear intuitive to the user.
+            #Parse the plist (Property List).
+            ImageinfoOutput = plistlib.readPlistFromString(Output)
+
+            #Make a nice list of partitions for the user.
             Choices = []
 
-            for Partition in Partitions:
-                #Get the info related to this partition.
-                #Partition number.
-                PartNum = Partition["partition-number"]
-
-                #Disk size.
-                DiskSize = (Partition["partition-length"] * Blocksize) // 1000000
-
-                #Add stuff in an intuitive way.
-                Choices.append("Partition "+unicode(PartNum)+" with size "+unicode(DiskSize)+" MB")
+            #Find real partitions, not GPT headers and similar. If there's no partition number, ignore it.
+            for Partition in ImageinfoOutput["partitions"]["partitions"]:
+                if "partition-number" in Partition:
+                    Choices.append("Partition "+unicode(Partition["partition-number"])+", with size "+unicode((Partition["partition-length"] * Blocksize) // 1000000)+" MB")
 
             #Ask the user which partition to mount.
             logger.debug("FinishedWindow().MountDiskOSX(): Asking user which partition to mount...")
@@ -2408,20 +2430,15 @@ class FinishedWindow(wx.Frame):
             else:
                 SelectedPartNum = dlg.GetStringSelection().split()[1]
 
-            #Attempt to mount the disk.
-            wx.CallAfter(self.ParentWindow.UpdateStatusBar, "Mounting output file. This may take a few moments...")
-            wx.Yield()
-            logger.info("FinishedWindow().MountDiskOSX(): Mounting disk "+Settings["OutputFile"]+"...")
-            Retval, Output = BackendTools().StartProcess(Command="hdiutil mount "+Settings["OutputFile"]+" -plist", ReturnOutput=True)
-
             try:
                 #Parse the plist (Property List).
                 Plist = plistlib.readPlistFromString(Output)
                 Temp = Plist["system-entities"]
 
-                #Get the device name (it doesn't matter which partition Temp[0] is, as hdiutil detach removes all of them anyway).
+                #Get the device name given to the output file.
                 self.OutputFileDeviceName = Temp[0]["dev-entry"]
 
+                #Check that the filesystem the user wanted is among those that have been mounted.
                 for Partition in Temp:
                     Disk = Partition["dev-entry"]
 
@@ -2429,27 +2446,25 @@ class FinishedWindow(wx.Frame):
                         #Check if the partition we want was mounted (hdiutil mounts all mountable partitions in the image automatically).
                         if "mount-point" in Partition:
                             self.OutputFileMountPoint = Partition["mount-point"]
-                            Retval = 0
+                            MountedFS = True
 
                         else:
-                            #It wasn't! Set Retval to 1 so we can handle the error and unmount the image again
-                            Retval = 1
-                            self.UnmountOutputFile()
+                            #It wasn't! Note it so we can handle the error.
+                            MountedFS = False
 
             except:
-                Retval = 1
+                #Unexpected error.
+                MountedFS = False
 
-            #Check it worked.
-            if Retval == 0:
-                logger.info("FinishedWindow().MountDiskOSX(): Success! Waiting for user to finish with it and prompt to unmount it...")
-                return True
-
-            else:
-                logger.error("FinishedWindow().MountDiskOSX(): Error! Warning the user...")
-                dlg = wx.MessageDialog(self.Panel, "Couldn't mount your selected partition. Perhaps it uses an unsupported filesystem?", "DDRescue-GUI - Error!", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
+            if not MountedFS:
+                logger.info("FinishedWindow().MountDiskOSX(): Unsupported or damaged filesystem. Warning user and cleaning up...")
+                self.UnmountOutputFile()
+                dlg = wx.MessageDialog(self.Panel, "That filesystem is either not supported by macOS, or it is damaged (perhaps because the recovery is incomplete). Please try again and select a different partition.", "DDRescue-GUI - Error", wx.OK | wx.ICON_ERROR)
                 dlg.ShowModal()
                 dlg.Destroy()
-                return False
+
+            logger.info("FinishedWindow().MountDiskOSX(): Success! Waiting for user to finish with it and prompt to unmount it...")
+            return True
 
     def MountDiskLinux(self):
         """Mount the output file on Linux"""
