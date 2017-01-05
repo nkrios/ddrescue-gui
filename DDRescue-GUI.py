@@ -44,7 +44,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "1.6.2"
-ReleaseDate = "4/1/2017"
+ReleaseDate = "5/1/2017"
 SessionEnding = False
 
 def usage():
@@ -1474,7 +1474,7 @@ class MainWindow(wx.Frame):
             SessionEnding = True
             self.OnExit()
 
-    def OnExit(self, Event=None, JustFinishedRec=False): #*** Reduce nesting ***
+    def OnExit(self, Event=None, JustFinishedRec=False):
         """Exit DDRescue-GUI, if certain conditions are met"""
         logger.info("MainWindow().OnExit(): Preparing to exit...")
 
@@ -1492,71 +1492,72 @@ class MainWindow(wx.Frame):
             dlg = wx.MessageDialog(self.Panel, "You can't exit DDRescue-GUI while recovering data!", "DDRescue-GUI - Error!", wx.OK | wx.ICON_ERROR)
             dlg.ShowModal()
             dlg.Destroy()
+            return True
 
-        else:
-            logger.info("MainWindow().OnExit(): Double-checking the exit attempt with the user...")
-            dlg = wx.MessageDialog(self.Panel, 'Are you sure you want to exit?', 'DDRescue-GUI - Question!', wx.YES_NO | wx.ICON_QUESTION)
+        logger.info("MainWindow().OnExit(): Double-checking the exit attempt with the user...")
+        dlg = wx.MessageDialog(self.Panel, 'Are you sure you want to exit?', 'DDRescue-GUI - Question!', wx.YES_NO | wx.ICON_QUESTION)
+        Answer = dlg.ShowModal()
+        dlg.Destroy()
+
+        if Answer == wx.ID_YES:
+            #Run the exit sequence
+            logger.info("MainWindow().OnExit(): Exiting...")
+
+            #Shutdown the logger.
+            logging.shutdown()
+
+            #Prompt user to save the log file.
+            dlg = wx.MessageDialog(self.Panel, "Do you want to keep DDRescue-GUI's log file? For privacy reasons, DDRescue-GUI will delete its log file when closing. If you want to save it, which is helpful for debugging if something went wrong, click yes, and otherwise click no.", "DDRescue-GUI - Question", style=wx.YES_NO | wx.ICON_QUESTION, pos=wx.DefaultPosition)
             Answer = dlg.ShowModal()
             dlg.Destroy()
 
             if Answer == wx.ID_YES:
-                #Run the exit sequence
-                logger.info("MainWindow().OnExit(): Exiting...")
+                #Trap pogram in loop in case same log file as Recovery log file is picked for destination.
+                while True:
+                    #Ask the user where to save it.
+                    dlg = wx.FileDialog(self.Panel, "Save log file to...", defaultDir=self.UserHomeDir, wildcard="Log Files (*.log)|*.log" , style=wx.SAVE)
+                    Answer = dlg.ShowModal()
+                    File = dlg.GetPath()
+                    dlg.Destroy()
 
-                #Shutdown the logger.
-                logging.shutdown()
-
-                #Prompt user to save the log file.
-                dlg = wx.MessageDialog(self.Panel, "Do you want to keep DDRescue-GUI's log file? For privacy reasons, DDRescue-GUI will delete its log file when closing. If you want to save it, which is helpful for debugging if something went wrong, click yes, and otherwise click no.", "DDRescue-GUI - Question", style=wx.YES_NO | wx.ICON_QUESTION, pos=wx.DefaultPosition)
-                Answer = dlg.ShowModal()
-                dlg.Destroy()
-
-                if Answer == wx.ID_YES:
-                    #Trap pogram in loop in case same log file as Recovery log file is picked for destination.
-                    while True:
-                        #Ask the user where to save it.
-                        dlg = wx.FileDialog(self.Panel, "Save log file to...", defaultDir=self.UserHomeDir, wildcard="Log Files (*.log)|*.log" , style=wx.SAVE)
-                        Answer = dlg.ShowModal()
-                        File = dlg.GetPath()
-                        dlg.Destroy()
-
-                        if Answer == wx.ID_OK:
-                            if File == Settings["LogFile"]:
-                                dlg = wx.MessageDialog(self.Panel, 'Error! Your chosen file is the same as the recovery log file! This log file contains only debugging information for DDRescue-GUI, and you must not overwrite the recovery log file with this one. Please select a new destination file.', 'DDRescue-GUI - Error', wx.OK | wx.ICON_ERROR)
-                                dlg.ShowModal()
-                                dlg.Destroy()
-
-                            else:
-                                #Copy it to the specified path, using a one-liner, and don't bother handling any errors, because this is run as root.
-                                BackendTools().StartProcess(Command="cp /tmp/ddrescue-gui.log "+File, ReturnOutput=False)
-
-                                dlg = wx.MessageDialog(self.Panel, 'Done! DDRescue-GUI will now exit.', 'DDRescue-GUI - Information', wx.OK | wx.ICON_INFORMATION)
-                                dlg.ShowModal()
-                                dlg.Destroy()
-                                break
-
-                        else:
-                            dlg = wx.MessageDialog(self.Panel, 'Okay, DDRescue-GUI will now exit without saving the log file.', 'DDRescue-GUI - Information', wx.OK | wx.ICON_INFORMATION)
+                    if Answer == wx.ID_OK:
+                        if File == Settings["LogFile"]:
+                            dlg = wx.MessageDialog(self.Panel, 'Error! Your chosen file is the same as the recovery log file! This log file contains only debugging information for DDRescue-GUI, and you must not overwrite the recovery log file with this one. Please select a new destination file.', 'DDRescue-GUI - Error', wx.OK | wx.ICON_ERROR)
                             dlg.ShowModal()
                             dlg.Destroy()
 
-                else:
-                    dlg = wx.MessageDialog(self.Panel, 'Okay, DDRescue-GUI will now exit without saving the log file.', 'DDRescue-GUI - Information', wx.OK | wx.ICON_INFORMATION)
-                    dlg.ShowModal()
-                    dlg.Destroy()
+                        else:
+                            #Copy it to the specified path, using a one-liner, and don't bother handling any errors, because this is run as root.
+                            BackendTools().StartProcess(Command="cp /tmp/ddrescue-gui.log "+File, ReturnOutput=False)
 
-                #Delete the log file, and don't bother handling any errors, because this is run as root.
-                os.remove('/tmp/ddrescue-gui.log')
+                            dlg = wx.MessageDialog(self.Panel, 'Done! DDRescue-GUI will now exit.', 'DDRescue-GUI - Information', wx.OK | wx.ICON_INFORMATION)
+                            dlg.ShowModal()
+                            dlg.Destroy()
+                            break
 
-                self.Destroy()
+                    else:
+                        dlg = wx.MessageDialog(self.Panel, 'Okay, DDRescue-GUI will now exit without saving the log file.', 'DDRescue-GUI - Information', wx.OK | wx.ICON_INFORMATION)
+                        dlg.ShowModal()
+                        dlg.Destroy()
+                        break
 
             else:
-                #Check if exit was initated by finisheddlg.
-                logger.warning("MainWindow().OnExit(): User cancelled exit attempt! Aborting exit attempt...")
-                if JustFinishedRec:
-                    #If so return to finisheddlg.
-                    logger.info("MainWindow().OnExit(): Showing FinishedWindow() again...")
-                    FinishedWindow(self).Show()
+                dlg = wx.MessageDialog(self.Panel, 'Okay, DDRescue-GUI will now exit without saving the log file.', 'DDRescue-GUI - Information', wx.OK | wx.ICON_INFORMATION)
+                dlg.ShowModal()
+                dlg.Destroy()
+
+            #Delete the log file, and don't bother handling any errors, because this is run as root.
+            os.remove('/tmp/ddrescue-gui.log')
+
+            self.Destroy()
+
+        else:
+            #Check if exit was initated by finisheddlg.
+            logger.warning("MainWindow().OnExit(): User cancelled exit attempt! Aborting exit attempt...")
+            if JustFinishedRec:
+                #If so return to finisheddlg.
+                logger.info("MainWindow().OnExit(): Showing FinishedWindow() again...")
+                FinishedWindow(self).Show()
 
 #End Main Window
 #Begin Disk Info Window
@@ -2031,7 +2032,7 @@ class SettingsWindow(wx.Frame):
         else:
             Settings["NoSplit"] = ""
 
-        logger.info("SettingsWindow().SaveOptions(): Split failed blocks: "+unicode(bool(Settings["NoSplit"]))+".") #*** Wrong way around? ***
+        logger.info("SettingsWindow().SaveOptions(): Split failed blocks: "+unicode(not bool(Settings["NoSplit"]))+".")
 
         #ChoiceBoxes:
         #Retry bad sectors option.
