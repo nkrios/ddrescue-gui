@@ -2239,30 +2239,25 @@ class FinishedWindow(wx.Frame):
                 self.RestartButton.Disable()
                 self.QuitButton.Disable()
 
-                #Call Layout() on self.Panel() to ensure it displays properly.
-                self.Panel.Layout()
-
                 dlg = wx.MessageDialog(self.Panel, "Your output file is now mounted. Leave DDRescue-GUI open and click unmount when you're finished.", "DDRescue-GUI - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
                 dlg.ShowModal()
                 dlg.Destroy()
 
         else:
-            Retvals = self.UnmountOutputFile()
-
             #Change some stuff if it worked.
-            if Retvals == [0, 0] or Retvals == [0]:
+            if self.UnmountOutputFile():
                 self.TopText.SetLabel("Your recovered data is at:")
                 self.PathText.SetLabel(Settings["OutputFile"])
                 self.MountButton.SetLabel("Mount Image/Disk")
                 self.RestartButton.Enable()
                 self.QuitButton.Enable()
 
-                #Call Layout() on self.Panel() to ensure it displays properly.
-                self.Panel.Layout()
+        #Call Layout() on self.Panel() to ensure it displays properly.
+        self.Panel.Layout()
 
         wx.CallAfter(self.ParentWindow.UpdateStatusBar, "Finished")
 
-    def MountOutputFile(self, Event=None): #*** Refactor all of these and make them handle errors better and more user friendily. ***
+    def MountOutputFile(self, Event=None):
         """Handle errors and call the platform-dependent mounter function to mount the output file"""
         logger.debug("FinishedWindow().MountOutputFile(): Preparing to mount the output file...")
 
@@ -2291,31 +2286,38 @@ class FinishedWindow(wx.Frame):
         wx.CallAfter(self.ParentWindow.UpdateStatusBar, "Unmounting output file. This may take a few moments...")
         wx.Yield()
         Retvals = []
-        Retvals.append(BackendTools().UnmountDisk(self.OutputFileMountPoint))
 
         #Check if it worked.
-        if Retvals == [0]:
+        if BackendTools().UnmountDisk(self.OutputFileMountPoint) == 0:
             logger.info("FinishedWindow().UnmountOutputFile(): Successfully unmounted output file...")
 
         else:
-            logger.error("FinishedWindow().UnmountOutputFile(): Error unmounting output file! Return value: "+Retval+"...")
+            logger.error("FinishedWindow().UnmountOutputFile(): Error unmounting output file! Warning user...")
+			dlg = wx.MessageDialog(self.Panel, "It seems your output file is in use. Please close all applications that could be using it and try again.", "DDRescue-GUI - Warning", style=wx.OK | wx.ICON_INFO)
+			dlg.ShowModal()
+			dlg.Destroy()
+			return False
 
         #Linux: Pull down loops if the OutputFile is a Device. OS X: Detach the image's device file.
         if self.OutputFileType == "Device" and Linux:
             logger.debug("FinishedWindow().UnmountOutputFile(): Pulling down loop device...")
-            Retvals.append(BackendTools().StartProcess(Command="kpartx -d "+Settings["OutputFile"], ReturnOutput=False))
+			Command = "kpartx -d "+Settings["OutputFile"]
 
         elif Linux == False:
             logger.error("FinishedWindow().UnmountOutputFile(): Detaching the device that represents the image...")
-            Retvals.append(BackendTools().StartProcess(Command="hdiutil detach "+self.OutputFileDeviceName, ReturnOutput=False))
+			Command = "hdiutil detach "+self.OutputFileDeviceName
 
-        if Retvals[-1] == 0:
+        if BackendTools().StartProcess(Command=Command, ReturnOutput=False) == 0:
             logger.info("FinishedWindow().UnmountOutputFile(): Successfully pulled down loop device...")
 
         else:
-            logger.info("FinishedWindow().UnmountOutputFile(): Failed to pull down the loop device...")
+            logger.info("FinishedWindow().UnmountOutputFile(): Failed to pull down the loop device! Warning user...")
+			dlg = wx.MessageDialog(self.Panel, "Couldn't finish unmounting your output file! Please close all applications that could be using it and try again.", "DDRescue-GUI - Warning", style=wx.OK | wx.ICON_INFO)
+			dlg.ShowModal()
+			dlg.Destroy()
+			return False
 
-        return Retvals
+        return True
 
     def MountDiskOSX(self): #*** Refactor with Linux function *** *** Make both of these more reliable in error circumstances ***
         """Mount the output file on OS X"""
