@@ -2293,29 +2293,33 @@ class FinishedWindow(wx.Frame):
 
         else:
             logger.error("FinishedWindow().UnmountOutputFile(): Error unmounting output file! Warning user...")
-			dlg = wx.MessageDialog(self.Panel, "It seems your output file is in use. Please close all applications that could be using it and try again.", "DDRescue-GUI - Warning", style=wx.OK | wx.ICON_INFO)
-			dlg.ShowModal()
-			dlg.Destroy()
-			return False
+            dlg = wx.MessageDialog(self.Panel, "It seems your output file is in use. Please close all applications that could be using it and try again.", "DDRescue-GUI - Warning", style=wx.OK | wx.ICON_INFO)
+            dlg.ShowModal()
+            dlg.Destroy()
+            return False
 
         #Linux: Pull down loops if the OutputFile is a Device. OS X: Detach the image's device file.
         if self.OutputFileType == "Device" and Linux:
             logger.debug("FinishedWindow().UnmountOutputFile(): Pulling down loop device...")
-			Command = "kpartx -d "+Settings["OutputFile"]
+            Command = "kpartx -d "+Settings["OutputFile"]
 
         elif Linux == False:
             logger.error("FinishedWindow().UnmountOutputFile(): Detaching the device that represents the image...")
-			Command = "hdiutil detach "+self.OutputFileDeviceName
+            Command = "hdiutil detach "+self.OutputFileDeviceName
+
+        else:
+            #Linux and partition. Return True.
+            return True
 
         if BackendTools().StartProcess(Command=Command, ReturnOutput=False) == 0:
             logger.info("FinishedWindow().UnmountOutputFile(): Successfully pulled down loop device...")
 
         else:
             logger.info("FinishedWindow().UnmountOutputFile(): Failed to pull down the loop device! Warning user...")
-			dlg = wx.MessageDialog(self.Panel, "Couldn't finish unmounting your output file! Please close all applications that could be using it and try again.", "DDRescue-GUI - Warning", style=wx.OK | wx.ICON_INFO)
-			dlg.ShowModal()
-			dlg.Destroy()
-			return False
+            dlg = wx.MessageDialog(self.Panel, "Couldn't finish unmounting your output file! Please close all applications that could be using it and try again.", "DDRescue-GUI - Warning", style=wx.OK | wx.ICON_INFO)
+            dlg.ShowModal()
+            dlg.Destroy()
+            return False
 
         return True
 
@@ -2453,25 +2457,31 @@ class FinishedWindow(wx.Frame):
         wx.CallAfter(self.ParentWindow.UpdateStatusBar, "Preparing to mount output file. Please Wait...")
         wx.Yield()
 
-        #Determine if the OutputFile is a partition.
+        #Determine what type of OutputFile we have (Partition or Device).
         if Settings["InputFile"] in DiskInfo:
-            Type = DiskInfo[Settings["InputFile"]]["Type"]
-            Partitions = BackendTools().StartProcess(Command="kpartx -l "+Settings["OutputFile"], ReturnOutput=True)[1].split('\n')
+			#Read from DiskInfo if possible (OutputFile type = InputFile type)
+            self.OutputFileType = DiskInfo[Settings["InputFile"]]["Type"]
+
+			#Get list of partitions if Device.
+            if self.OutputFileType == "Device":
+                Partitions = BackendTools().StartProcess(Command="kpartx -l "+Settings["OutputFile"], ReturnOutput=True)[1].split('\n')
 
         else:
+            #If list of partitions is empty (or 1 partition), we have a partition.
             Partitions = BackendTools().StartProcess(Command="kpartx -l "+Settings["OutputFile"], ReturnOutput=True)[1].split('\n')
 
             if Partitions == [""] or len(Partitions) == 1:
-                Type = "Partition"
+                self.OutputFileType = "Partition"
 
             else:
-                Type = "Device"
+                self.OutputFileType = "Device"
 
-        if Type == "Partition":
+        if self.OutputFileType == "Partition":
+			#We have a partition.
             logger.debug("FinishedWindow().MountDiskLinux(): Output file is a partition! Continuing...")
             wx.CallAfter(self.ParentWindow.UpdateStatusBar, "Mounting output file. This may take a few moments...")
             wx.Yield()
-            self.OutputFileType = "Partition"
+
             self.OutputFileMountPoint = "/mnt"+Settings["InputFile"]
 
             #Attempt to mount the disk.
@@ -2481,15 +2491,14 @@ class FinishedWindow(wx.Frame):
 
             else:
                 logger.error("FinishedWindow().MountDiskLinux(): Error! Warning the user...")
-                dlg = wx.MessageDialog(self.Panel, "Couldn't mount your output file. Perhaps it uses an unsupported filesystem? Alternatively, it may still be too damaged to mount.", "DDRescue-GUI - Error!", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
+                dlg = wx.MessageDialog(self.Panel, "Couldn't mount your output file. Most probably, the filesystem is damaged and you'll need to use another tool to read it from here. It could also be that your recovery is incomplete, as that can sometimes cause this problem.", "DDRescue-GUI - Error!", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
                 dlg.ShowModal()
                 dlg.Destroy()
                 return False
 
         else:
-            #The Output File must NOT be a partition!
+            #We have a device.
             logger.debug("FinishedWindow().MountDiskLinux(): Output file isn't a partition! Getting list of contained partitions...")
-            self.OutputFileType = "Device"
 
             #Create loop devices for all contained partitions.
             logger.info("FinishedWindow().MountDiskLinux(): Creating loop device...")
@@ -2498,7 +2507,7 @@ class FinishedWindow(wx.Frame):
             #Get some Disk information.
             Output = BackendTools().StartProcess(Command="lsblk -r -o NAME,FSTYPE,SIZE", ReturnOutput=True)[1].split('\n')
 
-            #Smarten this list up, and make it appear intuitive to the user.
+            #Create a nice list of Partitions for the user.
             Choices = []
 
             for Partition in Partitions:
@@ -2509,27 +2518,23 @@ class FinishedWindow(wx.Frame):
                 #Get the info related to this partition.
                 for Line in Output:
                     if Partition.split()[0] in Line:
-                        #Add stuff in an intuitive way.
+                        #Add stuff, trying to keep it human-readable.
                         Choices.append("Partition "+Partition.split()[0].split("p")[-1]+", Filesystem: "+Line.split()[-2]+", Size: "+Line.split()[-1])
 
             #Ask the user which partition to mount.
             logger.debug("FinishedWindow().MountDiskLinux(): Asking user which partition to mount...")
-            dlg = wx.SingleChoiceDialog(self.Panel, "Please select which partition you wish to mount", "DDRescue-GUI - Select a Partition", Choices, pos=wx.DefaultPosition)
+            dlg = wx.SingleChoiceDialog(self.Panel, "Please select which partition you wish to mount.", "DDRescue-GUI - Select a Partition", Choices, pos=wx.DefaultPosition)
 
             #Respond to the user's action.
             if dlg.ShowModal() != wx.ID_OK:
                 self.OutputFileMountPoint = None
-                logger.debug("FinishedWindow().MountDiskLinux(): Pulling down loop device...")
-                BackendTools().StartProcess(Command="kpartx -d "+Settings["OutputFile"], ReturnOutput=False)
+                logger.debug("FinishedWindow().MountDiskLinux(): Use cancelled operation. Pulling down loop device...")
+                self.UnmountOutputFile()
                 return False
 
             else:
-                for Partition in Partitions:
-                    if Partition[0:12] != "loop deleted" and "/dev/" in Partition:
-                        CorrectDisk = Partition[0:6]+dlg.GetStringSelection().split()[1].replace(",", "")
-                        break
-
-                PartitionToMount = "/dev/mapper/"+CorrectDisk
+				#Get the partition to mount by combining the partition number the user selected with the loop device name from the partitions list.
+                PartitionToMount = "/dev/mapper/"+Partitions[0][0:6]+dlg.GetStringSelection().split()[1].replace(",", "")
                 self.OutputFileMountPoint = "/mnt"+PartitionToMount
 
             #Attempt to mount the disk.
@@ -2545,7 +2550,7 @@ class FinishedWindow(wx.Frame):
 
             else:
                 logger.error("FinishedWindow().MountDiskLinux(): Error! Warning the user...")
-                dlg = wx.MessageDialog(self.Panel, "Couldn't mount your selected partition. Perhaps it uses an unsupported filesystem?", "DDRescue-GUI - Error!", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
+                dlg = wx.MessageDialog(self.Panel, "Couldn't mount your selected partition. Most likely the filesystem is damaged, or Linux doesn't support your filesystem.", "DDRescue-GUI - Error!", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
                 dlg.ShowModal()
                 dlg.Destroy()
                 return False
