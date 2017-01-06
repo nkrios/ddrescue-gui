@@ -44,7 +44,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "1.6.2"
-ReleaseDate = "5/1/2017"
+ReleaseDate = "6/1/2017"
 SessionEnding = False
 
 def usage():
@@ -2323,7 +2323,7 @@ class FinishedWindow(wx.Frame):
 
         return True
 
-    def MountDiskOSX(self): #*** Refactor with Linux function *** *** Make both of these more reliable in error circumstances ***
+    def MountDiskOSX(self): #*** Refactor with Linux function *** *** Make both of these more reliable in error circumstances *** *** Test changed so far on OS X ***
         """Mount the output file on OS X"""
         logger.info("FinishedWindow().MountDiskOSX(): Mounting Disk: "+Settings["OutputFile"]+"...")
         wx.CallAfter(self.ParentWindow.UpdateStatusBar, "Preparing to mount output file. Please Wait...")
@@ -2393,7 +2393,7 @@ class FinishedWindow(wx.Frame):
             wx.CallAfter(self.ParentWindow.UpdateStatusBar, "Mounting output file. This may take a few moments...")
             wx.Yield()
             logger.info("FinishedWindow().MountDiskOSX(): Mounting disk "+Settings["OutputFile"]+"...")
-            Retval, Output = BackendTools().StartProcess(Command="hdiutil mount "+Settings["OutputFile"]+" -plist", ReturnOutput=True)
+            Retval, MountOutput = BackendTools().StartProcess(Command="hdiutil mount "+Settings["OutputFile"]+" -plist", ReturnOutput=True)
 
             #Check it worked.
             if Retval != 0:
@@ -2403,11 +2403,11 @@ class FinishedWindow(wx.Frame):
                 dlg.Destroy()
                 return False
 
-            #Get the block size of the image.
-            Blocksize = Plist["partitions"]["block-size"]
-
             #Parse the plist (Property List).
             ImageinfoOutput = plistlib.readPlistFromString(Output)
+
+            #Get the block size of the image.
+            Blocksize = ImageinfoOutput["partitions"]["block-size"]
 
             #Make a nice list of partitions for the user.
             Choices = []
@@ -2427,8 +2427,7 @@ class FinishedWindow(wx.Frame):
                 logger.debug("FinishedWindow().MountDiskOSX(): User declined to mount any partitions...")
                 return False
 
-            else:
-                SelectedPartNum = dlg.GetStringSelection().split()[1]
+            SelectedPartNum = dlg.GetStringSelection().split()[1]
 
             try:
                 #Parse the plist (Property List).
