@@ -2437,6 +2437,11 @@ class FinishedWindow(wx.Frame):
                 #Get the device name given to the output file.
                 self.OutputFileDeviceName = Temp[0]["dev-entry"]
 
+                MountedFS = False
+
+                #Set this so if we don't find our partition, unmounting doesn't fail.
+                self.OutputFileMountPoint = Temp[0]["dev-entry"]
+
                 #Check that the filesystem the user wanted is among those that have been mounted.
                 for Partition in Temp:
                     Disk = Partition["dev-entry"]
@@ -2446,10 +2451,7 @@ class FinishedWindow(wx.Frame):
                         if "mount-point" in Partition:
                             self.OutputFileMountPoint = Partition["mount-point"]
                             MountedFS = True
-
-                        else:
-                            #It wasn't! Note it so we can handle the error.
-                            MountedFS = False
+                            break
 
             except:
                 #Unexpected error.
