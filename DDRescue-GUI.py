@@ -2461,7 +2461,7 @@ class FinishedWindow(wx.Frame):
 #                dlg.Destroy()
 #                MountedFS = False
 
-            except:
+  #          except:
   #              #Unexpected error.
  #               self.OutputFileMountPoint = Settings["OutputFile"]
 #                MountedFS = False
