@@ -2431,7 +2431,7 @@ class FinishedWindow(wx.Frame):
 
             try:
                 #Parse the plist (Property List).
-                Plist = plistlib.readPlistFromString(Output)
+                Plist = plistlib.readPlistFromString(MountOutput)
                 Temp = Plist["system-entities"]
 
                 #Get the device name given to the output file.
@@ -2453,8 +2453,16 @@ class FinishedWindow(wx.Frame):
                             MountedFS = True
                             break
 
+            except UnicodeDecodeError:
+                logger.error("FinishedWindow().MountDiskOSX(): FIXME: Couldn't parse output of hdiutil mount due to UnicodeDecodeError. Cleaning up and warning user...")
+                self.UnmountOutputFile()
+                dlg = wx.MessageDialog(self.Panel, "FIXME: Couldn't parse output of hdiutil mount due to UnicodeDecodeError.", "DDRescue-GUI - Error", style=wx.OK | wx.ICON_ERROR)
+                dlg.ShowModal()
+                dlg.Destroy()
+
             except:
                 #Unexpected error.
+                self.OutputFileMountPoint = Settings["OutputFile"]
                 MountedFS = False
 
             if not MountedFS:
