@@ -100,16 +100,16 @@ class Main():
 
     def MacRunHdiutil(self, Options, Disk):
         """Runs hdiutil on behalf of the rest of the program when called. Tries to handle and fix hdiutil errors if they occurr."""
-        Output, Retval = BackendTools().StartProcess(Command="hdiutil "+Options, ReturnOutput=True)[1]
+        Output, Retval = self.StartProcess(Command="hdiutil "+Options, ReturnOutput=True)[1]
 
         #Handle this common error.
         if "Resource Temporarily Unavailable" in Output or "resource temporarily unavailable" in Output:
             #Fix by detaching and then reattaching.
-            BackendTools().StartProcess(Command="hdiutil detach "+Disk, ReturnOutput=True)[1]
-            BackendTools().StartProcess(Command="hdiutil attach "+Disk, ReturnOutput=True)[1]
+            self.StartProcess(Command="hdiutil detach "+Disk, ReturnOutput=True)[1]
+            self.StartProcess(Command="hdiutil attach "+Disk, ReturnOutput=True)[1]
 
             #Try again.
-            Output = BackendTools().StartProcess(Command="hdiutil "+Options, ReturnOutput=True)[1]
+            Output = self.StartProcess(Command="hdiutil "+Options, ReturnOutput=True)[1]
 
         return Output, Retval
 
