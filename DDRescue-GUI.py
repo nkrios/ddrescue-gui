@@ -2323,7 +2323,7 @@ class FinishedWindow(wx.Frame):
 
         return True
 
-    def MountDiskOSX(self): #*** Refactor with Linux function *** *** Make both of these more reliable in error circumstances *** *** Test changed so far on OS X ***
+    def MountDiskOSX(self): #*** Refactor with Linux function *** *** Make both of these more reliable in error circumstances *** *** Finish sorting out hdiutil retval stuff ***
         """Mount the output file on OS X"""
         logger.info("FinishedWindow().MountDiskOSX(): Mounting Disk: "+Settings["OutputFile"]+"...")
         wx.CallAfter(self.ParentWindow.UpdateStatusBar, "Preparing to mount output file. Please Wait...")
@@ -2336,11 +2336,27 @@ class FinishedWindow(wx.Frame):
 
 			#Get imageinfo if Device.
             if self.OutputFileType == "Device":
-                Output = BackendTools().StartProcess(Command="hdiutil imageinfo "+Settings["OutputFile"]+" -plist", ReturnOutput=True)[1]
+                HdiutilRetval, Output = BackendTools().MacRunHdiutil(Options="imageinfo "+Settings["OutputFile"]+" -plist", Disk=Settings["OutputFile"])
+
+                #If retval != 0 report to user.
+                if HdiutilRetval != 0:
+                    logger.error("FinishedWindow().MountDiskOSX(): Error! Warning the user...")
+                    dlg = wx.MessageDialog(self.Panel, "Couldn't mount your output file. The hard disk image utility failed to run. This could mean your disk image is damaged, and you need to use a different tool to read it.", "DDRescue-GUI - Error!", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
+                    dlg.ShowModal()
+                    dlg.Destroy()
+                    return False
 
         else:
             #If not use hdiutil imageinfo to get it.
-            Output = BackendTools().StartProcess(Command="hdiutil imageinfo "+Settings["OutputFile"]+" -plist", ReturnOutput=True)[1]
+            HdiutilRetval, Output = BackendTools().MacRunHdiutil(Options="imageinfo "+Settings["OutputFile"]+" -plist", Disk=Settings["OutputFile"])
+
+            #If retval != 0 report to user.
+            if HdiutilRetval != 0:
+                logger.error("FinishedWindow().MountDiskOSX(): Error! Warning the user...")
+                dlg = wx.MessageDialog(self.Panel, "Couldn't mount your output file. The hard disk image utility failed to run. This could mean your disk image is damaged, and you need to use a different tool to read it.", "DDRescue-GUI - Error!", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
+                dlg.ShowModal()
+                dlg.Destroy()
+                return False
 
             if "whole disk" in Output:
                 self.OutputFileType = "Partition"
@@ -2354,8 +2370,8 @@ class FinishedWindow(wx.Frame):
             wx.CallAfter(self.ParentWindow.UpdateStatusBar, "Mounting output file. This may take a few moments...")
             wx.Yield()
 
-            #Attempt to mount the disk. Bypass global mount function so we run with plist option *** Allow this in global function? ***
-            Retval, Output = BackendTools().StartProcess(Command="hdiutil mount "+Settings["OutputFile"]+" -plist", ReturnOutput=True)
+            #Attempt to mount the disk. Bypass global mount function so we run with plist option.
+            Retval, Output = BackendTools().MacRunHdiutil(Options="mount "+Settings["OutputFile"]+" -plist", Disk=Settings["OutputFile"])
 
             #Check it worked.
             if Retval != 0:
@@ -2393,7 +2409,7 @@ class FinishedWindow(wx.Frame):
             wx.CallAfter(self.ParentWindow.UpdateStatusBar, "Mounting output file. This may take a few moments...")
             wx.Yield()
             logger.info("FinishedWindow().MountDiskOSX(): Mounting disk "+Settings["OutputFile"]+"...")
-            Retval, MountOutput = BackendTools().StartProcess(Command="hdiutil mount "+Settings["OutputFile"]+" -plist", ReturnOutput=True)
+            Retval, MountOutput = BackendTools().MacRunHdiutil(Options="mount "+Settings["OutputFile"]+" -plist", Disk=Settings["OutputFile"])
 
             #Check it worked.
             if Retval != 0:
