@@ -2429,41 +2429,42 @@ class FinishedWindow(wx.Frame):
 
             SelectedPartNum = dlg.GetStringSelection().split()[1]
 
-            try:
-                #Parse the plist (Property List).
-                Plist = plistlib.readPlistFromString(MountOutput)
-                Temp = Plist["system-entities"]
+#            try:
+            #Parse the plist (Property List).
+            Plist = plistlib.readPlistFromString(MountOutput)
+            Temp = Plist["system-entities"]
 
-                #Get the device name given to the output file.
-                self.OutputFileDeviceName = Temp[0]["dev-entry"]
+            #Get the device name given to the output file.
+            self.OutputFileDeviceName = Temp[0]["dev-entry"]
 
-                MountedFS = False
+            MountedFS = False
 
-                #Set this so if we don't find our partition, unmounting doesn't fail.
-                self.OutputFileMountPoint = Temp[0]["dev-entry"]
+            #Set this so if we don't find our partition, unmounting doesn't fail.
+            self.OutputFileMountPoint = Temp[0]["dev-entry"]
 
-                #Check that the filesystem the user wanted is among those that have been mounted.
-                for Partition in Temp:
-                    Disk = Partition["dev-entry"]
+            #Check that the filesystem the user wanted is among those that have been mounted.
+            for Partition in Temp:
+                Disk = Partition["dev-entry"]
 
-                    if Disk.split("s")[-1] == SelectedPartNum:
-                        #Check if the partition we want was mounted (hdiutil mounts all mountable partitions in the image automatically).
-                        if "mount-point" in Partition:
-                            self.OutputFileMountPoint = Partition["mount-point"]
-                            MountedFS = True
-                            break
+                if Disk.split("s")[-1] == SelectedPartNum:
+                    #Check if the partition we want was mounted (hdiutil mounts all mountable partitions in the image automatically).
+                    if "mount-point" in Partition:
+                        self.OutputFileMountPoint = Partition["mount-point"]
+                        MountedFS = True
+                        break
 
-            except UnicodeDecodeError:
-                logger.error("FinishedWindow().MountDiskOSX(): FIXME: Couldn't parse output of hdiutil mount due to UnicodeDecodeError. Cleaning up and warning user...")
-                self.UnmountOutputFile()
-                dlg = wx.MessageDialog(self.Panel, "FIXME: Couldn't parse output of hdiutil mount due to UnicodeDecodeError.", "DDRescue-GUI - Error", style=wx.OK | wx.ICON_ERROR)
-                dlg.ShowModal()
-                dlg.Destroy()
+#            except UnicodeDecodeError:
+#                logger.error("FinishedWindow().MountDiskOSX(): FIXME: Couldn't parse output of hdiutil mount due to UnicodeDecodeError. Cleaning up and warning user...")
+#                self.UnmountOutputFile()
+#                dlg = wx.MessageDialog(self.Panel, "FIXME: Couldn't parse output of hdiutil mount due to UnicodeDecodeError.", "DDRescue-GUI - Error", style=wx.OK | wx.ICON_ERROR)
+#                dlg.ShowModal()
+#                dlg.Destroy()
+#                MountedFS = False
 
             except:
-                #Unexpected error.
-                self.OutputFileMountPoint = Settings["OutputFile"]
-                MountedFS = False
+  #              #Unexpected error.
+ #               self.OutputFileMountPoint = Settings["OutputFile"]
+#                MountedFS = False
 
             if not MountedFS:
                 logger.info("FinishedWindow().MountDiskOSX(): Unsupported or damaged filesystem. Warning user and cleaning up...")
@@ -2471,6 +2472,7 @@ class FinishedWindow(wx.Frame):
                 dlg = wx.MessageDialog(self.Panel, "That filesystem is either not supported by macOS, or it is damaged (perhaps because the recovery is incomplete). Please try again and select a different partition.", "DDRescue-GUI - Error", wx.OK | wx.ICON_ERROR)
                 dlg.ShowModal()
                 dlg.Destroy()
+                return False
 
             logger.info("FinishedWindow().MountDiskOSX(): Success! Waiting for user to finish with it and prompt to unmount it...")
             return True
