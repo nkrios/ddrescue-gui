@@ -2427,44 +2427,44 @@ class FinishedWindow(wx.Frame):
                 logger.debug("FinishedWindow().MountDiskOSX(): User declined to mount any partitions...")
                 return False
 
-            SelectedPartNum = dlg.GetStringSelection().split()[1]
+            SelectedPartNum = dlg.GetStringSelection().split()[1].replace(",", "")
 
-#            try:
-            #Parse the plist (Property List).
-            Plist = plistlib.readPlistFromString(MountOutput)
-            Temp = Plist["system-entities"]
+            try:
+                #Parse the plist (Property List).
+                Plist = plistlib.readPlistFromString(MountOutput)
+                Temp = Plist["system-entities"]
 
-            #Get the device name given to the output file.
-            self.OutputFileDeviceName = Temp[0]["dev-entry"]
+                #Get the device name given to the output file.
+                self.OutputFileDeviceName = Temp[0]["dev-entry"]
 
-            MountedFS = False
+                MountedFS = False
 
-            #Set this so if we don't find our partition, unmounting doesn't fail.
-            self.OutputFileMountPoint = Temp[0]["dev-entry"]
+                #Set this so if we don't find our partition, unmounting doesn't fail.
+                self.OutputFileMountPoint = Temp[0]["dev-entry"]
 
-            #Check that the filesystem the user wanted is among those that have been mounted.
-            for Partition in Temp:
-                Disk = Partition["dev-entry"]
+                #Check that the filesystem the user wanted is among those that have been mounted.
+                for Partition in Temp:
+                    Disk = Partition["dev-entry"]
 
-                if Disk.split("s")[-1] == SelectedPartNum:
-                    #Check if the partition we want was mounted (hdiutil mounts all mountable partitions in the image automatically).
-                    if "mount-point" in Partition:
-                        self.OutputFileMountPoint = Partition["mount-point"]
-                        MountedFS = True
-                        break
+                    if Disk.split("s")[-1] == SelectedPartNum:
+                        #Check if the partition we want was mounted (hdiutil mounts all mountable partitions in the image automatically).
+                        if "mount-point" in Partition:
+                            self.OutputFileMountPoint = Partition["mount-point"]
+                            MountedFS = True
+                            break
 
-#            except UnicodeDecodeError:
-#                logger.error("FinishedWindow().MountDiskOSX(): FIXME: Couldn't parse output of hdiutil mount due to UnicodeDecodeError. Cleaning up and warning user...")
-#                self.UnmountOutputFile()
-#                dlg = wx.MessageDialog(self.Panel, "FIXME: Couldn't parse output of hdiutil mount due to UnicodeDecodeError.", "DDRescue-GUI - Error", style=wx.OK | wx.ICON_ERROR)
-#                dlg.ShowModal()
-#                dlg.Destroy()
-#                MountedFS = False
+            except UnicodeDecodeError:
+                logger.error("FinishedWindow().MountDiskOSX(): FIXME: Couldn't parse output of hdiutil mount due to UnicodeDecodeError. Cleaning up and warning user...")
+                self.UnmountOutputFile()
+                dlg = wx.MessageDialog(self.Panel, "FIXME: Couldn't parse output of hdiutil mount due to UnicodeDecodeError.", "DDRescue-GUI - Error", style=wx.OK | wx.ICON_ERROR)
+                dlg.ShowModal()
+                dlg.Destroy()
+                MountedFS = False
 
-  #          except:
-  #              #Unexpected error.
- #               self.OutputFileMountPoint = Settings["OutputFile"]
-#                MountedFS = False
+            except:
+                #Unexpected error.
+                self.OutputFileMountPoint = Settings["OutputFile"]
+                MountedFS = False
 
             if not MountedFS:
                 logger.info("FinishedWindow().MountDiskOSX(): Unsupported or damaged filesystem. Warning user and cleaning up...")
