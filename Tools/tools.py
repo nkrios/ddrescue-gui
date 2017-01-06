@@ -100,7 +100,7 @@ class Main():
 
     def MacRunHdiutil(self, Options, Disk):
         """Runs hdiutil on behalf of the rest of the program when called. Tries to handle and fix hdiutil errors if they occurr."""
-        Output, Retval = self.StartProcess(Command="hdiutil "+Options, ReturnOutput=True)
+        Retval, Output = self.StartProcess(Command="hdiutil "+Options, ReturnOutput=True)
 
         #Handle this common error.
         if "Resource Temporarily Unavailable" in Output or "resource temporarily unavailable" in Output:
@@ -111,7 +111,7 @@ class Main():
             #Try again.
             Output = self.StartProcess(Command="hdiutil "+Options, ReturnOutput=True)[1]
 
-        return Output, Retval
+        return Retval, Output
 
     def IsMounted(self, Partition, MountPoint=None):
         """Checks if the given partition is mounted.
