@@ -101,7 +101,7 @@ class Main():
     def SendNotification(self, Message):
         """Send a notification, created to reduce clutter in the rest of the code."""
         if Linux:
-            #Use notify-send.
+            #Use notify-send. *** Is this working? ***
             self.StartProcess(Command="notify-send 'DDRescue-GUI' '"+Message+"' -i /usr/share/pixmaps/ddrescue-gui.png", ReturnOutput=False)
 
         else:
