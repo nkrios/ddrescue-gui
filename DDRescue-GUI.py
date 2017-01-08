@@ -44,7 +44,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "1.6.2"
-ReleaseDate = "6/1/2017"
+ReleaseDate = "8/1/2017"
 SessionEnding = False
 
 def usage():
@@ -1161,11 +1161,7 @@ class MainWindow(wx.Frame):
             wx.Yield()
 
             #Notify the user.
-            if Linux:
-                BackendTools().StartProcess(Command="notify-send 'DDRescue-GUI' 'The recovery is about to start...' -i /usr/share/pixmaps/ddrescue-gui.png", ReturnOutput=False)
-
-            else:
-                subprocess.Popen(RescourcePath+"""/other/CocoaDialog.app/Contents/MacOS/CocoaDialog bubble --title "DDRescue-GUI" --text "The recovery is about to start..." --icon-file """+RescourcePath+"""/images/Logo.png  --background-top EFF7FD --border-color EFF7FD""", shell=True)
+            BackendTools().SendNotification("Starting Recovery...")
 
             #Disable and enable all necessary items.
             self.SettingsButton.Disable()
@@ -1336,12 +1332,9 @@ class MainWindow(wx.Frame):
         #Handle any errors.
         if self.AbortedRecovery:
             logger.info("MainWindow().RecoveryEnded(): ddrescue was aborted by the user...")
-            #Notify the user.
-            if Linux:
-                BackendTools().StartProcess(Command="notify-send 'DDRescue-GUI' 'Recovery aborted by user.' -i /usr/share/pixmaps/ddrescue-gui.png", ReturnOutput=False)
 
-            else:
-                subprocess.Popen(RescourcePath+"""/other/CocoaDialog.app/Contents/MacOS/CocoaDialog bubble --title "DDRescue-GUI" --text "Recovery aborted by user." --icon-file """+RescourcePath+"""/images/Logo.png  --background-top EFF7FD --border-color EFF7FD""", shell=True)
+            #Notify the user.
+            BackendTools().SendNotification("Recovery was aborted by user.")
 
             dlg = wx.MessageDialog(self.Panel, "Your recovery has been aborted as you requested.\n\nNote: Your recovered data may be incomplete at this point, so you may now want to run a second recovery to try and grab the remaining data. If you wish to, you may now use DDRescue-GUI to mount your destination drive/file so you can access your data, although some/all of it may be unreadable in its current state.", "DDRescue-GUI - Information", wx.OK | wx.ICON_INFORMATION)
             dlg.ShowModal()
@@ -1351,11 +1344,7 @@ class MainWindow(wx.Frame):
             logger.error("MainWindow().RecoveryEnded(): We didn't get ddrescue's initial status! This probably means ddrescue aborted immediately. Maybe settings are incorrect?")
 
             #Notify the user.
-            if Linux:
-                BackendTools().StartProcess(Command="notify-send 'DDRescue-GUI' 'Recovery Error! ddrescue aborted immediately. See GUI for more info.' -i /usr/share/pixmaps/ddrescue-gui.png", ReturnOutput=True)
-
-            else:
-                subprocess.Popen(RescourcePath+"""/other/CocoaDialog.app/Contents/MacOS/CocoaDialog bubble --title "DDRescue-GUI" --text "Recovery Error! ddrescue aborted immediately. See GUI for more info." --icon-file """+RescourcePath+"""/images/Logo.png  --background-top EFF7FD --border-color EFF7FD""", shell=True)
+            BackendTools().SendNotification("Recovery Error! ddrescue aborted immediately. See GUI for more info.")
 
             dlg = wx.MessageDialog(self.Panel, "We didn't get ddrescue's initial status! This probably means ddrescue aborted immediately. Please check all of your settings, and try again. Here is ddrescue's output, which may tell you what went wrong:\n\n"+self.OutputBox.GetValue(), "DDRescue-GUI - Error!", wx.OK | wx.ICON_ERROR)
             dlg.ShowModal()
@@ -1365,11 +1354,7 @@ class MainWindow(wx.Frame):
             logger.error("MainWindow().RecoveryEnded(): ddrescue exited with nonzero exit status "+unicode(ReturnCode)+"! Perhaps the output file/disk is full?")
 
             #Notify the user.
-            if Linux:
-                BackendTools().StartProcess(Command="notify-send 'DDRescue-GUI' 'Recovery Error! ddrescue exited with exit status "+unicode(ReturnCode)+"!' -i /usr/share/pixmaps/ddrescue-gui.png", ReturnOutput=False)
-
-            else:
-                subprocess.Popen(RescourcePath+"""/other/CocoaDialog.app/Contents/MacOS/CocoaDialog bubble --title "DDRescue-GUI" --text "Recovery Error! ddrescue exited with exit status "+unicode(ReturnCode)+"!" --icon-file """+RescourcePath+"""/images/Logo.png  --background-top EFF7FD --border-color EFF7FD""", shell=True)
+            BackendTools().SendNotification("Recovery Error! ddrescue exited with exit status "+unicode(ReturnCode)+"!")
 
             dlg = wx.MessageDialog(self.Panel, "Ddrescue exited with nonzero exit status "+unicode(ReturnCode)+"! Perhaps the output file/disk is full? Please check all of your settings, and try again. Here is ddrescue's output, which may tell you what went wrong:\n\n"+self.OutputBox.GetValue(), "DDRescue-GUI - Error!", wx.OK | wx.ICON_ERROR)
             dlg.ShowModal()
@@ -1381,22 +1366,15 @@ class MainWindow(wx.Frame):
             #Check if we got all the data.
             if self.ProgressBar.GetValue() >= self.ProgressBar.GetRange():
                 Message = "Your recovery is complete, with all data recovered from your source disk/file.\n\nNote: If you wish to, you may now use DDRescue-GUI to mount your destination drive/file so you can access your data."
-                #Notify the user.
-                if Linux:
-                    BackendTools().StartProcess(Command="notify-send 'DDRescue-GUI' 'Recovery Finished with all data!' -i /usr/share/pixmaps/ddrescue-gui.png", ReturnOutput=False)
 
-                else:
-                    subprocess.Popen(RescourcePath+"""/other/CocoaDialog.app/Contents/MacOS/CocoaDialog bubble --title "DDRescue-GUI" --text "Recovery Finished with all data!" --icon-file """+RescourcePath+"""/images/Logo.png  --background-top EFF7FD --border-color EFF7FD""", shell=True)
+                #Notify the user.
+                BackendTools().SendNotification("Recovery finished with all data!")
 
             else:
                 Message = "Your recovery is finished, but not all of your data appears to have been recovered. You may now want to run a second recovery to try and grab the remaining data. If you wish to, you may now use DDRescue-GUI to mount your destination drive/file so you can access your data, although some/all of it may be unreadable in its current state."
 
                 #Notify the user.
-                if Linux:
-                    BackendTools().StartProcess(Command="notify-send 'DDRescue-GUI' 'Recovery Finished, but not all data was recovered.' -i /usr/share/pixmaps/ddrescue-gui.png", ReturnOutput=False)
-
-                else:
-                    subprocess.Popen(RescourcePath+"""/other/CocoaDialog.app/Contents/MacOS/CocoaDialog bubble --title "DDRescue-GUI" --text "Recovery Finished, but not all data was recovered." --icon-file """+RescourcePath+"""/images/Logo.png  --background-top EFF7FD --border-color EFF7FD""", shell=True)
+                BackendTools().SendNotification("Recovery finished, but not all data was recovered.")
 
             dlg = wx.MessageDialog(self.Panel, Message, "DDRescue-GUI - Information", wx.OK | wx.ICON_INFORMATION)
             dlg.ShowModal()
@@ -2323,7 +2301,7 @@ class FinishedWindow(wx.Frame):
 
         return True
 
-    def MountDiskOSX(self): #*** Refactor with Linux function *** *** Make both of these more reliable in error circumstances *** *** Finish sorting out hdiutil retval stuff ***
+    def MountDiskOSX(self): #*** Refactor with Linux function ***
         """Mount the output file on OS X"""
         logger.info("FinishedWindow().MountDiskOSX(): Mounting Disk: "+Settings["OutputFile"]+"...")
         wx.CallAfter(self.ParentWindow.UpdateStatusBar, "Preparing to mount output file. Please Wait...")

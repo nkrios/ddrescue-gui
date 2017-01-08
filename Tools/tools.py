@@ -98,6 +98,16 @@ class Main():
 
         return Found
 
+    def SendNotification(self, Message):
+        """Send a notification, created to reduce clutter in the rest of the code."""
+        if Linux:
+            #Use notify-send.
+            BackendTools().StartProcess(Command="notify-send 'DDRescue-GUI' '"+Message+' -i /usr/share/pixmaps/ddrescue-gui.png", ReturnOutput=False)
+
+        else:
+            #Use Cocoadialog.
+            BackendTools().StartProcess(Command=RescourcePath+"""/other/CocoaDialog.app/Contents/MacOS/CocoaDialog bubble --title "DDRescue-GUI" --text \""""+Message+"""\" --icon-file """+RescourcePath+"""/images/Logo.png  --background-top EFF7FD --border-color EFF7FD""", ReturnOutput=False)
+
     def MacRunHdiutil(self, Options, Disk):
         """Runs hdiutil on behalf of the rest of the program when called. Tries to handle and fix hdiutil errors if they occurr."""
         Retval, Output = self.StartProcess(Command="hdiutil "+Options, ReturnOutput=True)
