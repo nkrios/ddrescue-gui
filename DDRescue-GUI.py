@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with DDRescue-GUI.  If not, see <http://www.gnu.org/licenses/>.
 
-#*** Implement notification handler function rather than cluttering up the code doing this over and over ***
 #*** Refactor in specified places ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
@@ -606,7 +605,7 @@ class MainWindow(wx.Frame):
 
         #Get the sizer set up for the frame.
         self.Panel.SetSizer(self.MainSizer)
-        self.MainSizer.SetMinSize(wx.Size(936,360))
+        self.MainSizer.SetMinSize(wx.Size(1036,360))
         self.MainSizer.SetSizeHints(self)
 
     def CreateMenus(self):
