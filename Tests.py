@@ -85,7 +85,6 @@ Tools.tools.Linux = Linux
 Tools.tools.RescourcePath = RescourcePath
 
 #Setup test modules.
-GetDevInfoTests.Linux = Linux
 GetDevInfoTests.DevInfoTools = DevInfoTools
 GetDevInfoTests.GetDevInfo = GetDevInfo
 

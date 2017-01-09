@@ -17,9 +17,33 @@
 
 #import modules.
 import unittest
+import wx
+import os
 
-#Set to avoid errors.
-Linux = True
+#Set up resource path and determine OS.
+if "wxGTK" in wx.PlatformInfo:
+    #Set the resource path to /usr/share/ddrescue-gui/
+    RescourcePath = '/usr/share/ddrescue-gui'
+    Linux = True
+
+    #Check if we're running on Parted Magic.
+    if os.uname()[1] == "PartedMagic":
+        PartedMagic = True
+
+    else:
+        PartedMagic = False
+
+elif "wxMac" in wx.PlatformInfo:
+    try:
+        #Set the resource path from an environment variable, as mac .apps can be found in various places.
+        RescourcePath = os.environ['RESOURCEPATH']
+
+    except KeyError:
+        #Use '.' as the rescource path instead as a fallback.
+        RescourcePath = "."
+
+    Linux = False
+    PartedMagic = False
 
 #Functions to return fake DiskInfo dictionary.
 def ReturnFakeDiskInfoLinux():
