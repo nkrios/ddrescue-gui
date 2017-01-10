@@ -807,7 +807,7 @@ class TestGetVendorProductCapacityDescription(unittest.TestCase):
             del self.BadNode3
 
         else:
-            del GetDevInfo.GetDevInfo.DiskInfo
+            del GetDevInfo.getdevinfo.DiskInfo
             del self.BadPlist0
             del self.Plist0
             del self.Plist0s1

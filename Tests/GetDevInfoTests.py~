@@ -792,11 +792,11 @@ class TestGetVendorProductCapacityDescription(unittest.TestCase):
 
         else:
             GetDevInfo.getdevinfo.DiskInfo = ReturnFakeDiskInfoMac()
-            self.BadPlist0 = ReturnDiskutilInfoBadDisk0Plist()
-            self.Plist0 = ReturnDiskutilInfoDisk0Plist()
-            self.Plist0s1 = ReturnDiskutilInfoDisk0s1Plist()
-            self.Plist0s2 = ReturnDiskutilInfoDisk0s2Plist()
-            self.Plist0s3 = ReturnDiskutilInfoDisk0s3Plist()
+            self.BadPlist0 = ReturnFakeDiskutilInfoBadDisk0Plist()
+            self.Plist0 = ReturnFakeDiskutilInfoDisk0Plist()
+            self.Plist0s1 = ReturnFakeDiskutilInfoDisk0s1Plist()
+            self.Plist0s2 = ReturnFakeDiskutilInfoDisk0s2Plist()
+            self.Plist0s3 = ReturnFakeDiskutilInfoDisk0s3Plist()
 
     def tearDown(self):
         if Linux:
