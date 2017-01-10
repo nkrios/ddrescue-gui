@@ -46,13 +46,68 @@ elif "wxMac" in wx.PlatformInfo:
     PartedMagic = False
 
 #Classes for test cases.
-class Node:
+class Node1:
+    def GetCopy(self):
+        return self
+
     class vendor:
         string = "FakeVendor"
 
-class BadNode:
+    class product:
+        string = "FakeProduct"
+
+    class capacity:
+        string = 100000000000
+
+class Node2:
+    def GetCopy(self):
+        return self
+
+    class vendor:
+        string = "FakeVendor2"
+
+    class product:
+        string = "FakeProduct2"
+
+    class size:
+        string = 10000000000000000000
+
+class BadNode1:
+    def GetCopy(self):
+        return self
+
     class vendor:
         notstring = ""
+
+    class product:
+        notstring = ""
+
+class BadNode2:
+    def GetCopy(self):
+        return self
+
+    class vendor:
+        notstring = ""
+
+    class product:
+        notstring = ""
+
+    class capacity:
+        #Too long, causes IndexError.
+        string = 1000000000000000000000000000000000000000000000000
+
+class BadNode3:
+    def GetCopy(self):
+        return self
+
+    class vendor:
+        notstring = ""
+
+    class product:
+        notstring = ""
+
+    class size:
+        string = "fghjk"
 
 #Functions to return fake DiskInfo dictionary.
 def ReturnFakeDiskInfoLinux():
@@ -180,8 +235,11 @@ class TestIsPartition(unittest.TestCase):
 class TestGetVendorProductCapacityDescription(unittest.TestCase):
     def setUp(self):
         if Linux:
-            self.Node = Node
-            self.BadNode = BadNode
+            self.Node1 = Node1().GetCopy()
+            self.Node2 = Node2().GetCopy()
+            self.BadNode1 = BadNode1().GetCopy()
+            self.BadNode2 = BadNode2().GetCopy()
+            self.BadNode3 = BadNode3().GetCopy()
 
         else:
             #TODO
@@ -189,8 +247,11 @@ class TestGetVendorProductCapacityDescription(unittest.TestCase):
 
     def tearDown(self):
         if Linux:
-            del self.Node
-            del self.BadNode
+            del self.Node1
+            del self.Node2
+            del self.BadNode1
+            del self.BadNode2
+            del self.BadNode3
 
         else:
             #TODO
@@ -198,5 +259,36 @@ class TestGetVendorProductCapacityDescription(unittest.TestCase):
 
     @unittest.skipUnless(Linux, "Linux-specific test")
     def testGetVendorLinux(self):
-        self.assertEqual(DevInfoTools().GetVendor(Node=self.Node), "FakeVendor")
-        self.assertEqual(DevInfoTools().GetVendor(Node=self.BadNode), "Unknown")
+        self.assertEqual(DevInfoTools().GetVendor(Node=self.Node1), "FakeVendor")
+        self.assertEqual(DevInfoTools().GetVendor(Node=self.Node2), "FakeVendor2")
+        self.assertEqual(DevInfoTools().GetVendor(Node=self.BadNode1), "Unknown")
+
+    @unittest.skipUnless(Linux, "Linux-specific test")
+    def testGetProductLinux(self):
+        self.assertEqual(DevInfoTools().GetProduct(Node=self.Node1), "FakeProduct")
+        self.assertEqual(DevInfoTools().GetProduct(Node=self.Node2), "FakeProduct2")
+        self.assertEqual(DevInfoTools().GetProduct(Node=self.BadNode1), "Unknown")
+
+    @unittest.skipUnless(Linux, "Linux-specific test")
+    def testGetCapacityLinux(self):
+        #1st good node.
+        RawCapacity, HumanSize = DevInfoTools().GetCapacity(Node=self.Node1)
+        self.assertEqual(RawCapacity, "100000000000")
+        self.assertEqual(HumanSize, "100 GB")
+
+        #2nd good node.
+        RawCapacity, HumanSize = DevInfoTools().GetCapacity(Node=self.Node2)
+        self.assertEqual(RawCapacity, "10000000000000000000")
+        self.assertEqual(HumanSize, "10 EB")
+
+        #1st bad node.
+        self.assertEqual(DevInfoTools().GetCapacity(Node=self.BadNode1), ("Unknown", "Unknown"))
+
+        #2nd bad node.
+        self.assertEqual(DevInfoTools().GetCapacity(Node=self.BadNode2), ("Unknown", "Unknown"))
+
+    @unittest.skipUnless(Linux, "Linux-specific test")
+    @unittest.expectedFailure
+    def testBadGetCapacityLinux(self):
+        #3rd bad node.
+        self.assertEqual(DevInfoTools().GetCapacity(Node=self.BadNode3), ("Unknown", "Unknown"))

@@ -115,10 +115,14 @@ class Main():
             Unit = "B"
             HumanSize = int(RawCapacity)
 
-            while len(unicode(HumanSize)) > 3:
-                #Shift up one unit.
-                Unit = UnitList[UnitList.index(Unit)+1]
-                HumanSize = HumanSize//1000
+            try:
+                while len(unicode(HumanSize)) > 3:
+                    #Shift up one unit.
+                    Unit = UnitList[UnitList.index(Unit)+1]
+                    HumanSize = HumanSize//1000
+
+            except IndexError:
+                return "Unknown", "Unknown"
 
             #Include the unit in the result for both exact and human-readable sizes.
             return RawCapacity, unicode(HumanSize)+" "+Unit
