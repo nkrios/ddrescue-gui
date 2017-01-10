@@ -45,6 +45,15 @@ elif "wxMac" in wx.PlatformInfo:
     Linux = False
     PartedMagic = False
 
+#Classes for test cases.
+class Node:
+    class vendor:
+        string = "FakeVendor"
+
+class BadNode:
+    class vendor:
+        notstring = ""
+
 #Functions to return fake DiskInfo dictionary.
 def ReturnFakeDiskInfoLinux():
     DiskInfo = {}
@@ -128,7 +137,7 @@ def ReturnFakeDiskInfoMac():
 
     return DiskInfo
 
-class TestDevInfoIsPartition(unittest.TestCase):
+class TestIsPartition(unittest.TestCase):
     def setUp(self):
         #Create a fictional DiskInfo distionary for it to test against.
         if Linux:
@@ -167,3 +176,27 @@ class TestDevInfoIsPartition(unittest.TestCase):
         #Partitions.
         for PARTITION in ["/dev/disk0s2", "/dev/disk0s1", "/dev/disk0s45", "/dev/disk1s5", "/dev/disk1s45"]:
             self.assertTrue(DevInfoTools().IsPartition(PARTITION))
+
+class TestGetVendorProductCapacityDescription(unittest.TestCase):
+    def setUp(self):
+        if Linux:
+            self.Node = Node
+            self.BadNode = BadNode
+
+        else:
+            #TODO
+            pass
+
+    def tearDown(self):
+        if Linux:
+            del self.Node
+            del self.BadNode
+
+        else:
+            #TODO
+            pass
+
+    @unittest.skipUnless(Linux, "Linux-specific test")
+    def testGetVendorLinux(self):
+        self.assertEqual(DevInfoTools().GetVendor(Node=self.Node), "FakeVendor")
+        self.assertIsNone(DevInfoTools().GetVendor(Node=self.BadNode))
