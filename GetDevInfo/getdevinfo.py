@@ -173,6 +173,9 @@ class Main():
         except KeyError:
             BusProtocol = "Unknown"
 
+        print([InternalOrExternal, Type])
+        print([InternalOrExternal, Type] is ["", ""])
+
         if [InternalOrExternal, Type] is not ["", ""]:
             if BusProtocol != "Unknown":
                 return InternalOrExternal+Type+"(Connected through "+BusProtocol+")"
