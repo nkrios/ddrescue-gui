@@ -19,6 +19,7 @@
 import unittest
 import wx
 import os
+import plistlib
 
 #Set up resource path and determine OS.
 if "wxGTK" in wx.PlatformInfo:
@@ -807,7 +808,7 @@ class TestGetVendorProductCapacityDescription(unittest.TestCase):
             del self.BadNode3
 
         else:
-            del GetDevInfo.GetDevInfo.DiskInfo
+            del GetDevInfo.getdevinfo.DiskInfo
             del self.BadPlist0
             del self.Plist0
             del self.Plist0s1
