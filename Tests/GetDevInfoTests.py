@@ -913,20 +913,20 @@ class TestGetVendorProductCapacityDescription(unittest.TestCase):
     def testGetDescriptionMac(self):
         #baddisk0
         GetDevInfo.getdevinfo.Main.Plist = self.BadPlist0
-        self.assertEqual(DevInfoTools().GetDescription(), "Unknown")
+        self.assertEqual(DevInfoTools().GetDescription(), "N/A")
 
         #disk0
         GetDevInfo.getdevinfo.Main.Plist = self.Plist0
-        self.assertEqual(DevInfoTools().GetDescription(), "42948853248")
+        self.assertEqual(DevInfoTools().GetDescription(), "Internal Hard Disk Drive (Connected through SATA)")
 
         #disk0s1
         GetDevInfo.getdevinfo.Main.Plist = self.Plist0s1
-        self.assertEqual(DevInfoTools().GetDescription(), "209715200")
+        self.assertEqual(DevInfoTools().GetDescription(), "Internal Hard Disk Drive (Connected through SATA)")
 
         #disk0s2
         GetDevInfo.getdevinfo.Main.Plist = self.Plist0s2
-        self.assertEqual(DevInfoTools().GetDescription(), "42089095168")
+        self.assertEqual(DevInfoTools().GetDescription(), "Internal Hard Disk Drive (Connected through SATA)")
 
         #disk0s3
         GetDevInfo.getdevinfo.Main.Plist = self.Plist0s3
-        self.assertEqual(DevInfoTools().GetDescription(), "650002432")
+        self.assertEqual(DevInfoTools().GetDescription(), "Internal Hard Disk Drive (Connected through SATA)")
