@@ -293,8 +293,6 @@ def ReturnFakeDiskutilInfoBadDisk0Plist():
 <dict>
 	<key>Bootable</key>
 	<false/>
-	<key>BusProtocol</key>
-	<string>SATA</string>
 	<key>CanBeMadeBootable</key>
 	<false/>
 	<key>CanBeMadeBootableRequiresDestroy</key>
@@ -323,8 +321,6 @@ def ReturnFakeDiskutilInfoBadDisk0Plist():
 	<integer>42948853248</integer>
 	<key>IORegistryEntryName</key>
 	<string>VBOX HARDDISK Media</string>
-	<key>Internal</key>
-	<true/>
 	<key>LowLevelFormatSupported</key>
 	<false/>
 	<key>MediaType</key>
@@ -349,8 +345,6 @@ def ReturnFakeDiskutilInfoBadDisk0Plist():
 	<string>Not Supported</string>
 	<key>Size</key>
 	<integer>42948853248</integer>
-	<key>SolidState</key>
-	<false/>
 	<key>SupportsGlobalPermissionsDisable</key>
 	<false/>
 	<key>SystemImage</key>
@@ -914,3 +908,25 @@ class TestGetVendorProductCapacityDescription(unittest.TestCase):
         #disk0s3
         GetDevInfo.getdevinfo.Main.Plist = self.Plist0s3
         self.assertEqual(DevInfoTools().GetCapacity(), "650002432")
+
+    @unittest.skipUnless(not Linux, "Mac-specific test")
+    def testGetDescriptionMac(self):
+        #baddisk0
+        GetDevInfo.getdevinfo.Main.Plist = self.BadPlist0
+        self.assertEqual(DevInfoTools().GetDescription(), "Unknown")
+
+        #disk0
+        GetDevInfo.getdevinfo.Main.Plist = self.Plist0
+        self.assertEqual(DevInfoTools().GetDescription(), "42948853248")
+
+        #disk0s1
+        GetDevInfo.getdevinfo.Main.Plist = self.Plist0s1
+        self.assertEqual(DevInfoTools().GetDescription(), "209715200")
+
+        #disk0s2
+        GetDevInfo.getdevinfo.Main.Plist = self.Plist0s2
+        self.assertEqual(DevInfoTools().GetDescription(), "42089095168")
+
+        #disk0s3
+        GetDevInfo.getdevinfo.Main.Plist = self.Plist0s3
+        self.assertEqual(DevInfoTools().GetDescription(), "650002432")
