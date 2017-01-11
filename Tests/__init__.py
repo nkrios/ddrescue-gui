@@ -16,3 +16,4 @@
 # along with DDRescue-GUI.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import absolute_import
 from . import GetDevInfoTests
+from . import GetDevInfoTestData

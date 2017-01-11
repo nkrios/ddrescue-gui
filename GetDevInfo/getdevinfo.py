@@ -393,7 +393,7 @@ class Main():
                 else:
                     DiskInfo["/dev/"+Disk]["Capacity"] = "Unknown"
 
-                #Round the sizes to make them human-readable.
+                #Round the sizes to make them human-readable. *** Move to get capacity and update test ***
                 Unit = "B"
 
                 #Catch an error in case Size is unknown.
