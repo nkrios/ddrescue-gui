@@ -861,15 +861,15 @@ class TestGetVendorProductCapacityDescription(unittest.TestCase):
 
         #disk0s1
         GetDevInfo.getdevinfo.Main.Plist = self.Plist0s1
-        self.assertEqual(DevInfoTools().GetProduct(Disk="disk0s1"), "Host Device: FakeDisk")
+        self.assertEqual(DevInfoTools().GetProduct(Disk="disk0s1"), "FakeDisk")
 
         #disk0s2
         GetDevInfo.getdevinfo.Main.Plist = self.Plist0s2
-        self.assertEqual(DevInfoTools().GetProduct(Disk="disk0s2"), "Host Device: FakeDisk")
+        self.assertEqual(DevInfoTools().GetProduct(Disk="disk0s2"), "FakeDisk")
 
         #disk0s3
         GetDevInfo.getdevinfo.Main.Plist = self.Plist0s3
-        self.assertEqual(DevInfoTools().GetProduct(Disk="disk0s3"), "Host Device: FakeDisk")
+        self.assertEqual(DevInfoTools().GetProduct(Disk="disk0s3"), "FakeDisk")
 
     @unittest.skipUnless(Linux, "Linux-specific test")
     def testGetCapacityLinux(self):
