@@ -849,6 +849,28 @@ class TestGetVendorProductCapacityDescription(unittest.TestCase):
         self.assertEqual(DevInfoTools().GetProduct(Node=self.Node2), "FakeProduct2")
         self.assertEqual(DevInfoTools().GetProduct(Node=self.BadNode1), "Unknown")
 
+    @unittest.skipUnless(not Linux, "Mac-specific test")
+    def testGetProductMac(self):
+        #baddisk0
+        GetDevInfo.getdevinfo.Main.Plist = self.BadPlist0
+        self.assertEqual(DevInfoTools().GetVendor(Disk="disk0"), "Unknown")
+
+        #disk0
+        GetDevInfo.getdevinfo.Main.Plist = self.Plist0
+        self.assertEqual(DevInfoTools().GetVendor(Disk="disk0"), "HARDDISK")
+
+        #disk0s1
+        GetDevInfo.getdevinfo.Main.Plist = self.Plist0s1
+        self.assertEqual(DevInfoTools().GetVendor(Disk="disk0s1"), "Host Device: FakeDisk")
+
+        #disk0s2
+        GetDevInfo.getdevinfo.Main.Plist = self.Plist0s2
+        self.assertEqual(DevInfoTools().GetVendor(Disk="disk0s2"), "Host Device: FakeDisk")
+
+        #disk0s3
+        GetDevInfo.getdevinfo.Main.Plist = self.Plist0s3
+        self.assertEqual(DevInfoTools().GetVendor(Disk="disk0s3"), "Host Device: FakeDisk")
+
     @unittest.skipUnless(Linux, "Linux-specific test")
     def testGetCapacityLinux(self):
         #1st good node.
