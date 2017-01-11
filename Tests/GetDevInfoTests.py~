@@ -150,6 +150,18 @@ def ReturnFakeDiskInfoLinux():
     DiskInfo["/dev/sda2"]["Type"] = "Partition"
     DiskInfo["/dev/sda2"]["Partitions"] = []
 
+    #Fictional /dev/sda3
+    DiskInfo["/dev/sda3"] = {}
+    DiskInfo["/dev/sda3"]["Product"] = "Host Device: FakeDisk"
+    DiskInfo["/dev/sda3"]["Vendor"] = "FakeOS v3"
+    DiskInfo["/dev/sda3"]["Name"] = "/dev/sda3"
+    DiskInfo["/dev/sda3"]["Description"] = "BTRFS Volume"
+    DiskInfo["/dev/sda3"]["RawCapacity"] = "564456313"
+    DiskInfo["/dev/sda3"]["HostDevice"] = "/dev/sda"
+    DiskInfo["/dev/sda3"]["Capacity"] = "25.5GB"
+    DiskInfo["/dev/sda3"]["Type"] = "Partition"
+    DiskInfo["/dev/sda3"]["Partitions"] = []
+
     return DiskInfo
 
 def ReturnFakeDiskInfoMac():
@@ -205,7 +217,8 @@ def ReturnFakeDiskInfoMac():
 
     return DiskInfo
 
-def ReturnFakeDiskutilListPlist():
+def ReturnFakeLVMDiskInfo():
+    return "def ReturnFakeDiskutilListPlist():
     return """<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -734,6 +747,56 @@ def ReturnFakeDiskutilInfoDisk0s3Plist():
 </dict>
 </plist>"""
 
+def ReturnFakeLVMOutput():
+    return """  --- Logical volume ---
+  LV Path                /dev/fedora/swap
+  LV Name                swap
+  VG Name                fedora
+  LV UUID                3e8urm-xsCG-iCAJ-Q3go-2247-OU5N-3AwlD1
+  LV Write Access        read/write
+  LV Creation host, time localhost-live, 2016-12-22 19:49:26 +0000
+  LV Status              available
+  # open                 2
+  LV Size                1.60 GiB
+  Current LE             410
+  Segments               1
+  Allocation             inherit
+  Read ahead sectors     auto
+  - currently set to     256
+  Block device           253:1
+   
+  --- Segments ---
+  Logical extents 0 to 409:
+    Type		linear
+    Physical volume	/dev/sda3
+    Physical extents	0 to 409
+   
+   
+  --- Logical volume ---
+  LV Path                /dev/fedora/root
+  LV Name                root
+  VG Name                fedora
+  LV UUID                TWxt1j-g62o-GYju-3UpB-A4g3-9ZbB-HWb7jf
+  LV Write Access        read/write
+  LV Creation host, time localhost-live, 2016-12-22 19:49:26 +0000
+  LV Status              available
+  # open                 1
+  LV Size                13.20 GiB
+  Current LE             3379
+  Segments               1
+  Allocation             inherit
+  Read ahead sectors     auto
+  - currently set to     256
+  Block device           253:0
+   
+  --- Segments ---
+  Logical extents 0 to 3378:
+    Type		linear
+    Physical volume	/dev/sda3
+    Physical extents	410 to 3788
+   
+   """.split("\n")
+
 class TestIsPartition(unittest.TestCase):
     def setUp(self):
         #Create a fictional DiskInfo distionary for it to test against.
@@ -925,8 +988,25 @@ class TestGetVendorProductCapacityDescription(unittest.TestCase):
 
         #disk0s2
         GetDevInfo.getdevinfo.Main.Plist = self.Plist0s2
-        self.assertEqual(DevInfoTools().GetDescription(), "Internal Hard Disk Drive (Connected through SATA)")
+        self.assertEqual(DevInfoTools().GetDescription(Disk="disk0s2"), "Internal Hard Disk Drive (Connected through SATA)")
 
         #disk0s3
         GetDevInfo.getdevinfo.Main.Plist = self.Plist0s3
-        self.assertEqual(DevInfoTools().GetDescription(), "Internal Hard Disk Drive (Connected through SATA)")
+        self.assertEqual(DevInfoTools().GetDescription(Disk="disk0s3"), "Internal Hard Disk Drive (Connected through SATA)")
+
+class TestParseLVMOutput(unittest.TestCase):
+    def setUp(self):
+        GetDevInfo.getdevinfo.Main.LVMOutput = ReturnFakeLVMOutput()
+        GetDevInfo.getdevinfo.DiskInfo = ReturnFakeDiskInfoLinux()
+        self.CorrectDiskInfo = ReturnFakeLVMDiskInfo()
+
+    def tearDown(self):
+        del GetDevInfo.getdevinfo.Main.LVMOutput
+        del GetDevInfo.getdevinfo.DiskInfo
+        del self.CorrectDiskInfo
+
+    @unittest.skipUnless(Linux, "Linux-specific test")
+    def testParseAndAssembleLVMOutput(self):
+        DevInfoTools().ParseLVMOutput()
+        print(GetDevInfo.getdevinfo.DiskInfo)
+        self.assertEqual(GetDevInfo.getdevinfo.DiskInfo, self.CorrectDiskInfo)

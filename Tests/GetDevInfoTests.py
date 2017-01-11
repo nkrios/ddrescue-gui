@@ -150,6 +150,18 @@ def ReturnFakeDiskInfoLinux():
     DiskInfo["/dev/sda2"]["Type"] = "Partition"
     DiskInfo["/dev/sda2"]["Partitions"] = []
 
+    #Fictional /dev/sda3
+    DiskInfo["/dev/sda3"] = {}
+    DiskInfo["/dev/sda3"]["Product"] = "Host Device: FakeDisk"
+    DiskInfo["/dev/sda3"]["Vendor"] = "FakeOS v3"
+    DiskInfo["/dev/sda3"]["Name"] = "/dev/sda3"
+    DiskInfo["/dev/sda3"]["Description"] = "BTRFS Volume"
+    DiskInfo["/dev/sda3"]["RawCapacity"] = "564456313"
+    DiskInfo["/dev/sda3"]["HostDevice"] = "/dev/sda"
+    DiskInfo["/dev/sda3"]["Capacity"] = "25.5GB"
+    DiskInfo["/dev/sda3"]["Type"] = "Partition"
+    DiskInfo["/dev/sda3"]["Partitions"] = []
+
     return DiskInfo
 
 def ReturnFakeDiskInfoMac():
@@ -204,6 +216,9 @@ def ReturnFakeDiskInfoMac():
     DiskInfo["/dev/disk0s3"]["Partitions"] = []
 
     return DiskInfo
+
+def ReturnFakeLVMDiskInfo():
+    return {'/dev/sda': {'Product': 'FakeDisk', 'Vendor': 'ThereIsNone', 'Name': '/dev/sda', 'RawCapacity': '56483132', 'HostDevice': 'N/A', 'Capacity': '200GB', 'Partitions': ['/dev/sda1', '/dev/sda2'], 'Type': 'Device', 'Description': 'Fake Hard Disk Drive'}, u'/dev/mapper/fedora-root': {u'LVName': u'fedora-root', u'VGName': u'mapper', u'Vendor': u'Linux', u'Name': u'/dev/mapper/fedora-root', u'Product': u'LVM Partition', u'HostPartition': '/dev/sda3', u'HostDevice': '/dev/sda', u'Capacity': u'13.20 GiB', u'Description': u'LVM partition fedora-root in volume group mapper', u'Type': u'Partition', u'Partitions': []}, '/dev/sda3': {'Product': 'Host Device: FakeDisk', 'Vendor': 'FakeOS v3', 'Name': '/dev/sda3', 'RawCapacity': '564456313', 'HostDevice': '/dev/sda', 'Capacity': '25.5GB', 'Partitions': [], 'Type': 'Partition', 'Description': 'BTRFS Volume'}, '/dev/sda1': {'Product': 'Host Device: FakeDisk', 'Vendor': 'FakeOS v3', 'Name': '/dev/sda1', 'RawCapacity': '5648313', 'HostDevice': '/dev/sda', 'Capacity': '20GB', 'Partitions': [], 'Type': 'Partition', 'Description': 'EXT4 Volume'}, '/dev/sda2': {'Product': 'Host Device: FakeDisk', 'Vendor': 'FakeOS v3', 'Name': '/dev/sda2', 'RawCapacity': '564313', 'HostDevice': '/dev/sda', 'Capacity': '2.5GB', 'Partitions': [], 'Type': 'Partition', 'Description': 'EXT3 Volume'}, u'/dev/mapper/fedora-swap': {u'LVName': u'fedora-swap', u'VGName': u'mapper', u'Vendor': u'Linux', u'Name': u'/dev/mapper/fedora-swap', u'Product': u'LVM Partition', u'HostPartition': '/dev/sda3', u'HostDevice': '/dev/sda', u'Capacity': u'1.60 GiB', u'Description': u'LVM partition fedora-swap in volume group mapper', u'Type': u'Partition', u'Partitions': []}}
 
 def ReturnFakeDiskutilListPlist():
     return """<?xml version="1.0" encoding="UTF-8"?>
@@ -734,6 +749,56 @@ def ReturnFakeDiskutilInfoDisk0s3Plist():
 </dict>
 </plist>"""
 
+def ReturnFakeLVMOutput():
+    return """  --- Logical volume ---
+  LV Path                /dev/fedora/swap
+  LV Name                swap
+  VG Name                fedora
+  LV UUID                3e8urm-xsCG-iCAJ-Q3go-2247-OU5N-3AwlD1
+  LV Write Access        read/write
+  LV Creation host, time localhost-live, 2016-12-22 19:49:26 +0000
+  LV Status              available
+  # open                 2
+  LV Size                1.60 GiB
+  Current LE             410
+  Segments               1
+  Allocation             inherit
+  Read ahead sectors     auto
+  - currently set to     256
+  Block device           253:1
+   
+  --- Segments ---
+  Logical extents 0 to 409:
+    Type		linear
+    Physical volume	/dev/sda3
+    Physical extents	0 to 409
+   
+   
+  --- Logical volume ---
+  LV Path                /dev/fedora/root
+  LV Name                root
+  VG Name                fedora
+  LV UUID                TWxt1j-g62o-GYju-3UpB-A4g3-9ZbB-HWb7jf
+  LV Write Access        read/write
+  LV Creation host, time localhost-live, 2016-12-22 19:49:26 +0000
+  LV Status              available
+  # open                 1
+  LV Size                13.20 GiB
+  Current LE             3379
+  Segments               1
+  Allocation             inherit
+  Read ahead sectors     auto
+  - currently set to     256
+  Block device           253:0
+   
+  --- Segments ---
+  Logical extents 0 to 3378:
+    Type		linear
+    Physical volume	/dev/sda3
+    Physical extents	410 to 3788
+   
+   """.split("\n")
+
 class TestIsPartition(unittest.TestCase):
     def setUp(self):
         #Create a fictional DiskInfo distionary for it to test against.
@@ -930,3 +995,19 @@ class TestGetVendorProductCapacityDescription(unittest.TestCase):
         #disk0s3
         GetDevInfo.getdevinfo.Main.Plist = self.Plist0s3
         self.assertEqual(DevInfoTools().GetDescription(Disk="disk0s3"), "Internal Hard Disk Drive (Connected through SATA)")
+
+class TestParseLVMOutput(unittest.TestCase):
+    def setUp(self):
+        GetDevInfo.getdevinfo.Main.LVMOutput = ReturnFakeLVMOutput()
+        GetDevInfo.getdevinfo.DiskInfo = ReturnFakeDiskInfoLinux()
+        self.CorrectDiskInfo = ReturnFakeLVMDiskInfo()
+
+    def tearDown(self):
+        del GetDevInfo.getdevinfo.Main.LVMOutput
+        del GetDevInfo.getdevinfo.DiskInfo
+        del self.CorrectDiskInfo
+
+    @unittest.skipUnless(Linux, "Linux-specific test")
+    def testParseAndAssembleLVMOutput(self):
+        DevInfoTools().ParseLVMOutput()
+        self.assertEqual(GetDevInfo.getdevinfo.DiskInfo, self.CorrectDiskInfo)

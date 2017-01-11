@@ -288,15 +288,6 @@ class Main():
             #Get the output.
             stdout, stderr = runcmd.communicate()
 
-            #Save some info for later use.
-            #UUIDs.
-            cmd = subprocess.Popen("blkid -o list", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-            self.BlkidOutput = cmd.communicate()[0]
-
-            #IDs.
-            cmd = subprocess.Popen("ls -l /dev/disk/by-id/", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-            self.LsOutput = cmd.communicate()[0]
-
             logger.debug("GetDevInfo: Main().GetInfo(): Done.")
 
             #Parse XML as HTML to support Ubuntu 12.04 LTS. Otherwise output is cut off.
