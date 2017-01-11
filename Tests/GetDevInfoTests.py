@@ -897,20 +897,20 @@ class TestGetVendorProductCapacityDescription(unittest.TestCase):
     def testGetCapacityMac(self):
         #baddisk0
         GetDevInfo.getdevinfo.Main.Plist = self.BadPlist0
-        self.assertEqual(DevInfoTools().GetCapacity(Disk="disk0"), "Unknown")
+        self.assertEqual(DevInfoTools().GetCapacity(), "Unknown")
 
         #disk0
         GetDevInfo.getdevinfo.Main.Plist = self.Plist0
-        self.assertEqual(DevInfoTools().GetCapacity(Disk="disk0"), "42948853248")
+        self.assertEqual(DevInfoTools().GetCapacity(), "42948853248")
 
         #disk0s1
         GetDevInfo.getdevinfo.Main.Plist = self.Plist0s1
-        self.assertEqual(DevInfoTools().GetCapacity(Disk="disk0s1"), "209715200")
+        self.assertEqual(DevInfoTools().GetCapacity(), "209715200")
 
         #disk0s2
         GetDevInfo.getdevinfo.Main.Plist = self.Plist0s2
-        self.assertEqual(DevInfoTools().GetCapacity(Disk="disk0s2"), "42089095168")
+        self.assertEqual(DevInfoTools().GetCapacity(), "42089095168")
 
         #disk0s3
         GetDevInfo.getdevinfo.Main.Plist = self.Plist0s3
-        self.assertEqual(DevInfoTools().GetCapacity(Disk="disk0s3"), "650002432")
+        self.assertEqual(DevInfoTools().GetCapacity(), "650002432")
