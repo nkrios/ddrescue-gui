@@ -24,6 +24,8 @@ import logging
 import plistlib
 import os
 import time
+import getopt
+import sys
 from bs4 import BeautifulSoup
 
 #Custom made modules.
@@ -37,6 +39,50 @@ from Tools.tools import Main as BackendTools
 import Tests
 
 from Tests import GetDevInfoTests
+
+def usage():
+    print("\nUsage: Tests.py [OPTION]\n\n")
+    print("Options:\n")
+    print("       -h, --help:                   Display this help text.")
+    print("       -g, --getdevinfo:             Run tests for GetDevInfo module.")
+    print("       -b, --backendtools:           Run tests for BackendTools module.")
+    print("       -m, --main:                   Run tests for main file (DDRescue-GUI.py).")
+    print("       -a, --all:                    Run all the tests. The default.\n")
+    print("DDRescue-GUI "+Version+" is released under the GNU GPL Version 3")
+    print("Copyright (C) Hamish McIntyre-Bhatty 2013-2017")
+
+#Check all cmdline options are valid.
+try:
+    opts, args = getopt.getopt(sys.argv[1:], "hgbma", ["help", "getdevinfo", "backendtools", "main", "all"])
+
+except getopt.GetoptError as err:
+    #Invalid option. Show the help message and then exit.
+    #Show the error.
+    print(unicode(err))
+    usage()
+    sys.exit(2)
+
+#Set up which tests to run based on options given. *** Set up default when finished ***
+TestSuites = []
+
+for o, a in opts:
+    if o in ["-g", "--getdevinfo"]:
+        TestSuites.append(GetDevInfoTests)
+    elif o in ["-b", "--backendtools"]:
+        #TestSuites.append(ToolsTests)
+        assert False, "Not implemented yet"
+    elif o in ["-m", "--main"]:
+        #TestSuites.append(MainTests)
+        assert False, "Not implemented yet"
+    elif o in ["-a", "--all"]:
+        TestSuites.append(GetDevInfoTests)
+        #TestSuites.append(ToolsTests)
+        #TestSuites.append(MainTests)
+    elif o in ["-h", "--help"]:
+        usage()
+        sys.exit()
+    else:
+        assert False, "unhandled option"
 
 #Set up the logger (silence all except critical logging messages).
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s: %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p', level=logging.CRITICAL)
@@ -89,5 +135,6 @@ GetDevInfoTests.DevInfoTools = DevInfoTools
 GetDevInfoTests.GetDevInfo = GetDevInfo
 
 if __name__ == "__main__":
-    suite = unittest.TestLoader().loadTestsFromModule(GetDevInfoTests)
-    unittest.TextTestRunner(verbosity=2).run(suite)
+    for SuiteModule in TestSuites:
+        print("\n\n---------------------------- Tests for "+unicode(SuiteModule)+" ----------------------------\n\n")
+        unittest.TextTestRunner(verbosity=2).run(unittest.TestLoader().loadTestsFromModule(SuiteModule))
