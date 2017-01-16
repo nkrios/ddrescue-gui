@@ -32,3 +32,16 @@ def ReturnFakeCommands():
     Dict["TIMES=1; while [ $TIMES -lt 6000 ]; do echo 'Fast task'; sleep 0.001; TIMES=$(( $TIMES + 1 )); done"]["Retval"] = 0
 
     return Dict
+
+def ReturnFakeFilenames():
+    Dict = {}
+    Dict["/dev/ewgrhtjerwhd"] = {}
+    Dict["/dev/ewgrhtjerwhd"]["Result"] = "...ev/ewgrhtjerwhd"
+    Dict["/home/hamish/Desktop/img.img"] = {}
+    Dict["/home/hamish/Desktop/img.img"]["Result"] = ["...Desktop/img.img", "...Desktop/img.i~2"]
+    Dict["/dev/sda"] = {}
+    Dict["/dev/sda"]["Result"] = "/dev/sda"
+    Dict["/home/hamish/Desktop/img2.img"] = {}
+    Dict["/home/hamish/Desktop/img2.img"]["Result"] = ["...Desktop/img.img", "...esktop/img2.img", "...Desktop/img.i~2"]
+
+    return Dict

@@ -50,7 +50,7 @@ class Main():
             #Return the return code, as well as the output.
             return Retval, ''.join(Output)
 
-    def CreateUniqueKey(self, Dict, Data, Length): #*** Test this thoroughly ***
+    def CreateUniqueKey(self, Dict, Data, Length):
         """Create a unqiue dictionary key of Length for dictionary Dict for the item Data.
         The unique key is created by adding a number on the the end of Data, while keeping it at the correct length.
         The key will also start with '...'."""

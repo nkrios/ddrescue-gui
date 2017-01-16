@@ -55,8 +55,24 @@ class TestStartProcess(unittest.TestCase):
     def tearDown(self):
         del self.Commands
 
+    @unittest.skipUnless(False, "Disabled to speed up development")
     def testStartProcess(self):
         for Command in self.Commands.keys():
             Retval, Output = BackendTools().StartProcess(Command=Command, ReturnOutput=True)
             self.assertEqual(Retval, self.Commands[Command]["Retval"])
             self.assertEqual(Output, self.Commands[Command]["Output"])
+
+class TestCreateUniqueKey(unittest.TestCase):
+    def setUp(self):
+        self.KeysDict = {}
+        self.Filenames = Data.ReturnFakeFilenames()
+
+    def tearDown(self):
+        del self.KeysDict
+        del self.Filenames
+
+    def testCreateUniqueKey(self):
+        for File in self.Filenames:
+            Key = BackendTools().CreateUniqueKey(self.KeysDict, File, 15)
+            self.assertTrue(Key in self.Filenames[File]["Result"])
+            self.KeysDict[Key] = ""
