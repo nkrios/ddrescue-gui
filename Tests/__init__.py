@@ -17,3 +17,5 @@
 from __future__ import absolute_import
 from . import GetDevInfoTests
 from . import GetDevInfoTestData
+from . import BackendToolsTests
+from . import BackendToolsTestData

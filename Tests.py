@@ -28,6 +28,9 @@ import getopt
 import sys
 from bs4 import BeautifulSoup
 
+#Global vars.
+Version = "1.6.2"
+
 #Custom made modules.
 import GetDevInfo
 import Tools
@@ -39,6 +42,7 @@ from Tools.tools import Main as BackendTools
 import Tests
 
 from Tests import GetDevInfoTests
+from Tests import BackendToolsTests
 
 def usage():
     print("\nUsage: Tests.py [OPTION]\n\n")
@@ -69,14 +73,13 @@ for o, a in opts:
     if o in ["-g", "--getdevinfo"]:
         TestSuites.append(GetDevInfoTests)
     elif o in ["-b", "--backendtools"]:
-        #TestSuites.append(ToolsTests)
-        assert False, "Not implemented yet"
+        TestSuites.append(BackendToolsTests)
     elif o in ["-m", "--main"]:
         #TestSuites.append(MainTests)
         assert False, "Not implemented yet"
     elif o in ["-a", "--all"]:
         TestSuites.append(GetDevInfoTests)
-        #TestSuites.append(ToolsTests)
+        TestSuites.append(BackendToolsTests)
         #TestSuites.append(MainTests)
     elif o in ["-h", "--help"]:
         usage()
@@ -133,6 +136,9 @@ Tools.tools.RescourcePath = RescourcePath
 #Setup test modules.
 GetDevInfoTests.DevInfoTools = DevInfoTools
 GetDevInfoTests.GetDevInfo = GetDevInfo
+
+BackendToolsTests.BackendTools = BackendTools
+BackendToolsTests.Tools = Tools
 
 if __name__ == "__main__":
     for SuiteModule in TestSuites:

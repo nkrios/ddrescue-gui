@@ -43,7 +43,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "1.6.2"
-ReleaseDate = "13/1/2017"
+ReleaseDate = "16/1/2017"
 SessionEnding = False
 
 def usage():
