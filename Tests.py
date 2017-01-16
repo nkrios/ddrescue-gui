@@ -71,15 +71,14 @@ TestSuites = [GetDevInfoTests, BackendToolsTests] #*** Set up full defaults when
 
 for o, a in opts:
     if o in ["-g", "--getdevinfo"]:
-        TestSuites.append(GetDevInfoTests)
+        TestSuites = [GetDevInfoTests]
     elif o in ["-b", "--backendtools"]:
-        TestSuites.append(BackendToolsTests)
+        TestSuites = [BackendToolsTests]
     elif o in ["-m", "--main"]:
-        #TestSuites.append(MainTests)
+        #TestSuites = [MainTests]
         assert False, "Not implemented yet"
     elif o in ["-a", "--all"]:
-        TestSuites.append(GetDevInfoTests)
-        TestSuites.append(BackendToolsTests)
+        TestSuites = [GetDevInfoTests, BackendToolsTests]
         #TestSuites.append(MainTests)
     elif o in ["-h", "--help"]:
         usage()
