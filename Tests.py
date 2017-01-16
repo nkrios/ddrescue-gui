@@ -66,8 +66,8 @@ except getopt.GetoptError as err:
     usage()
     sys.exit(2)
 
-#Set up which tests to run based on options given. *** Set up default when finished ***
-TestSuites = []
+#Set up which tests to run based on options given.
+TestSuites = [GetDevInfoTests, BackendToolsTests] #*** Set up full defaults when finished ***
 
 for o, a in opts:
     if o in ["-g", "--getdevinfo"]:
