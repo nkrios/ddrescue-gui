@@ -94,8 +94,26 @@ class TestSendNotification(unittest.TestCase):
         BackendTools().SendNotification("Test Message from unit tests.")
 
         #Ask the user if they got it.
-        dlg = wx.MessageDialog(None, "Did you see the notification? Note that on some systems they can take a few seconds to come through.", "DDRescue-GUI - Tests", wx.YES_NO | wx.ICON_QUESTION)
+        dlg = wx.MessageDialog(None, "Did you see the notification? Note that on some systems (Macs especially) they can take up to 10 seconds to come through.", "DDRescue-GUI - Tests", wx.YES_NO | wx.ICON_QUESTION)
         Result = dlg.ShowModal()
         dlg.Destroy()
 
         self.assertEqual(Result, wx.ID_YES)
+
+class TestMacHdiutil(unittest.TestCase):
+    def setUp(self):
+        self.app = wx.App()
+
+    def tearDown(self):
+        del self.app
+
+    @unittest.skipUnless(not Linux, "Mac-specific test")
+    def testMacRunHdiutil(self):
+        #*** Add more tests for when "resource is temporarily unavailable" errors happen ***
+        #Get a device path from the user to test against.
+        dlg = wx.TextEntryDialog(None, "DDRescue-GUI needs a device name to test against. Not data on your device will be modified. Suggested: insert a USB disk and leave it mounted.", "DDRescue-GUI Tests", style=wx.OK)
+        dlg.ShowModal()
+        DevicePath = dlg.GetValue()
+        dlg.Destroy()
+
+        self.assertEqual(BackendTools().MacRunHdiutil("info", "DevicePath")[0], 0)
