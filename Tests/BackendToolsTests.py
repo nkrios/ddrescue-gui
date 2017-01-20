@@ -111,9 +111,11 @@ class TestMacHdiutil(unittest.TestCase):
     def testMacRunHdiutil(self):
         #*** Add more tests for when "resource is temporarily unavailable" errors happen ***
         #Get a device path from the user to test against.
-        dlg = wx.TextEntryDialog(None, "DDRescue-GUI needs a device name to test against. Not data on your device will be modified. Suggested: insert a USB disk and leave it mounted.", "DDRescue-GUI Tests", style=wx.OK)
+        dlg = wx.TextEntryDialog(None, "DDRescue-GUI needs a device name to test against.\nNo data on your device will be modified. Suggested: insert a USB disk and leave it mounted.\nNote: Do not use your device while these test are running, or it may interfere with the tests.", "DDRescue-GUI Tests", style=wx.OK)
         dlg.ShowModal()
         DevicePath = dlg.GetValue()
         dlg.Destroy()
 
         self.assertEqual(BackendTools().MacRunHdiutil("info", "DevicePath")[0], 0)
+        self.assertEqual(BackendTools().MacRunHdiutil("detach", "DevicePath")[0], 0)
+        self.assertEqual(BackendTools().MacRunHdiutil("attach", "DevicePath")[0], 0)
