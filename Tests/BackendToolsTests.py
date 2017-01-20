@@ -76,3 +76,26 @@ class TestCreateUniqueKey(unittest.TestCase):
             Key = BackendTools().CreateUniqueKey(self.KeysDict, File, 15)
             self.assertTrue(Key in self.Filenames[File]["Result"])
             self.KeysDict[Key] = ""
+
+class TestSendNotification(unittest.TestCase):
+    def setUp(self):
+        self.app = wx.App()
+
+    def tearDown(self):
+        self.app.Destroy()
+
+    def testSendNotification(self):
+        #Tell the user we are about to send a notification.
+        dlg = wx.MessageDialog(None, "DDRescue-GUI's BackendTools tests are about to send you a notification to test that notifications are working. You will then be prompted to confirm if they are working or not.", "DDRescue-GUI - Tests", wx.OK | wx.ICON_INFORMATION)
+        dlg.ShowModal()
+        dlg.Destroy()
+        
+        #Send it.
+        BackendTools().SendNotification("Test Message from unit tests.")
+
+        #Ask the user if they got it.
+        dlg = wx.MessageDialog(None, "Did you see the notification? Note that on some systems they can take a few seconds to come through.", "DDRescue-GUI - Tests", wx.YES_NO | wx.ICON_QUESTION)
+        Result = dlg.ShowModal()
+        dlg.Destroy()
+
+        self.assertEqual(Result, wx.ID_YES)

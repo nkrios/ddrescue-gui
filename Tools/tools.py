@@ -88,20 +88,10 @@ class Main():
 
         return Key
 
-    def FindDataValueInDict(self, Dict, DataValue): #*** Test this thoroughly ***
-        """Find a data value in a dicionary, returning True for found, and False for not found."""
-        Found = False
-
-        for Key in Dict.keys():
-            if DataValue == Dict[Key]:
-                Found = True
-
-        return Found
-
     def SendNotification(self, Message):
         """Send a notification, created to reduce clutter in the rest of the code."""
         if Linux:
-            #Use notify-send. *** Is this working? ***
+            #Use notify-send. *** Sometimes doesn't work as root. Find uid of logged-in user? ***
             self.StartProcess(Command="notify-send 'DDRescue-GUI' '"+Message+"' -i /usr/share/pixmaps/ddrescue-gui.png", ReturnOutput=False)
 
         else:

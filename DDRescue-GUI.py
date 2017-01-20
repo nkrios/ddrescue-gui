@@ -43,7 +43,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "1.6.2"
-ReleaseDate = "16/1/2017"
+ReleaseDate = "20/1/2017"
 SessionEnding = False
 
 def usage():
@@ -936,7 +936,7 @@ class MainWindow(wx.Frame):
 
             #Handle custom paths properly.
             #If it's in the dictionary or in DiskInfo, don't add it.
-            if BackendTools().FindDataValueInDict(Paths, UserSelection):
+            if UserSelection in Paths:
                 #Set the selection using the unique key.
                 ChoiceBox.SetStringSelection(BackendTools().CreateUniqueKey(Paths, UserSelection, 30))
 
