@@ -130,7 +130,7 @@ class TestMacHdiutil(unittest.TestCase):
 
     @unittest.skipUnless(not Linux, "Mac-specific test")
     def testMacRunHdiutil(self):
-        #*** Add more tests for when "resource is temporarily unavailable" errors happen ***
+        #*** Add more tests for when "resource is temporarily unavailable" errors happen *** *** Create image to test against? ***
         #Get a device path from the user to test against.
         dlg = wx.TextEntryDialog(None, "DDRescue-GUI needs a device name to test against.\nNo data on your device will be modified. Suggested: insert a USB disk and leave it mounted.\nNote: Do not use your device while these test are running, or it may interfere with the tests.", "DDRescue-GUI Tests", PotentialDevicePath, style=wx.OK)
         dlg.ShowModal()
@@ -142,7 +142,6 @@ class TestMacHdiutil(unittest.TestCase):
         PotentialDevicePath = DevicePath
 
         self.assertEqual(BackendTools().MacRunHdiutil("info", DevicePath)[0], 0)
-        self.assertEqual(BackendTools().MacRunHdiutil("detach "+DevicePath, DevicePath)[0], 0)
 
 class TestIsMounted(unittest.TestCase):
     def setUp(self):
@@ -174,7 +173,7 @@ class TestIsMounted(unittest.TestCase):
     def testIsMounted1(self):
         #If not mounted, mount it
         if not Functions.IsMounted(self.Path):
-            self.assertEqual(Functions.MountPartition(self.Path, "/tmp/ddrescueguimtpt"), 0)
+            self.assertEqual(Functions.MountPartition(self.Path, "/tmp/ddrescueguimtpt"), 0) #*** Fix on OS X***
 
         self.assertTrue(BackendTools().IsMounted(self.Path))
 

@@ -61,6 +61,10 @@ def usage():
     print("DDRescue-GUI "+Version+" is released under the GNU GPL Version 3")
     print("Copyright (C) Hamish McIntyre-Bhatty 2013-2017")
 
+#Exit if not running as root.
+if os.geteuid() != 0:
+    sys.exit("You must run the tests as root! Exiting...")
+
 #Check all cmdline options are valid.
 try:
     opts, args = getopt.getopt(sys.argv[1:], "hgbma", ["help", "getdevinfo", "backendtools", "main", "all"])
