@@ -116,6 +116,6 @@ class TestMacHdiutil(unittest.TestCase):
         DevicePath = dlg.GetValue()
         dlg.Destroy()
 
-        self.assertEqual(BackendTools().MacRunHdiutil("info", "DevicePath")[0], 0)
-        self.assertEqual(BackendTools().MacRunHdiutil("detach", "DevicePath")[0], 0)
-        self.assertEqual(BackendTools().MacRunHdiutil("attach", "DevicePath")[0], 0)
+        self.assertEqual(BackendTools().MacRunHdiutil("info", DevicePath)[0], 0)
+        self.assertEqual(BackendTools().MacRunHdiutil("detach", DevicePath)[0], 0)
+        self.assertEqual(BackendTools().MacRunHdiutil("attach", DevicePath)[0], 0)
