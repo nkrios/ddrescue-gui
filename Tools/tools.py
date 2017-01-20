@@ -125,11 +125,12 @@ class Main():
 
             Mounted = False
 
-            #Linux fix: Accept a mountpoint when called with just one argument.
+            #Linux fix: Accept any mountpoint when called with just one argument.
             for Line in MountInfo.split("\n"):
                 if len(Line) != 0:
                     if Line.split()[0] == Partition or Line.split()[2] == Partition:
                         Mounted = True
+                        break
 
         else:
             #Check where it's mounted to.
@@ -162,6 +163,7 @@ class Main():
             if len(SplitLine) != 0:
                 if Partition == SplitLine[0]:
                     MountPoint = SplitLine[2]
+                    break
 
         if MountPoint != None:
             logger.info("Tools: Main().GetMountPointOf(): Found it! MountPoint is "+MountPoint+"...")
@@ -195,9 +197,7 @@ class Main():
         elif MountPoint in MountInfo:
             #Something else is in the way. Unmount that partition, and continue.
             logger.warning("Tools: Main().MountPartition(): Unmounting filesystem in the way at "+MountPoint+"...")
-            Retval = self.Unmount(MountPoint)
-
-            if Retval != 0:
+            if self.Unmount(MountPoint) != 0:
                 logger.error("Tools: Main().MountPartition(): Couldn't unmount "+MountPoint+", preventing the mounting of "+Partition+"! Skipping mount attempt.")
                 return False
 
