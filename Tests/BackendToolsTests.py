@@ -131,14 +131,55 @@ class TestIsMounted(unittest.TestCase):
 
     def tearDown(self):
         del self.app
+        del self.Path
 
     def testIsMounted1(self):
         self.assertTrue(BackendTools().IsMounted(self.Path))
 
     def testIsMounted2(self):
         #Ask the user ito unmount it.
-        dlg = wx.MessageDialog(None, "Please now unmount your disk from the command line or disk utility (if on Mac)", "DDRescue-GUI - Tests", wx.OK | wx.ICON_QUESTION)
+        dlg = wx.MessageDialog(None, "Please now unmount your disk from the command line or 'Disks' (if on Linux), or 'Disk Utility' (if on Mac)", "DDRescue-GUI - Tests", wx.OK | wx.ICON_QUESTION)
         dlg.ShowModal()
         dlg.Destroy()
 
         self.assertFalse(BackendTools().IsMounted(self.Path))
+
+class TestGetMountPointOf(unittest.TestCase):
+    def setUp(self):
+        self.app = wx.App()
+
+        #Get a device path from the user to test against.
+        dlg = wx.TextEntryDialog(None, "DDRescue-GUI needs a partition name to test against.\nNo data on your device will be modified. Suggested: insert a USB disk and leave it mounted.\nNote: Do not use your device while these test are running, or it may interfere with the tests.", "DDRescue-GUI Tests", style=wx.OK)
+        dlg.ShowModal()
+        self.Path = dlg.GetValue()
+        dlg.Destroy()
+
+    def tearDown(self):
+        del self.app
+        del self.Path
+
+    def testGetMountPointOf1(self):
+        #Ask user to mount the disk if it's not mounted.
+        if not BackendTools().IsMounted(self.Path):
+            dlg = wx.MessageDialog(None, "Please now mount your disk from the command line or 'Disks' (if on Linux), or 'Disk Utility' (if on Mac)", "DDRescue-GUI - Tests", wx.OK | wx.ICON_QUESTION)
+            dlg.ShowModal()
+            dlg.Destroy()
+
+        #Get mount point and verify with user.
+        MountPoint = BackendTools().GetMountPointOf(self.Path)
+
+        dlg = wx.MessageDialog(None, "Is your device's ("+self.Path+"'s) mount point "+MountPoint+"?", "DDRescue-GUI - Tests", wx.YES_NO | wx.ICON_QUESTION)
+        Result = dlg.ShowModal()
+        dlg.Destroy()
+
+        self.assertEqual(Result, wx.ID_YES)
+
+    def testGetMountPointOf2(self):
+        #Ask user to unmount the disk if it's mounted.
+        if BackendTools().IsMounted(self.Path):
+            dlg = wx.MessageDialog(None, "Please now unmount your disk from the command line or 'Disks' (if on Linux), or 'Disk Utility' (if on Mac)", "DDRescue-GUI - Tests", wx.OK | wx.ICON_QUESTION)
+            dlg.ShowModal()
+            dlg.Destroy()
+
+        #Get mount point.
+        self.assertIsNone(BackendTools().GetMountPointOf(self.Path))
