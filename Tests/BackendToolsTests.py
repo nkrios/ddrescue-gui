@@ -174,7 +174,7 @@ class TestIsMounted(unittest.TestCase):
     def testIsMounted1(self):
         #If not mounted, mount it
         if not Functions.IsMounted(self.Path):
-            Functions.MountPartition(self.Path, "/tmp/ddrescueguimtpt")
+            self.assertEqual(Functions.MountPartition(self.Path, "/tmp/ddrescueguimtpt"), 0)
 
         self.assertTrue(BackendTools().IsMounted(self.Path))
 
