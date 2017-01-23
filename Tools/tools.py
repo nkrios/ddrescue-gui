@@ -197,7 +197,7 @@ class Main():
         elif MountPoint in MountInfo:
             #Something else is in the way. Unmount that partition, and continue.
             logger.warning("Tools: Main().MountPartition(): Unmounting filesystem in the way at "+MountPoint+"...")
-            if self.Unmount(MountPoint) != 0:
+            if self.UnmountDisk(MountPoint) != 0:
                 logger.error("Tools: Main().MountPartition(): Couldn't unmount "+MountPoint+", preventing the mounting of "+Partition+"! Skipping mount attempt.")
                 return False
 

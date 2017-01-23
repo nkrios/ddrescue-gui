@@ -159,7 +159,7 @@ class TestIsMounted(unittest.TestCase):
 
     def tearDown(self):
         #Check if anything is mounted at our temporary mount point.
-        if Functions.GetMountPointOf(self.Path):
+        if Functions.IsMounted(self.Path):
             Functions.UnmountDisk(self.Path)
 
         #Remove the mount point.
@@ -213,7 +213,7 @@ class TestGetMountPointOf(unittest.TestCase):
 
     def testGetMountPointOf2(self):
         #Unmount disk.
-        BackendTools().UnmountDisk(self.Path)
+        Functions.UnmountDisk(self.Path)
 
         #Get mount point.
         self.assertIsNone(BackendTools().GetMountPointOf(self.Path))
@@ -229,6 +229,10 @@ class TestMountPartition(unittest.TestCase):
         self.MountPoint = Functions.GetMountPointOf(self.Path)
         dlg.Destroy()
 
+        if self.MountPoint == None:
+            self.MountPoint = "/tmp/ddrescueguimtpt"
+            os.mkdir(self.MountPoint)
+
         #Save it for autocomplete with other dialogs.
         global PotentialPartitionPath
         PotentialPartitionPath = self.Path
@@ -238,21 +242,65 @@ class TestMountPartition(unittest.TestCase):
         del self.app
         del self.Path
 
-    def TestMountPartition1(self):
+        if os.path.isdir("/tmp/ddrescueguimtpt"):
+            os.rmdir("/tmp/ddrescueguimtpt")
+
+    def testMountPartition1(self):
+        Functions.MountPartition(self.Path, self.MountPoint)
+
         #Partition should be mounted, so we should pass this without doing anything.
         self.assertEqual(BackendTools().MountPartition(self.Path, self.MountPoint), 0)
 
-    def TestMountPartition2(self):
+        Functions.UnmountDisk(self.Path)
+
+    def testMountPartition2(self):
         #Unmount disk.
-        BackendTools().UnmountDisk(self.Path)
+        Functions.UnmountDisk(self.Path)
 
         self.assertEqual(BackendTools().MountPartition(self.Path, self.MountPoint), 0)
 
-    def TestMountPartition3(self):
-        #*** Test when other device is in the way TODO ***
-        self.assertTrue(True)
+        Functions.UnmountDisk(self.Path)
 
-    def TestMountPartition4(self):
-        #*** Test when dir needs to be created TODO ***
-        self.assertTrue(True)
+    def testMountPartition3(self):
+        #Get another device path from the user to test against.
+        dlg = wx.TextEntryDialog(None, "DDRescue-GUI needs a second (different) partition name to test against.\nNo data on your device will be modified. Suggested: insert a USB disk and leave it mounted.\nNote: Do not use your device while these test are running, or it may interfere with the tests.", "DDRescue-GUI Tests", "", style=wx.OK)
+        dlg.ShowModal()
+        self.Path2 = dlg.GetValue()
+        dlg.Destroy()
+
+        #Unmount both partitions.
+        for Partition in [self.Path, self.Path2]:
+            Functions.UnmountDisk(Partition)
+
+        #Mount the 2nd one on the desired path for the 1st one.
+        Functions.MountPartition(self.Path2, self.MountPoint)
+
+        #Now try to mount the first one there.
+        BackendTools().MountPartition(self.Path, self.MountPoint)
+
+        #Now the 2nd should have been unmounted to get it out of the way, and the 1st should be there.
+        self.assertFalse(Functions.IsMounted(self.Path2, self.MountPoint))
+        self.assertTrue(Functions.IsMounted(self.Path, self.MountPoint))
+
+        Functions.UnmountDisk(self.Path)
+
+        #Clean up.
+        del self.Path2
+
+    def testMountPartition4(self):
+        #Unmount partition.
+        Functions.UnmountDisk(self.Path)
+
+        #Try to mount in subdir of usual mount point.
+        BackendTools().MountPartition(self.Path, self.MountPoint+"/subdir")
+
+        #Check is mounted.
+        self.assertTrue(Functions.IsMounted(self.Path, self.MountPoint+"/subdir"))
+
+        #Unmount.
+        Functions.UnmountDisk(self.Path)
+
+        #Clean up.
+        if os.path.isdir(self.MountPoint+"/subdir"):
+            os.rmdir(self.MountPoint+"/subdir")
 

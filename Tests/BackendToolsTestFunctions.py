@@ -105,7 +105,7 @@ def MountPartition(Partition, MountPoint, Options=""):
 
     elif MountPoint in MountInfo:
         #Something else is in the way. Unmount that partition, and continue.
-        if Unmount(MountPoint) != 0:
+        if UnmountDisk(MountPoint) != 0:
             return False
 
     #Create the dir if needed.

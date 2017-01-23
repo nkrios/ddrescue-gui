@@ -285,4 +285,4 @@ class TestComputeBlockSize(unittest.TestCase):
 
     def testComputeBlockSize(self):
         for Data in self.BlockSizes:
-            self.assertEqual(DevInfoTools().ComputeBlockSize(Data), self.CorrectResults[self.BlockSizes.index(Data)])
+            self.assertEqual(DevInfoTools().ComputeBlockSize("FakeDisk", Data), self.CorrectResults[self.BlockSizes.index(Data)])
