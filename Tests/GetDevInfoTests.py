@@ -267,3 +267,22 @@ class TestParseLVMOutput(unittest.TestCase):
     def testParseAndAssembleLVMOutput(self):
         DevInfoTools().ParseLVMOutput()
         self.assertEqual(GetDevInfo.getdevinfo.DiskInfo, self.CorrectDiskInfo)
+
+class TestComputeBlockSize(unittest.TestCase):
+    def setUp(self):
+        if Linux:
+            self.BlockSizes, self.CorrectResults = (Data.ReturnFakeBlockDevOutput(), [None, "512", "1024", "2048", "4096", "8192"])
+
+        else:
+            self.BlockSizes, self.CorrectResults = (["Not a plist", Data.ReturnFakeDiskutilInfoBadDisk0Plist(), Data.ReturnFakeDiskutilInfoDisk0Plist(), Data.ReturnFakeDiskutilInfoDisk0s1Plist(), Data.ReturnFakeDiskutilInfoDisk0s2Plist(), Data.ReturnFakeDiskutilInfoDisk0s3Plist()], [None, None, "512", "1024", "2048", "4096"])
+        
+        GetDevInfo.getdevinfo.plistlib = plistlib
+
+    def tearDown(self):
+        del self.BlockSizes
+        del self.CorrectResults
+        del GetDevInfo.getdevinfo.plistlib
+
+    def testComputeBlockSize(self):
+        for Data in self.BlockSizes:
+            self.assertEqual(DevInfoTools().ComputeBlockSize("FakeDisk", Data), self.CorrectResults[self.BlockSizes.index(Data)])

@@ -290,8 +290,6 @@ def ReturnFakeDiskutilInfoBadDisk0Plist():
 	<false/>
 	<key>Content</key>
 	<string>GUID_partition_scheme</string>
-	<key>DeviceBlockSize</key>
-	<integer>512</integer>
 	<key>DeviceIdentifier</key>
 	<string>disk0</string>
 	<key>DeviceNode</key>
@@ -462,8 +460,8 @@ def ReturnFakeDiskutilInfoDisk0s1Plist():
 	<false/>
 	<key>Content</key>
 	<string>EFI</string>
-	<key>DeviceBlockSize</key>
-	<integer>512</integer>
+	<key>VolumeBlockSize</key>
+	<integer>1024</integer>
 	<key>DeviceIdentifier</key>
 	<string>disk0s1</string>
 	<key>DeviceNode</key>
@@ -551,7 +549,7 @@ def ReturnFakeDiskutilInfoDisk0s2Plist():
 	<key>Content</key>
 	<string>Apple_HFS</string>
 	<key>DeviceBlockSize</key>
-	<integer>512</integer>
+	<integer>2048</integer>
 	<key>DeviceIdentifier</key>
 	<string>disk0s2</string>
 	<key>DeviceNode</key>
@@ -653,7 +651,7 @@ def ReturnFakeDiskutilInfoDisk0s3Plist():
 	<key>Content</key>
 	<string>Apple_Boot</string>
 	<key>DeviceBlockSize</key>
-	<integer>512</integer>
+	<integer>4096</integer>
 	<key>DeviceIdentifier</key>
 	<string>disk0s3</string>
 	<key>DeviceNode</key>
@@ -774,3 +772,6 @@ def ReturnFakeLVMOutput():
     Physical extents	410 to 3788
    
    """.split("\n")
+
+def ReturnFakeBlockDevOutput():
+    return ["No such file or device", "512", "1024", "2048", "4096", "8192"]
