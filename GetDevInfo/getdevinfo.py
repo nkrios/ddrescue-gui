@@ -430,22 +430,25 @@ class Main():
         return DiskInfo
 
     def GetBlockSize(self, Disk):
-        """Find the given Disk's blocksize, and return it"""
+        """Run the command to get the block size, and pass it to ComputeBlockSize()"""
         logger.debug("GetDevInfo: Main().GetBlockSize(): Finding blocksize for Disk: "+Disk+"...")
 
         if Linux:
     	    #Run /sbin/blockdev to try and get blocksize information.
-            logger.debug("GetDevInfo: Main().GetBlockSize(): Running 'blockdev --getpbsz "+Disk+"'...")
-            runcmd = subprocess.Popen("blockdev --getpbsz "+Disk, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+            Command = "blockdev --getpbsz "+Disk
 
         else:
             #Run diskutil list to get Disk names.
-            logger.debug("GetDevInfo: Main().GetBlockSize(): Running 'diskutil info "+Disk+"'...")
-            runcmd = subprocess.Popen("diskutil info -plist "+Disk, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+            Command = "diskutil info -plist "+Disk
 
-        #Get the output.
-        stdout, stderr = runcmd.communicate()
+        logger.debug("GetDevInfo: Main().GetBlockSize(): Running '"+Command+"'...")
+        runcmd = subprocess.Popen(Command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 
+        #Get the output and pass it to ComputeBlockSize.
+        return self.ComputeBlockSize(Disk, runcmd.communicate()[0])
+
+    def ComputeBlockSize(self, Disk, stdout):
+        """Called with stdout from blockdev (Linux), or dickutil (Mac) and gets block size"""
         if Linux:
             Result = stdout.replace('\n', '')
 
@@ -519,3 +522,4 @@ if __name__ == "__main__":
 
     for Key in Keys:
         print("\n\n", DiskInfo[Key], "\n\n")
+        print(Main().GetBlockSize(Key))
