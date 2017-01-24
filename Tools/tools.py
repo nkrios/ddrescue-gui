@@ -211,7 +211,7 @@ class Main():
             Retval = self.StartProcess("mount "+Options+" "+Partition+" "+MountPoint)
 
         else:
-            Retval = self.StartProcess("diskutil mount "+Options+" "+Partition+" -mountPoint "+MountPoint)
+            Retval = self.StartProcess("diskutil mount "+Options+" "+" -mountPoint "+MountPoint+" "+Partition)
 
         if Retval == 0:
             logger.debug("Tools: Main().MountPartition(): Successfully mounted partition!")
