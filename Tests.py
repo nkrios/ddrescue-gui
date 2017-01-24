@@ -97,7 +97,7 @@ for o, a in opts:
         assert False, "unhandled option"
 
 #Set up the logger (silence all except critical logging messages).
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s: %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p', level=logging.CRITICAL)
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s: %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p', level=logging.DEBUG)
 logger = logging
 
 #Set up resource path and determine OS.

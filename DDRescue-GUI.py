@@ -43,7 +43,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "1.6.2"
-ReleaseDate = "23/1/2017"
+ReleaseDate = "24/1/2017"
 SessionEnding = False
 
 def usage():
@@ -1844,7 +1844,6 @@ class SettingsWindow(wx.Frame):
         #Direct disk access setting.
         if Settings["DirectAccess"] == "-d":
             self.DirectAccessCB.SetValue(True)
-
         else:
             self.DirectAccessCB.SetValue(False)
 
