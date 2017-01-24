@@ -126,7 +126,7 @@ class Main():
             Mounted = False
 
             #OS X fix: Handle paths with /tmp in them, as paths with /private/tmp.
-            if not Linux and "/tmp" in Partiton:
+            if not Linux and "/tmp" in Partition:
                 Partition.replace("/tmp", "/private/tmp")
 
             #Linux fix: Accept any mountpoint when called with just one argument.
