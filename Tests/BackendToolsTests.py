@@ -242,6 +242,10 @@ class TestMountPartition(unittest.TestCase):
 
     def tearDown(self):
         self.app.Destroy()
+
+        #Unmount.
+        BackendTools().UnmountDisk(self.Path)
+
         del self.app
         del self.Path
 
@@ -285,8 +289,8 @@ class TestMountPartition(unittest.TestCase):
         BackendTools().MountPartition(self.Path, self.MountPoint)
 
         #Now the 2nd should have been unmounted to get it out of the way, and the 1st should be there.
-        self.assertFalse(Functions.IsMounted(self.Path2, self.MountPoint))
-        self.assertTrue(Functions.IsMounted(self.Path, self.MountPoint))
+        self.assertFalse(BackendTools().IsMounted(self.Path2, self.MountPoint))
+        self.assertTrue(BackendTools().IsMounted(self.Path, self.MountPoint))
 
         Functions.UnmountDisk(self.Path)
 
