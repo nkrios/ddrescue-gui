@@ -113,7 +113,14 @@ def MountPartition(Partition, MountPoint, Options=""):
         os.makedirs(MountPoint)
     
     #Mount the device to the mount point.
-    Retval = StartProcess("mount "+Options+" "+Partition+" "+MountPoint)
+    #Use diskutil on OS X.
+    if Linux:
+        MountCommand = "mount"
+
+    else:
+        MountCommand = "diskutil mount"
+
+    Retval = StartProcess(MountCommand+" "+Options+" "+Partition+" "+MountPoint)
 
     return Retval
 

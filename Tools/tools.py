@@ -206,7 +206,14 @@ class Main():
             os.makedirs(MountPoint)
     
         #Mount the device to the mount point.
-        Retval = self.StartProcess("mount "+Options+" "+Partition+" "+MountPoint)
+        #Use diskutil on OS X.
+        if Linux:
+            MountCommand = "mount"
+
+        else:
+            MountCommand = "diskutil mount"
+
+        Retval = self.StartProcess(MountCommand+" "+Options+" "+Partition+" "+MountPoint)
 
         if Retval == 0:
             logger.debug("Tools: Main().MountPartition(): Successfully mounted partition!")

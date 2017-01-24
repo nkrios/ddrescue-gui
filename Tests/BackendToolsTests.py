@@ -141,7 +141,7 @@ class TestMacHdiutil(unittest.TestCase):
         global PotentialDevicePath
         PotentialDevicePath = DevicePath
 
-        self.assertEqual(BackendTools().MacRunHdiutil("info", DevicePath)[0], 0)
+        self.assertEqual(BackendTools().MacRunHdiutil("info "+DevicePath, DevicePath)[0], 0)
 
 class TestIsMounted(unittest.TestCase):
     def setUp(self):
@@ -164,6 +164,9 @@ class TestIsMounted(unittest.TestCase):
 
         #Remove the mount point.
         if os.path.isdir("/tmp/ddrescueguimtpt"):
+            if os.path.isdir("/tmp/ddrescueguimtpt/subdir"):
+                os.rmdir("/tmp/ddrescueguimtpt/subdir")
+
             os.rmdir("/tmp/ddrescueguimtpt")
 
         self.app.Destroy()
@@ -243,6 +246,9 @@ class TestMountPartition(unittest.TestCase):
         del self.Path
 
         if os.path.isdir("/tmp/ddrescueguimtpt"):
+            if os.path.isdir("/tmp/ddrescueguimtpt/subdir"):
+                os.rmdir("/tmp/ddrescueguimtpt/subdir")
+
             os.rmdir("/tmp/ddrescueguimtpt")
 
     def testMountPartition1(self):
