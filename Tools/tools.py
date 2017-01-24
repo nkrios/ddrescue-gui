@@ -142,6 +142,10 @@ class Main():
 
             Mounted = False
 
+            #OS X fix: Handle paths with /tmp in them, as paths with /private/tmp.
+            if not Linux and "/tmp" in MountPoint:
+                MountPoint = MountPoint.replace("/tmp", "/private/tmp")
+
             if self.GetMountPointOf(Partition) == MountPoint:
                 Mounted = True
 
