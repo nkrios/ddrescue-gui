@@ -176,7 +176,7 @@ class TestIsMounted(unittest.TestCase):
     def testIsMounted1(self):
         #If not mounted, mount it
         if not Functions.IsMounted(self.Path):
-            self.assertEqual(Functions.MountPartition(self.Path, "/tmp/ddrescueguimtpt"), 0) #*** Fix on OS X***
+            self.assertEqual(BackendTools().MountPartition(self.Path, "/tmp/ddrescueguimtpt"), 0) #*** Fix on OS X***
 
         self.assertTrue(BackendTools().IsMounted(self.Path))
 
@@ -279,7 +279,7 @@ class TestMountPartition(unittest.TestCase):
             Functions.UnmountDisk(Partition)
 
         #Mount the 2nd one on the desired path for the 1st one.
-        Functions.MountPartition(self.Path2, self.MountPoint)
+        BackendTools().MountPartition(self.Path2, self.MountPoint)
 
         #Now try to mount the first one there.
         BackendTools().MountPartition(self.Path, self.MountPoint)
@@ -304,7 +304,7 @@ class TestMountPartition(unittest.TestCase):
         self.assertTrue(Functions.IsMounted(self.Path, self.MountPoint+"/subdir"))
 
         #Unmount.
-        Functions.UnmountDisk(self.Path)
+        BackendTools().UnmountDisk(self.Path)
 
         #Clean up.
         if os.path.isdir(self.MountPoint+"/subdir"):
