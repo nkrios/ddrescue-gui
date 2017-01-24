@@ -57,6 +57,10 @@ def IsMounted(Partition, MountPoint=None):
 
         Mounted = False
 
+        #OS X fix: Handle paths with /tmp in them, as paths with /private/tmp.
+        if not Linux and "/tmp" in Partition:
+            Partition = Partition.replace("/tmp", "/private/tmp")
+
         #Linux fix: Accept any mountpoint when called with just one argument.
         for Line in MountInfo.split("\n"):
             if len(Line) != 0:
@@ -67,6 +71,10 @@ def IsMounted(Partition, MountPoint=None):
     else:
         #Check where it's mounted to.
         Mounted = False
+
+        #OS X fix: Handle paths with /tmp in them, as paths with /private/tmp.
+        if not Linux and "/tmp" in MountPoint:
+            MountPoint = MountPoint.replace("/tmp", "/private/tmp")
 
         if GetMountPointOf(Partition) == MountPoint:
             Mounted = True
