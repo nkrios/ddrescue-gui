@@ -115,12 +115,10 @@ def MountPartition(Partition, MountPoint, Options=""):
     #Mount the device to the mount point.
     #Use diskutil on OS X.
     if Linux:
-        MountCommand = "mount"
+        Retval = StartProcess("mount "+Options+" "+Partition+" "+MountPoint)
 
     else:
-        MountCommand = "diskutil mount"
-
-    Retval = StartProcess(MountCommand+" "+Options+" "+Partition+" "+MountPoint)
+        Retval = StartProcess("diskutil mount "+Options+" "+Partition+" -mountPoint "+MountPoint)
 
     return Retval
 
