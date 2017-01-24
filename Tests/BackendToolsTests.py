@@ -74,7 +74,6 @@ class TestStartProcess(unittest.TestCase):
     def tearDown(self):
         del self.Commands
 
-    @unittest.skipUnless(False, "Disabled to speed up development")
     def testStartProcess(self):
         for Command in self.Commands.keys():
             Retval, Output = BackendTools().StartProcess(Command=Command, ReturnOutput=True)
@@ -130,7 +129,7 @@ class TestMacHdiutil(unittest.TestCase):
 
     @unittest.skipUnless(not Linux, "Mac-specific test")
     def testMacRunHdiutil(self):
-        #*** Add more tests for when "resource is temporarily unavailable" errors happen *** *** Create image to test against? ***
+        #*** Add more tests for when "resource is temporarily unavailable" errors happen *** *** Create image to test against? *** *** Test against a device too. ***
         #Get a device path from the user to test against.
         dlg = wx.TextEntryDialog(None, "DDRescue-GUI needs a device name to test against.\nNo data on your device will be modified. Suggested: insert a USB disk and leave it mounted.\nNote: Do not use your device while these test are running, or it may interfere with the tests.", "DDRescue-GUI Tests", PotentialDevicePath, style=wx.OK)
         dlg.ShowModal()
@@ -176,7 +175,7 @@ class TestIsMounted(unittest.TestCase):
     def testIsMounted1(self):
         #If not mounted, mount it
         if not Functions.IsMounted(self.Path):
-            self.assertEqual(BackendTools().MountPartition(self.Path, "/tmp/ddrescueguimtpt"), 0) #*** Fix on OS X***
+            self.assertEqual(BackendTools().MountPartition(self.Path, "/tmp/ddrescueguimtpt"), 0)
 
         self.assertTrue(BackendTools().IsMounted(self.Path))
 
