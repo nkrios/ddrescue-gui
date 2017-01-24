@@ -208,10 +208,10 @@ class Main():
         #Mount the device to the mount point.
         #Use diskutil on OS X.
         if Linux:
-            Retval = StartProcess("mount "+Options+" "+Partition+" "+MountPoint)
+            Retval = self.StartProcess("mount "+Options+" "+Partition+" "+MountPoint)
 
         else:
-            Retval = StartProcess("diskutil mount "+Options+" "+Partition+" -mountPoint "+MountPoint)
+            Retval = self.StartProcess("diskutil mount "+Options+" "+Partition+" -mountPoint "+MountPoint)
 
         if Retval == 0:
             logger.debug("Tools: Main().MountPartition(): Successfully mounted partition!")

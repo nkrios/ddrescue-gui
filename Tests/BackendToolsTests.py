@@ -141,7 +141,7 @@ class TestMacHdiutil(unittest.TestCase):
         global PotentialDevicePath
         PotentialDevicePath = DevicePath
 
-        self.assertEqual(BackendTools().MacRunHdiutil("info "+DevicePath, DevicePath)[0], 0)
+        self.assertEqual(BackendTools().MacRunHdiutil("info", DevicePath)[0], 0)
 
 class TestIsMounted(unittest.TestCase):
     def setUp(self):
