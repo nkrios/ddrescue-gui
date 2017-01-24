@@ -54,6 +54,7 @@ def usage():
     print("\nUsage: Tests.py [OPTION]\n\n")
     print("Options:\n")
     print("       -h, --help:                   Display this help text.")
+    print("       -d, --debug:                  Set logging level to debug, to show all logging messages. Default: show only critical logging messages.")
     print("       -g, --getdevinfo:             Run tests for GetDevInfo module.")
     print("       -b, --backendtools:           Run tests for BackendTools module.")
     print("       -m, --main:                   Run tests for main file (DDRescue-GUI.py).")
@@ -67,7 +68,7 @@ if os.geteuid() != 0:
 
 #Check all cmdline options are valid.
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "hgbma", ["help", "getdevinfo", "backendtools", "main", "all"])
+    opts, args = getopt.getopt(sys.argv[1:], "hdgbma", ["help", "debug", "getdevinfo", "backendtools", "main", "all"])
 
 except getopt.GetoptError as err:
     #Invalid option. Show the help message and then exit.
@@ -78,6 +79,9 @@ except getopt.GetoptError as err:
 
 #Set up which tests to run based on options given.
 TestSuites = [GetDevInfoTests, BackendToolsTests] #*** Set up full defaults when finished ***
+
+#Log only critical message by default.
+loggerLevel = logging.CRITICAL
 
 for o, a in opts:
     if o in ["-g", "--getdevinfo"]:
@@ -90,6 +94,8 @@ for o, a in opts:
     elif o in ["-a", "--all"]:
         TestSuites = [GetDevInfoTests, BackendToolsTests]
         #TestSuites.append(MainTests)
+    elif o in ["-d", "--debug"]:
+        loggerLevel = logging.DEBUG
     elif o in ["-h", "--help"]:
         usage()
         sys.exit()
@@ -97,7 +103,7 @@ for o, a in opts:
         assert False, "unhandled option"
 
 #Set up the logger (silence all except critical logging messages).
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s: %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p', level=logging.CRITICAL)
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s: %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p', level=loggerLevel)
 logger = logging
 
 #Set up resource path and determine OS.
