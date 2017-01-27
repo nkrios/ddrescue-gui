@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*- 
-# DDRescue-GUI Main Script Version 1.6.2
+# DDRescue-GUI Main Script Version 1.7
 # This file is part of DDRescue-GUI.
 # Copyright (C) 2013-2017 Hamish McIntyre-Bhatty
 # DDRescue-GUI is free software: you can redistribute it and/or modify it
@@ -42,7 +42,7 @@ import traceback
 from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
-Version = "1.6.2"
+Version = "1.7"
 ReleaseDate = "27/1/2017"
 SessionEnding = False
 

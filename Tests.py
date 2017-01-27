@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*- 
-# Unit tests for DDRescue-GUI Version 1.6.2
+# Unit tests for DDRescue-GUI Version 1.7
 # This file is part of DDRescue-GUI.
 # Copyright (C) 2013-2017 Hamish McIntyre-Bhatty
 # DDRescue-GUI is free software: you can redistribute it and/or modify it
@@ -35,7 +35,7 @@ import sys
 from bs4 import BeautifulSoup
 
 #Global vars.
-Version = "1.6.2"
+Version = "1.7"
 
 #Custom made modules.
 import GetDevInfo
