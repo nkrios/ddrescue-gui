@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with DDRescue-GUI.  If not, see <http://www.gnu.org/licenses/>.
 
-#*** Refactor in specified places ***
-
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
 from __future__ import division
@@ -154,6 +152,7 @@ Tools.tools.logging = logging
 Tools.tools.time = time
 Tools.tools.Linux = Linux
 Tools.tools.RescourcePath = RescourcePath
+
 
 #Begin Disk Information Handler thread.
 class GetDiskInformation(threading.Thread):
@@ -424,8 +423,8 @@ class MainWindow(wx.Frame):
 
         #Set the wildcards and make it easy for the user to find his/her home directory (helps make DDRescue-GUI more user friendly).
         if Linux:
-            self.InputWildcard = "SATA HDDs/USB Drives|sd*|Optical Drives|sr*|Floppy Drives|fd*|IMG Disk Image (*.img)|*.img|ISO (CD/DVD) Disk Image (*.iso)|*.iso|All Files/Disks (*)|*"
-            self.OutputWildcard = "IMG Disk Image (*.img)|*.img|ISO (CD/DVD) Disk Image (*.iso)|*.iso|SATA HDDs/USB Drives|sd*|Floppy Drives|fd*|All Files/Disks (*)|*"
+            self.InputWildcard = "(S)ATA HDDs/USB Drives|sd*|Optical Drives|sr*|Floppy Drives|fd*|IMG Disk Image (*.img)|*.img|ISO (CD/DVD) Disk Image (*.iso)|*.iso|All Files/Disks (*)|*"
+            self.OutputWildcard = "IMG Disk Image (*.img)|*.img|ISO (CD/DVD) Disk Image (*.iso)|*.iso|(S)ATA HDDs/USB Drives|sd*|Floppy Drives|fd*|All Files/Disks (*)|*"
             self.UserHomeDir = "/home"
 
         else:
@@ -2299,40 +2298,8 @@ class FinishedWindow(wx.Frame):
         wx.CallAfter(self.ParentWindow.UpdateStatusBar, "Preparing to mount output file. Please Wait...")
         wx.Yield()
 
-        #Determine what type of OutputFile we have (Partition or Device). *** Outsource to function in tools module ***
-        if Settings["InputFile"] in DiskInfo:
-			#Read from DiskInfo if possible (OutputFile type = InputFile type)
-            self.OutputFileType = DiskInfo[Settings["InputFile"]]["Type"]
-            Retval = 0
-
-            if self.OutputFileType == "Device":
-                if Linux:
-                    Retval, Partitions = BackendTools().StartProcess(Command="kpartx -l "+Settings["OutputFile"], ReturnOutput=True)
-                    Partitions = Partitions.split("\n")
-
-                else:
-                    Retval, Output = BackendTools().MacRunHdiutil(Options="imageinfo "+Settings["OutputFile"]+" -plist", Disk=Settings["OutputFile"])
-
-        else:
-            if Linux:
-                #If list of partitions is empty (or 1 partition), we have a partition.
-                Retval, Partitions = BackendTools().StartProcess(Command="kpartx -l "+Settings["OutputFile"], ReturnOutput=True)
-                Partitions = Partitions.split("\n")
-
-                if Partitions == [""] or len(Partitions) == 1:
-                    self.OutputFileType = "Partition"
-
-                else:
-                    self.OutputFileType = "Device"
-
-            else:
-                Retval, Output = BackendTools().MacRunHdiutil(Options="imageinfo "+Settings["OutputFile"]+" -plist", Disk=Settings["OutputFile"])
-                
-                if "whole disk" in Output:
-                    self.OutputFileType = "Partition"
-
-                else:
-                    self.OutputFileType = "Device"
+        #Determine what type of OutputFile we have (Partition or Device).
+        self.OutputFileType, Retval, Output = BackendTools().DetermineOutputFileType(Settings=Settings, DiskInfo=DiskInfo)
 
         #If retval != 0 report to user.
         if Retval != 0:
@@ -2404,7 +2371,7 @@ class FinishedWindow(wx.Frame):
                 BackendTools().StartProcess(Command="kpartx -a "+Settings["OutputFile"], ReturnOutput=False)
 
                 #Get some Disk information.
-                Output = BackendTools().StartProcess(Command="lsblk -r -o NAME,FSTYPE,SIZE", ReturnOutput=True)[1].split('\n')
+                LsblkOutput = BackendTools().StartProcess(Command="lsblk -r -o NAME,FSTYPE,SIZE", ReturnOutput=True)[1].split('\n')
 
             else:
                 #Attempt to mount the image (this mounts all partitions inside).
@@ -2427,28 +2394,25 @@ class FinishedWindow(wx.Frame):
                 #Get the block size of the image.
                 Blocksize = ImageinfoOutput["partitions"]["block-size"]
 
-                Partitions = ImageinfoOutput["partitions"]["partitions"]
-
+                Output = ImageinfoOutput["partitions"]["partitions"]
 
             #Create a nice list of Partitions for the user.
             Choices = []
 
-            for Partition in Partitions:
+            for Partition in Output:
                 #Skip non-partition things and any "partitions" that don't have numbers (OS X).
                 if (Linux and (Partition[0:12] == "loop deleted" or "/dev/" not in Partition)) or (not Linux and ("partition-number" not in Partition)):
                     continue
 
                 if Linux:
                     #Get the info related to this partition.
-                    for Line in Output:
+                    for Line in LsblkOutput:
                         if Partition.split()[0] in Line:
                             #Add stuff, trying to keep it human-readable.
                             Choices.append("Partition "+Partition.split()[0].split("p")[-1]+", Filesystem: "+Line.split()[-2]+", Size: "+Line.split()[-1])
 
                 else:
-                    Choices.append("Partition "+unicode(Partition["partition-number"])+", with size "+unicode((Partition["partition-length"] * Blocksize) // 1000000)+" MB")
-
-
+                    Choices.append("Partition "+unicode(Partition["partition-number"])+", with size "+unicode((Partition["partition-length"] * Blocksize) // 1000000)+" MB") #*** Round to best size using Unitlist etc? ***
 
             #Ask the user which partition to mount.
             logger.debug("FinishedWindow().MountDisk(): Asking user which partition to mount...")
@@ -2463,7 +2427,7 @@ class FinishedWindow(wx.Frame):
 
             if Linux:
 				#Get the partition to mount by combining the partition number the user selected with the loop device name from the partitions list.
-                PartitionToMount = "/dev/mapper/"+Partitions[0][0:6]+dlg.GetStringSelection().split()[1].replace(",", "")
+                PartitionToMount = "/dev/mapper/"+Output[0][0:6]+dlg.GetStringSelection().split()[1].replace(",", "")
                 self.OutputFileMountPoint = "/mnt"+PartitionToMount
 
                 #Attempt to mount the disk.

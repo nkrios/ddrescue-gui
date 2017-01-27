@@ -97,7 +97,39 @@ class Main():
         else:
             #Use Cocoadialog. (use subprocess to avoid blocking GUI thread.)
             subprocess.Popen(RescourcePath+"""/other/CocoaDialog.app/Contents/MacOS/CocoaDialog bubble --title "DDRescue-GUI" --text \""""+Message+"""\" --icon-file """+RescourcePath+"""/images/Logo.png  --background-top EFF7FD --border-color EFF7FD""", shell=True)
-            
+
+    def DetermineOutputFileType(self, Settings, DiskInfo):
+        """Determines Output File Type (Partition or Device)"""
+        if Settings["InputFile"] in DiskInfo:
+			#Read from DiskInfo if possible (OutputFile type = InputFile type)
+            OutputFileType = DiskInfo[Settings["InputFile"]]["Type"]
+            Retval = 0
+            Output = ""
+
+            if OutputFileType == "Device":
+                if Linux:
+                    Retval, Output = self.StartProcess(Command="kpartx -l "+Settings["OutputFile"], ReturnOutput=True)
+                    Output = Output.split("\n")
+
+                else:
+                    Retval, Output = self.MacRunHdiutil(Options="imageinfo "+Settings["OutputFile"]+" -plist", Disk=Settings["OutputFile"])
+
+        else:
+            if Linux:
+                #If list of partitions is empty (or 1 partition), we have a partition.
+                Retval, Output = self.StartProcess(Command="kpartx -l "+Settings["OutputFile"], ReturnOutput=True)
+                Output = Output.split("\n")
+
+            else:
+                Retval, Output = self.MacRunHdiutil(Options="imageinfo "+Settings["OutputFile"]+" -plist", Disk=Settings["OutputFile"])
+
+            if Output == [""] or len(Output) == 1 or "whole disk" in Output:
+                OutputFileType = "Partition"
+
+            else:
+                OutputFileType = "Device"
+ 
+        return OutputFileType, Retval, Output
 
     def MacRunHdiutil(self, Options, Disk):
         """Runs hdiutil on behalf of the rest of the program when called. Tries to handle and fix hdiutil errors if they occurr."""
