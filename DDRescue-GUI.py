@@ -149,10 +149,10 @@ Tools.tools.os = os
 Tools.tools.subprocess = subprocess
 Tools.tools.logger = logger
 Tools.tools.logging = logging
+Tools.tools.plistlib = plistlib
 Tools.tools.time = time
 Tools.tools.Linux = Linux
 Tools.tools.RescourcePath = RescourcePath
-
 
 #Begin Disk Information Handler thread.
 class GetDiskInformation(threading.Thread):
