@@ -2369,8 +2369,12 @@ class FinishedWindow(wx.Frame):
                 dlg.ShowModal()
                 dlg.Destroy()
 
-            #Get the mountpoint.
-            MountedDisk = HdiutilOutput["system-entities"][1]
+            #Find the disk and get the mountpoint.
+            if len(HdiutilOutput["system-entities"]) > 1:
+                MountedDisk = HdiutilOutput["system-entities"][1]
+
+            else:
+                MountedDisk = HdiutilOutput["system-entities"][0]
 
             self.OutputFileDeviceName = MountedDisk["dev-entry"]
             self.OutputFileMountPoint = MountedDisk["mount-point"]
