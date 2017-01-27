@@ -967,7 +967,7 @@ class MainWindow(wx.Frame):
             Settings[SettingsKey] = Paths[UserSelection]
 
         #Handle special cases if the file is the output file.
-        if Type == "Output":
+        if Type == "Output" and Settings[SettingsKey] != None:
             #Check with the user if the output file already exists.
             if os.path.exists(Settings[SettingsKey]):
                 logger.info("MainWindow().FileChoiceHandler(): Selected file already exists! Showing warning to user...")
