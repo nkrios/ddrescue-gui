@@ -2303,6 +2303,7 @@ class FinishedWindow(wx.Frame):
         if Settings["InputFile"] in DiskInfo:
 			#Read from DiskInfo if possible (OutputFile type = InputFile type)
             self.OutputFileType = DiskInfo[Settings["InputFile"]]["Type"]
+            Retval = 0
 
             if self.OutputFileType == "Device":
                 if Linux:
