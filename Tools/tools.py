@@ -131,6 +131,24 @@ class Main():
  
         return OutputFileType, Retval, Output
 
+    def MacGetDevNameAndMountPoint(self, Output):
+        """Get the device name and mount point of an output file, given output from hdiutil mount -plist"""
+        #Parse the plist (Property List).
+        try:
+            HdiutilOutput = plistlib.readPlistFromString(Output)
+
+        except UnicodeDecodeError:
+            return None, None, "UnicodeError"
+
+        #Find the disk and get the mountpoint.
+        if len(HdiutilOutput["system-entities"]) > 1:
+            MountedDisk = HdiutilOutput["system-entities"][1]
+
+        else:
+            MountedDisk = HdiutilOutput["system-entities"][0]
+
+        return MountedDisk["dev-entry"], MountedDisk["mount-point"]
+
     def MacRunHdiutil(self, Options, Disk):
         """Runs hdiutil on behalf of the rest of the program when called. Tries to handle and fix hdiutil errors if they occurr."""
         Retval, Output = self.StartProcess(Command="hdiutil "+Options, ReturnOutput=True)

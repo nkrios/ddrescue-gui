@@ -2247,6 +2247,11 @@ class FinishedWindow(wx.Frame):
             dlg = wx.MessageDialog(self.Panel, "Your output file could not be mounted!\n\nThe most likely reason for this is that the disk image is incomplete. If the disk image is complete, it may use an unsupported filesystem.\n\nIf you were asked which partition to mount, try again and choose a different one.\n\nThe error was:\n\n"+unicode(Error), "DDRescue-GUI - Error!", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
             dlg.ShowModal()
             dlg.Destroy()
+
+            #Clean up. *** Do more clean up here ***
+            self.OutputFileMountPoint = Settings["OutputFile"] #*** ??? ***
+            MountedFS = False
+
             return False
 
     def UnmountOutputFile(self, Event=None):
@@ -2308,7 +2313,7 @@ class FinishedWindow(wx.Frame):
             dlg.ShowModal()
             dlg.Destroy()
             return False
-            
+
         if self.OutputFileType == "Partition":
 			#We have a partition.
             logger.debug("FinishedWindow().MountDisk(): Output file is a partition! Continuing...")
@@ -2337,32 +2342,21 @@ class FinishedWindow(wx.Frame):
 
             else:
                 #More steps required on macOS.
-                #Parse the plist (Property List).
-                try:
-                    HdiutilOutput = plistlib.readPlistFromString(Output)
+                self.OutputFileDeviceName, self.OutputFileMountPoint, Result = BackendTools().MacGetDevNameAndMountPoint(Output)
 
-                except UnicodeDecodeError:
+                if Result == "UnicodeError":
                     logger.error("FinishedWindow().MountDisk(): FIXME: Couldn't parse output of hdiutil mount due to UnicodeDecodeError. Cleaning up and warning user...")
                     self.UnmountOutputFile()
                     dlg = wx.MessageDialog(self.Panel, "FIXME: Couldn't parse output of hdiutil mount due to UnicodeDecodeError.", "DDRescue-GUI - Error", style=wx.OK | wx.ICON_ERROR)
                     dlg.ShowModal()
                     dlg.Destroy()
-
-                #Find the disk and get the mountpoint.
-                if len(HdiutilOutput["system-entities"]) > 1:
-                    MountedDisk = HdiutilOutput["system-entities"][1]
-
-                else:
-                    MountedDisk = HdiutilOutput["system-entities"][0]
-
-                self.OutputFileDeviceName = MountedDisk["dev-entry"]
-                self.OutputFileMountPoint = MountedDisk["mount-point"]
+                    return False
 
                 logger.info("FinishedWindow().MountDisk(): Success! Waiting for user to finish with it and prompt to unmount it...")
                 return True
 
         else:
-            #We have a device.
+            #We have a device. *** Try to outsource bits and do things in the same order to reduce duplication ***
             logger.debug("FinishedWindow().MountDisk(): Output file isn't a partition! Getting list of contained partitions...")
 
             if Linux:
@@ -2448,7 +2442,7 @@ class FinishedWindow(wx.Frame):
                     dlg.Destroy()
                     return False
 
-            else:
+            else: #*** outsource all this to a separate function(s) ***
                 SelectedPartNum = dlg.GetStringSelection().split()[1].replace(",", "")
 
                 try:
@@ -2481,11 +2475,6 @@ class FinishedWindow(wx.Frame):
                     dlg = wx.MessageDialog(self.Panel, "FIXME: Couldn't parse output of hdiutil mount due to UnicodeDecodeError.", "DDRescue-GUI - Error", style=wx.OK | wx.ICON_ERROR)
                     dlg.ShowModal()
                     dlg.Destroy()
-                    MountedFS = False
-
-                except:
-                    #Unexpected error.
-                    self.OutputFileMountPoint = Settings["OutputFile"]
                     MountedFS = False
 
                 if not MountedFS:
