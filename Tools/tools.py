@@ -97,6 +97,7 @@ class Main():
         else:
             #Use Cocoadialog. (use subprocess to avoid blocking GUI thread.)
             subprocess.Popen(RescourcePath+"""/other/CocoaDialog.app/Contents/MacOS/CocoaDialog bubble --title "DDRescue-GUI" --text \""""+Message+"""\" --icon-file """+RescourcePath+"""/images/Logo.png  --background-top EFF7FD --border-color EFF7FD""", shell=True)
+            
 
     def MacRunHdiutil(self, Options, Disk):
         """Runs hdiutil on behalf of the rest of the program when called. Tries to handle and fix hdiutil errors if they occurr."""
