@@ -147,7 +147,7 @@ class Main():
         else:
             MountedDisk = HdiutilOutput["system-entities"][0]
 
-        return MountedDisk["dev-entry"], MountedDisk["mount-point"]
+        return MountedDisk["dev-entry"], MountedDisk["mount-point"], True
 
     def MacRunHdiutil(self, Options, Disk):
         """Runs hdiutil on behalf of the rest of the program when called. Tries to handle and fix hdiutil errors if they occurr."""
