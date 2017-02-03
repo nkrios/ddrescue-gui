@@ -2369,6 +2369,8 @@ class FinishedWindow(wx.Frame):
                 LsblkOutput = BackendTools().StartProcess(Command="lsblk -r -o NAME,FSTYPE,SIZE", ReturnOutput=True)[1].split('\n')
 
             else:
+                ImageinfoOutput = Output
+
                 #Get the block size of the image.
                 Blocksize = ImageinfoOutput["partitions"]["block-size"]
 
