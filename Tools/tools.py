@@ -129,7 +129,7 @@ class Main():
             else:
                 OutputFileType = "Device"
 
-        if not Linux:
+        if not Linux and Output != "":
             #Parse the plist (Property List).
             Output = plistlib.readPlistFromString(Output)
 
