@@ -41,7 +41,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "1.7"
-ReleaseDate = "27/1/2017"
+ReleaseDate = "3/2/2017"
 SessionEnding = False
 
 def usage():
@@ -2209,6 +2209,7 @@ class FinishedWindow(wx.Frame):
         if self.MountButton.GetLabel() == "Mount Image/Disk":
             #Change some stuff if it worked.
             if self.MountOutputFile():
+                self.Panel.Layout() #*** Test this fixes display glitch ***
                 self.TopText.SetLabel("Your recovered data is now mounted at:")
                 self.PathText.SetLabel(self.OutputFileMountPoint)
                 self.MountButton.SetLabel("Unmount Image/Disk")
@@ -2233,7 +2234,7 @@ class FinishedWindow(wx.Frame):
 
         wx.CallAfter(self.ParentWindow.UpdateStatusBar, "Finished")
 
-    def MountOutputFile(self, Event=None):
+    def MountOutputFile(self, Event=None): #*** Do we need this function any more? ***
         """Handle errors and call the platform-dependent mounter function to mount the output file"""
         logger.debug("FinishedWindow().MountOutputFile(): Preparing to mount the output file...")
 
