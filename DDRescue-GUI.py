@@ -2443,7 +2443,7 @@ class FinishedWindow(wx.Frame):
             #We need to ge the device name for the partition we wanted to mount, and check it was actually mounted by the command earlier.
             try:
                 #Get the list of disks mounted.
-                Disks = Plist["system-entities"]
+                Disks = MountOutput["system-entities"]
 
                 #Get the device name given to the output file.
                 #Set this so if we don't find our partition, we can still unmount the image when we report failure.
