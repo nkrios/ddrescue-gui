@@ -2470,7 +2470,7 @@ class FinishedWindow(wx.Frame):
                 dlg.Destroy()
                 return False
 
-            if not MountedFS:
+            if not Success:
                 logger.info("FinishedWindow().MountDisk(): Unsupported or damaged filesystem. Warning user and cleaning up...")
                 self.UnmountOutputFile()
                 dlg = wx.MessageDialog(self.Panel, "That filesystem is either not supported by macOS, or it is damaged (perhaps because the recovery is incomplete). Please try again and select a different partition.", "DDRescue-GUI - Error", wx.OK | wx.ICON_ERROR)
