@@ -128,7 +128,11 @@ class Main():
 
             else:
                 OutputFileType = "Device"
- 
+
+        if not Linux:
+            #Parse the plist (Property List).
+            Output = plistlib.readPlistFromString(Output)
+
         return OutputFileType, Retval, Output
 
     def MacGetDevNameAndMountPoint(self, Output):
