@@ -41,7 +41,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "1.7"
-ReleaseDate = "3/2/2017"
+ReleaseDate = "8/2/2017"
 SessionEnding = False
 
 def usage():
@@ -2209,7 +2209,6 @@ class FinishedWindow(wx.Frame):
         if self.MountButton.GetLabel() == "Mount Image/Disk":
             #Change some stuff if it worked.
             if self.MountOutputFile():
-                self.Panel.Layout() #*** Test this fixes display glitch ***
                 self.TopText.SetLabel("Your recovered data is now mounted at:")
                 self.PathText.SetLabel(self.OutputFileMountPoint)
                 self.MountButton.SetLabel("Unmount Image/Disk")
@@ -2262,28 +2261,32 @@ class FinishedWindow(wx.Frame):
         wx.Yield()
         Retvals = []
 
-        #Check if it worked.
-        if BackendTools().UnmountDisk(self.OutputFileMountPoint) == 0:
-            logger.info("FinishedWindow().UnmountOutputFile(): Successfully unmounted output file...")
+        #Try to umount the output file, if it has been mounted.
+        if self.OutputFileMountPoint != None:
+            if BackendTools().UnmountDisk(self.OutputFileMountPoint) == 0:
+                logger.info("FinishedWindow().UnmountOutputFile(): Successfully unmounted output file...")
 
-        else:
-            logger.error("FinishedWindow().UnmountOutputFile(): Error unmounting output file! Warning user...")
-            dlg = wx.MessageDialog(self.Panel, "It seems your output file is in use. Please close all applications that could be using it and try again.", "DDRescue-GUI - Warning", style=wx.OK | wx.ICON_INFO)
-            dlg.ShowModal()
-            dlg.Destroy()
-            return False
+            else:
+                logger.error("FinishedWindow().UnmountOutputFile(): Error unmounting output file! Warning user...")
+                dlg = wx.MessageDialog(self.Panel, "It seems your output file is in use. Please close all applications that could be using it and try again.", "DDRescue-GUI - Warning", style=wx.OK | wx.ICON_INFO)
+                dlg.ShowModal()
+                dlg.Destroy()
+                return False
 
         #Linux: Pull down loops if the OutputFile is a Device. OS X: Always detach the image's device file.
         if self.OutputFileType == "Device" and Linux:
+            #This won't error on Linux even if the loop device wasn't set up.
             logger.debug("FinishedWindow().UnmountOutputFile(): Pulling down loop device...")
             Command = "kpartx -d "+Settings["OutputFile"]
 
-        elif Linux == False:
+        elif Linux == False and self.OutputFileMountPoint != None:
+            #This will error on macOS if the file hasn't been attached, so skip it in that case.
             logger.error("FinishedWindow().UnmountOutputFile(): Detaching the device that represents the image...")
             Command = "hdiutil detach "+self.OutputFileDeviceName
 
         else:
-            #Linux and partition. Return True.
+            #Linux and partition, or no command needed. Return True.
+            logger.debug("FinishedWindow().UnmountOutputFile(): No further action required.")
             return True
 
         if BackendTools().StartProcess(Command=Command, ReturnOutput=False) == 0:
@@ -2298,7 +2301,7 @@ class FinishedWindow(wx.Frame):
 
         return True
 
-    def MountDisk(self):
+    def MountDisk(self): #*** Test this again ***
         """Mount the output file"""
         logger.info("FinishedWindow().MountDisk(): Mounting Disk: "+Settings["OutputFile"]+"...")
         wx.CallAfter(self.ParentWindow.UpdateStatusBar, "Preparing to mount output file. Please Wait...")
@@ -2357,7 +2360,7 @@ class FinishedWindow(wx.Frame):
                 return True
 
         else:
-            #We have a device. *** Try to outsource bits and do things in the same order to reduce duplication ***
+            #We have a device.
             logger.debug("FinishedWindow().MountDisk(): Output file isn't a partition! Getting list of contained partitions...")
 
             if Linux:
@@ -2401,7 +2404,7 @@ class FinishedWindow(wx.Frame):
             #Respond to the user's action.
             if dlg.ShowModal() != wx.ID_OK:
                 self.OutputFileMountPoint = None
-                logger.debug("FinishedWindow().MountDisk(): Use cancelled operation. Pulling down loop device...")
+                logger.debug("FinishedWindow().MountDisk(): User cancelled operation. Cleaning up...")
                 self.UnmountOutputFile()
                 return False
 
@@ -2421,7 +2424,7 @@ class FinishedWindow(wx.Frame):
                 #Attempt to mount the disk.
                 Retval = BackendTools().MountPartition(Partition=PartitionToMount, MountPoint=self.OutputFileMountPoint)
 
-            else: #*** outsource all this to a separate function(s) ***
+            else:
                 #Attempt to mount the disk (this mounts all partitions inside), and parse the resulting plist.
                 Retval, MountOutput = BackendTools().MacRunHdiutil(Options="mount "+Settings["OutputFile"]+" -plist", Disk=Settings["OutputFile"])
                 MountOutput = plistlib.readPlistFromString(MountOutput)
@@ -2462,10 +2465,10 @@ class FinishedWindow(wx.Frame):
                             Success = True
                             break
 
-            except UnicodeDecodeError:
+            except UnicodeDecodeError: #*** Fix this error in a later release ***
                 logger.error("FinishedWindow().MountDisk(): FIXME: Couldn't parse output of hdiutil mount due to UnicodeDecodeError. Cleaning up and warning user...")
                 self.UnmountOutputFile()
-                dlg = wx.MessageDialog(self.Panel, "FIXME: Couldn't parse output of hdiutil mount due to UnicodeDecodeError.", "DDRescue-GUI - Error", style=wx.OK | wx.ICON_ERROR)
+                dlg = wx.MessageDialog(self.Panel, "You have encountered a known bug in DDRescue-GUI that prevents mounting the output file under curtain circumstances. I'm aware of this issue and will fix it as soon as possible :) In the mean time, please feel free to contact me at hamishmb@live.co.uk if you want help mounting your output file.", "DDRescue-GUI - Information", style=wx.OK | wx.ICON_INFORMATION)
                 dlg.ShowModal()
                 dlg.Destroy()
                 return False
