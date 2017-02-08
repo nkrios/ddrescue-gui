@@ -135,6 +135,7 @@ import Tools
 
 from GetDevInfo.getdevinfo import Main as DevInfoTools
 from Tools.tools import Main as BackendTools
+import Tools.DDRescueTools as DDRescueTools
 
 #Setup custom-made modules (make global variables accessible inside the packages).
 GetDevInfo.getdevinfo.subprocess = subprocess
@@ -2666,9 +2667,7 @@ class BackendThread(threading.Thread):
             logger.info("MainBackendThread().Processline(): Got Initial Status... Setting up the progressbar...")
             self.GotInitialStatus = True
 
-            #Use ddrescue's output. We can do this on OS X too cos ddrescue knows the disk size now.
-            self.DiskCapacity = int(SplitLine[3])
-            self.DiskCapacityUnit = SplitLine[4]
+            self.DiskCapacity, self.DiskCapacityUnit = GetInitialStatus(SplitLine)
 
             wx.CallAfter(self.ParentWindow.SetProgressBarRange, self.DiskCapacity)
 
@@ -2676,51 +2675,45 @@ class BackendThread(threading.Thread):
             ElapsedTimeThread(self.ParentWindow)
 
         elif SplitLine[0] == "ipos:" and not self.DDRescue121:
-            self.InputPos = ' '.join(SplitLine[1:3]).replace(",", "")
-            self.NumErrors = SplitLine[4].replace(",", "")
-            self.AverageReadRate = SplitLine[7]
-            self.AverageReadRateUnit = SplitLine[8]
+            self.InputPos, self.NumErrors, self.AverageReadRate, self.AverageReadRateUnit = GetIPosNumErrorsandAverageReadRate(SplitLine)
 
             wx.CallAfter(self.ParentWindow.UpdateIpos, self.InputPos)
             wx.CallAfter(self.ParentWindow.UpdateNumErrors, self.NumErrors)
             wx.CallAfter(self.ParentWindow.UpdateAverageReadRate, unicode(self.AverageReadRate)+" "+self.AverageReadRateUnit)
 
         elif SplitLine[0] == "opos:":
-            self.OutputPos = ' '.join(SplitLine[1:3]).replace(",", "")
-
-            wx.CallAfter(self.ParentWindow.UpdateOpos, self.OutputPos)
-
             #Add compatibility for newer versions of ddrescue (the output format changed when 'run time' was introduced with v1.18, and 'time remaining' in v1.20). Not on ddrescue 1.21.
-            if self.DDRescue121:
+            if self.DDRescue121: #*** have a list of versions to compare against ***
                 #Get average read rate (ddrescue 1.21).
-                self.AverageReadRate = SplitLine[8]
-                self.AverageReadRateUnit = SplitLine[9]
+                self.OutputPos, self.AverageReadRate, self.AverageReadRateUnit = GetOPosAndAverageReadRate(SplitLine)
                 wx.CallAfter(self.ParentWindow.UpdateAverageReadRate, unicode(self.AverageReadRate)+" "+self.AverageReadRateUnit)
 
             else:
                 if SplitLine[-1] == "ago":
-                    self.TimeSinceLastRead = ' '.join(SplitLine[-3:-1]) #v1.14 to v1.18.
+                    self.OutputPos, self.TimeSinceLastRead = GetOPosandTimeSinceLastRead(SplitLine) #v1.14 to v1.18.
 
                 else:
-                    self.TimeSinceLastRead = ' '.join(SplitLine[-2:]) #v1.18 to v1.20
+                    self.OutputPos, self.TimeSinceLastRead = GetOPosandTimeSinceLastRead(SplitLine) #v1.18 to v1.20
 
                 wx.CallAfter(self.ParentWindow.UpdateTimeSinceLastRead, self.TimeSinceLastRead)
 
+            wx.CallAfter(self.ParentWindow.UpdateOpos, self.OutputPos)
+
         elif SplitLine[0] == "non-tried:":
             #Unreadable data (ddrescue 1.21).
-            self.ErrorSize = ' '.join(SplitLine[4:6]).replace(",", "")
+            self.ErrorSize = GetUnreadableData(SplitLine)
 
             wx.CallAfter(self.ParentWindow.UpdateErrorSize, self.ErrorSize)
 
         elif SplitLine[0] == "time":
             #Time since last read (ddrescue v1.20).
-            self.TimeSinceLastRead = SplitLine[-1]
+            self.TimeSinceLastRead = GetTimeSinceLastRead(SplitLine)
 
             wx.CallAfter(self.ParentWindow.UpdateTimeSinceLastRead, self.TimeSinceLastRead)
 
         elif SplitLine[0] == "percent":
             #Time since last read (ddrescue 1.21).
-            self.TimeSinceLastRead = SplitLine[-1]
+            self.TimeSinceLastRead = GetTimeSinceLastRead(SplitLine)
 
             wx.CallAfter(self.ParentWindow.UpdateTimeSinceLastRead, self.TimeSinceLastRead)
 
@@ -2732,9 +2725,7 @@ class BackendThread(threading.Thread):
             #Recovered data and number of errors (ddrescue 1.21).
             #Don't crash if we're reading the initial status from the logfile.
             try:
-                self.RecoveredData = SplitLine[1]
-                self.RecoveredDataUnit = SplitLine[2][:2]
-                self.NumErrors = SplitLine[4].replace(",", "")
+                self.RecoveredData, self.RecoveredDataUnit, self.NumErrors = GetRecoveredDataAndNumErrors()
 
                 #Change the unit of measurement of the current amount of recovered data if needed.
                 self.RecoveredData, self.RecoveredDataUnit = self.ChangeUnits(float(self.RecoveredData), self.RecoveredDataUnit, self.DiskCapacityUnit)
@@ -2765,16 +2756,12 @@ class BackendThread(threading.Thread):
             SplitLine = Info.split()
 
             if self.DDRescue121:
-                self.CurrentReadRate = ' '.join(SplitLine[7:9])
-                self.InputPos = ' '.join(SplitLine[0:2]).replace(",", "")
+                self.CurrentReadRate, self.InputPos = GetCurrentReadRateAndIPos(SplitLine)
 
                 wx.CallAfter(self.ParentWindow.UpdateIpos, self.InputPos)
 
             else:
-                self.CurrentReadRate = ' '.join(SplitLine[7:9])
-                self.ErrorSize = ' '.join(SplitLine[3:5]).replace(",", "")
-                self.RecoveredData = SplitLine[0]
-                self.RecoveredDataUnit = SplitLine[1][:2]
+                self.CurrentReadRate, self.ErrorSize, self.RecoveredData, self.RecoveredDataUnit = GetCurrentReadRateErrorSizeandRecoveredData(SplitLine)
 
                 #Change the unit of measurement of the current amount of recovered data if needed.
                 self.RecoveredData, self.RecoveredDataUnit = self.ChangeUnits(float(self.RecoveredData), self.RecoveredDataUnit, self.DiskCapacityUnit)
