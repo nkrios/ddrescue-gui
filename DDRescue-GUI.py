@@ -1281,7 +1281,7 @@ class MainWindow(wx.Frame):
         """Abort the recovery"""
         #Ask ddrescue to exit.
         logger.info("MainWindow().OnAbort(): Attempting to kill ddrescue...")
-        BackendTools().StartProcess("killall ddrescue")
+        BackendTools().StartProcess("killall ddrescue.new")
         self.AbortedRecovery = True
 
         #Disable control button.
@@ -2561,7 +2561,7 @@ class BackendThread(threading.Thread):
         OptionsList = [Settings["DirectAccess"], Settings["OverwriteOutputFile"], Settings["DiskSize"], Settings["Reverse"], Settings["Preallocate"], Settings["NoSplit"], Settings["BadSectorRetries"], Settings["MaxErrors"], Settings["ClusterSize"], Settings["InputFileBlockSize"], Settings["InputFile"], Settings["OutputFile"], Settings["LogFile"]]
 
         if Linux:
-            ExecList = ["ddrescue", "-v"]
+            ExecList = ["ddrescue.new", "-v"]
 
         else:
             ExecList = [RescourcePath+"/ddrescue", "-v"]
@@ -2602,11 +2602,8 @@ class BackendThread(threading.Thread):
         #Give ddrescue plenty of time to start.
         time.sleep(2)
 
-        #Grab information from ddrescue. (After ddrescue exits, attempt to read an extra 1000 chars to grab any remaining output)
-        while cmd.poll() == None or counter < 1000:
-            if cmd.poll() != None:
-                counter += 1
-
+        #Grab information from ddrescue. (After ddrescue exits, attempt to keep reading chars until the last attempt gave an empty string)
+        while cmd.poll() == None or Char != "":
             Char = cmd.stdout.read(1)
             Line += Char
 
@@ -2615,7 +2612,12 @@ class BackendThread(threading.Thread):
                 TidyLine = Line.replace("\n", "").replace("\r", "").replace("\x1b[A", "")
 
                 if TidyLine != "":
-                    self.ProcessLine(TidyLine)
+                    try:
+                        self.ProcessLine(TidyLine)
+
+                    except:
+                        #Handle unexpected errors.
+                        logger.error("MainBackendThread(): Unexpected error parsing ddrescue's output! Are you running a newer/older version of ddrescue than we support?")
 
                 wx.CallAfter(self.ParentWindow.UpdateOutputBox, Line.replace("\x1b[A", "¬"))
 
@@ -2625,18 +2627,35 @@ class BackendThread(threading.Thread):
         #Let the GUI know that we are no longer recovering any data.
         Settings["RecoveringData"] = False
 
-        #Check if we got ddrescue's init status, and if ddrescue exited with a status other than 0.
+        #Check if we got ddrescue's init status, and if ddrescue exited with a status other than 0. Handle errors in case someone is running DDRescue-GUI on an unsupported version of ddrescue.
         if self.GotInitialStatus == False:
             logger.error("MainBackendThread(): We didn't get the initial status before ddrescue exited! Something has gone wrong. Telling MainWindow and exiting...")
-            wx.CallAfter(self.ParentWindow.RecoveryEnded, DiskCapacity=unicode(self.DiskCapacity)+" "+self.DiskCapacityUnit, RecoveredData=unicode(int(self.RecoveredData))+" "+self.RecoveredDataUnit, Result="NoInitialStatus", ReturnCode=int(cmd.returncode))
+
+            try:
+                wx.CallAfter(self.ParentWindow.RecoveryEnded, DiskCapacity=unicode(self.DiskCapacity)+" "+self.DiskCapacityUnit, RecoveredData=unicode(int(self.RecoveredData))+" "+self.RecoveredDataUnit, Result="NoInitialStatus", ReturnCode=int(cmd.returncode))
+
+            except:
+                logger.error("MainBackendThread(): Unexpected error while trying to send recovery information to RecoveryEnded()! Continuing anyway. Are you running a newer/older version of ddrescue than we support?")
+                wx.CallAfter(self.ParentWindow.RecoveryEnded, DiskCapacity="Unknown Size", RecoveredData="Unknown Size", Result="NoInitialStatus", ReturnCode=int(cmd.returncode))
 
         elif int(cmd.returncode) != 0:
             logger.error("MainBackendThread(): ddrescue exited with exit status "+unicode(cmd.returncode)+"! Something has gone wrong. Telling MainWindow and exiting...")
-            wx.CallAfter(self.ParentWindow.RecoveryEnded, DiskCapacity=unicode(self.DiskCapacity)+" "+self.DiskCapacityUnit, RecoveredData=unicode(int(self.RecoveredData))+" "+self.RecoveredDataUnit, Result="BadReturnCode", ReturnCode=int(cmd.returncode))
 
+            try:
+                wx.CallAfter(self.ParentWindow.RecoveryEnded, DiskCapacity=unicode(self.DiskCapacity)+" "+self.DiskCapacityUnit, RecoveredData=unicode(int(self.RecoveredData))+" "+self.RecoveredDataUnit, Result="BadReturnCode", ReturnCode=int(cmd.returncode))
+
+            except:
+                logger.error("MainBackendThread(): Unexpected error while trying to send recovery information to RecoveryEnded()! Continuing anyway. Are you running a newer/older version of ddrescue than we support?")
+                wx.CallAfter(self.ParentWindow.RecoveryEnded, DiskCapacity="Unknown Size", RecoveredData="Unknown Size", Result="BadReturnCode", ReturnCode=int(cmd.returncode))
         else:
             logger.info("MainBackendThread(): ddrescue finished recovering data. Telling MainWindow and exiting...")
-            wx.CallAfter(self.ParentWindow.RecoveryEnded, DiskCapacity=unicode(self.DiskCapacity)+" "+self.DiskCapacityUnit, RecoveredData=unicode(int(self.RecoveredData))+" "+self.RecoveredDataUnit, Result="Success", ReturnCode=int(cmd.returncode))
+
+            try:
+                wx.CallAfter(self.ParentWindow.RecoveryEnded, DiskCapacity=unicode(self.DiskCapacity)+" "+self.DiskCapacityUnit, RecoveredData=unicode(int(self.RecoveredData))+" "+self.RecoveredDataUnit, Result="Success", ReturnCode=int(cmd.returncode))
+
+            except:
+                logger.error("MainBackendThread(): Unexpected error while trying to send recovery information to RecoveryEnded()! Continuing anyway. Are you running a newer/older version of ddrescue than we support?")
+                wx.CallAfter(self.ParentWindow.RecoveryEnded, DiskCapacity="Unknown Size", RecoveredData="Unknown Size", Result="Success", ReturnCode=int(cmd.returncode))
 
     def ProcessLine(self, Line):
         """Process a given line to get ddrescue's current status and recovery information and send it to the GUI Thread""" 
