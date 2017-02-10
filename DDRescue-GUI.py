@@ -2779,7 +2779,7 @@ class BackendThread(threading.Thread):
             #Recovered data and number of errors (ddrescue 1.21).
             #Don't crash if we're reading the initial status from the logfile.
             try:
-                self.RecoveredData, self.RecoveredDataUnit, self.NumErrors = self.GetRecoveredDataAndNumErrors()
+                self.RecoveredData, self.RecoveredDataUnit, self.NumErrors = self.GetRecoveredDataAndNumErrors(SplitLine)
 
                 #Change the unit of measurement of the current amount of recovered data if needed.
                 self.RecoveredData, self.RecoveredDataUnit = self.ChangeUnits(float(self.RecoveredData), self.RecoveredDataUnit, self.DiskCapacityUnit)
