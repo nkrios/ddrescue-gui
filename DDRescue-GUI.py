@@ -371,6 +371,7 @@ class MainWindow(wx.Frame):
         else:
             Command = RescourcePath+"/ddrescue --version"
 
+        global DDRescueVersion
         DDRescueVersion = BackendTools().StartProcess(Command=Command, ReturnOutput=True)[1].split("\n")[0].split(" ")[-1]
 
         logger.info("ddrescue version "+DDRescueVersion+"...")
