@@ -2652,7 +2652,7 @@ class BackendThread(threading.Thread):
 
         cmd = subprocess.Popen(ExecList, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         Line = ""
-        Char = ""
+        Char = " "
         LineList = []
         counter = 0
 
