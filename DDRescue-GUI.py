@@ -1461,7 +1461,7 @@ class MainWindow(wx.Frame):
         self.ProgressBar.SetValue(0)
 
         #Reset essential variables.
-        self.SetVars()
+        self.SetVars(DRescueVersion)
 
         #Update choice dialogs and reset checked settings to False
         self.UpdateFileChoices()
