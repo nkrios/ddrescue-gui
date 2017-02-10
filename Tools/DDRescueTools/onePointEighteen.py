@@ -26,4 +26,4 @@ from . import decorators
 @decorators.DefineVersions
 def GetOPosandTimeSinceLastRead(SplitLine):
     """Get Output Position and Time Since Last Successful Read. Works with ddrescue versions: 1.18,1.19,1.20"""
-    return ' '.join(SplitLine[1:3]).replace(",", ""), ' '.join(SplitLine[-2:])
+    return ' '.join(SplitLine[1:3]).replace(",", ""), ' '.join(SplitLine[-3:-1])

@@ -30,8 +30,8 @@ def GetIPosNumErrorsandAverageReadRate(SplitLine):
 
 @decorators.DefineVersions
 def GetOPosandTimeSinceLastRead(SplitLine):
-    """Get Output Position and Time Since Last Successful Read. Works with ddrescue versions: 1.14,1.15,1.16,1.17,1.18"""
-    return ' '.join(SplitLine[1:3]).replace(",", ""), ' '.join(SplitLine[-3:-1])
+    """Get Output Position and Time Since Last Successful Read. Works with ddrescue versions: 1.14,1.15,1.16,1.17"""
+    return ' '.join(SplitLine[1:3]).replace(",", ""), ' '.join(SplitLine[-2:])
 
 @decorators.DefineVersions
 def GetCurrentReadRateErrorSizeandRecoveredData(SplitLine):

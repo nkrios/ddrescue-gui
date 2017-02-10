@@ -136,7 +136,7 @@ import Tools
 
 from GetDevInfo.getdevinfo import Main as DevInfoTools
 from Tools.tools import Main as BackendTools
-import Tools.DDRescueTools as DDRescueTools
+import Tools.DDRescueTools.setup as DDRescueTools
 
 #Setup custom-made modules (make global variables accessible inside the packages).
 GetDevInfo.getdevinfo.subprocess = subprocess
@@ -2602,12 +2602,21 @@ class BackendThread(threading.Thread):
 
     def run(self):
         """Main body of the thread, started with self.start()"""
+        logger.debug("MainBackendThread(): Setting up ddrescue tools...")
+
+        #Find suitable functions.
+        SuitableFunctions = DDRescueTools.SetupForCorrectDDRescueVersion(Settings["DDRescueVersion"])
+
+        #Define all of these functions under their correct names.
+        for Function in SuitableFunctions:
+            vars(self)[Function.__name__] = Function
+
         #Prepare to start ddrescue.
         logger.debug("MainBackendThread(): Preparing to start ddrescue...")
         OptionsList = [Settings["DirectAccess"], Settings["OverwriteOutputFile"], Settings["DiskSize"], Settings["Reverse"], Settings["Preallocate"], Settings["NoSplit"], Settings["BadSectorRetries"], Settings["MaxErrors"], Settings["ClusterSize"], Settings["InputFileBlockSize"], Settings["InputFile"], Settings["OutputFile"], Settings["LogFile"]]
 
         if Linux:
-            ExecList = ["ddrescue.new", "-v"]
+            ExecList = ["ddrescue", "-v"]
 
         else:
             ExecList = [RescourcePath+"/ddrescue", "-v"]
@@ -2630,7 +2639,7 @@ class BackendThread(threading.Thread):
 
         #Set initial values for some variables.
         self.DiskCapacity = "An unknown amount of"
-        self.DiskCapacityUnit = "data."
+        self.DiskCapacityUnit = "data"
         self.RecoveredData = 0
         self.RecoveredDataUnit = "B"
 
@@ -2658,12 +2667,12 @@ class BackendThread(threading.Thread):
                 TidyLine = Line.replace("\n", "").replace("\r", "").replace("\x1b[A", "")
 
                 if TidyLine != "":
-                    try:
-                        self.ProcessLine(TidyLine)
+                    #try:
+                    self.ProcessLine(TidyLine)
 
-                    except:
+                    #except:
                         #Handle unexpected errors.
-                        logger.error("MainBackendThread(): Unexpected error parsing ddrescue's output! Are you running a newer/older version of ddrescue than we support?")
+                    #    logger.error("MainBackendThread(): Unexpected error parsing ddrescue's output! Are you running a newer/older version of ddrescue than we support?")
 
                 wx.CallAfter(self.ParentWindow.UpdateOutputBox, Line.replace("\x1b[A", "¬"))
 
@@ -2712,7 +2721,7 @@ class BackendThread(threading.Thread):
             logger.info("MainBackendThread().Processline(): Got Initial Status... Setting up the progressbar...")
             self.GotInitialStatus = True
 
-            self.DiskCapacity, self.DiskCapacityUnit = GetInitialStatus(SplitLine)
+            self.DiskCapacity, self.DiskCapacityUnit = self.GetInitialStatus(SplitLine)
 
             wx.CallAfter(self.ParentWindow.SetProgressBarRange, self.DiskCapacity)
 
@@ -2720,7 +2729,7 @@ class BackendThread(threading.Thread):
             ElapsedTimeThread(self.ParentWindow)
 
         elif SplitLine[0] == "ipos:" and not self.DDRescue121:
-            self.InputPos, self.NumErrors, self.AverageReadRate, self.AverageReadRateUnit = GetIPosNumErrorsandAverageReadRate(SplitLine)
+            self.InputPos, self.NumErrors, self.AverageReadRate, self.AverageReadRateUnit = self.GetIPosNumErrorsandAverageReadRate(SplitLine)
 
             wx.CallAfter(self.ParentWindow.UpdateIpos, self.InputPos)
             wx.CallAfter(self.ParentWindow.UpdateNumErrors, self.NumErrors)
@@ -2730,15 +2739,15 @@ class BackendThread(threading.Thread):
             #Add compatibility for newer versions of ddrescue (the output format changed when 'run time' was introduced with v1.18, and 'time remaining' in v1.20). Not on ddrescue 1.21.
             if self.DDRescue121: #*** have a list of versions to compare against ***
                 #Get average read rate (ddrescue 1.21).
-                self.OutputPos, self.AverageReadRate, self.AverageReadRateUnit = GetOPosAndAverageReadRate(SplitLine)
+                self.OutputPos, self.AverageReadRate, self.AverageReadRateUnit = self.GetOPosAndAverageReadRate(SplitLine)
                 wx.CallAfter(self.ParentWindow.UpdateAverageReadRate, unicode(self.AverageReadRate)+" "+self.AverageReadRateUnit)
 
             else:
                 if SplitLine[-1] == "ago":
-                    self.OutputPos, self.TimeSinceLastRead = GetOPosandTimeSinceLastRead(SplitLine) #v1.14 to v1.18.
+                    self.OutputPos, self.TimeSinceLastRead = self.GetOPosandTimeSinceLastRead(SplitLine) #v1.14 to v1.18.
 
                 else:
-                    self.OutputPos, self.TimeSinceLastRead = GetOPosandTimeSinceLastRead(SplitLine) #v1.18 to v1.20
+                    self.OutputPos, self.TimeSinceLastRead = self.GetOPosandTimeSinceLastRead(SplitLine) #v1.18 to v1.20
 
                 wx.CallAfter(self.ParentWindow.UpdateTimeSinceLastRead, self.TimeSinceLastRead)
 
@@ -2746,19 +2755,19 @@ class BackendThread(threading.Thread):
 
         elif SplitLine[0] == "non-tried:":
             #Unreadable data (ddrescue 1.21).
-            self.ErrorSize = GetUnreadableData(SplitLine)
+            self.ErrorSize = self.GetUnreadableData(SplitLine)
 
             wx.CallAfter(self.ParentWindow.UpdateErrorSize, self.ErrorSize)
 
         elif SplitLine[0] == "time":
             #Time since last read (ddrescue v1.20).
-            self.TimeSinceLastRead = GetTimeSinceLastRead(SplitLine)
+            self.TimeSinceLastRead = self.GetTimeSinceLastRead(SplitLine)
 
             wx.CallAfter(self.ParentWindow.UpdateTimeSinceLastRead, self.TimeSinceLastRead)
 
         elif SplitLine[0] == "percent":
             #Time since last read (ddrescue 1.21).
-            self.TimeSinceLastRead = GetTimeSinceLastRead(SplitLine)
+            self.TimeSinceLastRead = self.GetTimeSinceLastRead(SplitLine)
 
             wx.CallAfter(self.ParentWindow.UpdateTimeSinceLastRead, self.TimeSinceLastRead)
 
@@ -2770,7 +2779,7 @@ class BackendThread(threading.Thread):
             #Recovered data and number of errors (ddrescue 1.21).
             #Don't crash if we're reading the initial status from the logfile.
             try:
-                self.RecoveredData, self.RecoveredDataUnit, self.NumErrors = GetRecoveredDataAndNumErrors()
+                self.RecoveredData, self.RecoveredDataUnit, self.NumErrors = self.GetRecoveredDataAndNumErrors()
 
                 #Change the unit of measurement of the current amount of recovered data if needed.
                 self.RecoveredData, self.RecoveredDataUnit = self.ChangeUnits(float(self.RecoveredData), self.RecoveredDataUnit, self.DiskCapacityUnit)
@@ -2801,12 +2810,12 @@ class BackendThread(threading.Thread):
             SplitLine = Info.split()
 
             if self.DDRescue121:
-                self.CurrentReadRate, self.InputPos = GetCurrentReadRateAndIPos(SplitLine)
+                self.CurrentReadRate, self.InputPos = self.GetCurrentReadRateAndIPos(SplitLine)
 
                 wx.CallAfter(self.ParentWindow.UpdateIpos, self.InputPos)
 
             else:
-                self.CurrentReadRate, self.ErrorSize, self.RecoveredData, self.RecoveredDataUnit = GetCurrentReadRateErrorSizeandRecoveredData(SplitLine)
+                self.CurrentReadRate, self.ErrorSize, self.RecoveredData, self.RecoveredDataUnit = self.GetCurrentReadRateErrorSizeandRecoveredData(SplitLine)
 
                 #Change the unit of measurement of the current amount of recovered data if needed.
                 self.RecoveredData, self.RecoveredDataUnit = self.ChangeUnits(float(self.RecoveredData), self.RecoveredDataUnit, self.DiskCapacityUnit)
