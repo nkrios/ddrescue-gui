@@ -41,7 +41,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "1.7"
-ReleaseDate = "8/2/2017"
+ReleaseDate = "10/2/2017"
 SessionEnding = False
 
 def usage():
@@ -112,7 +112,8 @@ for o, a in opts:
 if os.geteuid() != 0:
     #Relaunch as root.
     execfile(RescourcePath+"/AuthenticationDialog.py")
-    sys.exit("\nSorry, DDRescue-GUI must be run with root (superuser) privileges.\nRestarting as root...")
+    print("\nSorry, DDRescue-GUI must be run with root (superuser) privileges.\nRestarting as root...")
+    sys.exit()
 
 #Set up logging with default logging mode as debug.
 logger = logging.getLogger('DDRescue-GUI '+Version)
@@ -339,6 +340,47 @@ class MainWindow(wx.Frame):
         logger.info("Release date: "+ReleaseDate)
         logger.info("Running on Python version: "+unicode(sys.version_info)+"...")
         logger.info("Running on wxPython version: "+wx.version()+"...")
+        logger.info("Checking for ddrescue...")
+
+        #Define places we need to look for ddrescue.
+        if Linux:
+            PATHS = os.getenv("PATH").split(":")
+
+        else:
+            PATHS = [RescourcePath]
+
+        FoundDDRescue = False
+
+        for PATH in PATHS:
+            if os.path.isfile(PATH+"/ddrescue"):
+                #Yay!
+                FoundDDRescue = True
+
+        if not FoundDDRescue:
+            dlg = wx.MessageDialog(self.Panel, "Couldn't find ddrescue! Are you sure it is installed on your system? If you're on a mac, this indicates an issue with the packaging, and if so please email me at hamishmb@live.co.uk.", 'DDRescue-GUI - Error!', wx.OK | wx.ICON_ERROR)
+            dlg.ShowModal()
+            dlg.Destroy()
+            sys.exit("\nCouldn't find ddrescue!")
+
+        logger.info("Determining ddrescue version...")
+
+        #Use correct command.
+        if Linux:
+            Command = "ddrescue --version"
+
+        else:
+            Command = RescourcePath+"/ddrescue --version"
+
+        DDRescueVersion = BackendTools().StartProcess(Command=Command, ReturnOutput=True)[1].split("\n")[0].split(" ")[-1]
+
+        logger.info("ddrescue version "+DDRescueVersion+"...")
+
+        #Warn if not on a supported version.
+        if DDRescueVersion not in ["1.14", "1.15", "1.16", "1.17", "1.18", "1.19", "1.20"]: #*** Add 1.21 when supported ***
+            logger.warning("Unsupported ddrescue version "+DDRescueVersion+"! Please upgrade DDRescue-GUI if possible..")
+            dlg = wx.MessageDialog(self.Panel, "You are using an unsupported version of ddrescue! You are strongly advised to upgrade DDRescue-GUI if there is an update available. You can use this GUI anyway, but you may find there are formatting or other issues when performing your recovery.", 'DDRescue-GUI - Unsupported ddrescue version!', wx.OK | wx.ICON_ERROR)
+            dlg.ShowModal()
+            dlg.Destroy()
 
         #Set the frame's icon.
         global AppIcon
@@ -347,7 +389,7 @@ class MainWindow(wx.Frame):
 
         #Set some variables
         logger.debug("MainWindow().__init__(): Setting some essential variables...")
-        self.SetVars()
+        self.SetVars(DDRescueVersion)
         self.Starting = True
 
         #Create a Statusbar in the bottom of the window and set the text.
@@ -396,10 +438,13 @@ class MainWindow(wx.Frame):
 
         logger.info("MainWindow().__init__(): Ready. Waiting for events...")
 
-    def SetVars(self):
+    def SetVars(self, DDRescueVersion):
         """Set some essential variables"""
         global Settings
         Settings = {}
+
+        #DDRescue version.
+        Settings["DDRescueVersion"] = DDRescueVersion
 
         #Basic settings and info.
         Settings["InputFile"] = None
@@ -1030,7 +1075,7 @@ class MainWindow(wx.Frame):
         aboutbox.Name = "DDRescue-GUI"
         aboutbox.Version = Version
         aboutbox.Copyright = "(C) 2013-2017 Hamish McIntyre-Bhatty"
-        aboutbox.Description = "GUI frontend for GNU ddrescue"
+        aboutbox.Description = "GUI frontend for GNU ddrescue\nRunning on ddrescue version "+Settings["DDRescueVersion"]
         aboutbox.WebSite = ("https://launchpad.net/ddrescue-gui", "Launchpad page")
         aboutbox.Developers = ["Hamish McIntyre-Bhatty", "Minnie McIntyre-Bhatty (GUI Design)"]
         aboutbox.Artists = ["Holly McIntyre-Bhatty", "Hamish McIntyre-Bhatty (Throbber designs)"]
