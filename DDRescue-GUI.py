@@ -2658,7 +2658,7 @@ class BackendThread(threading.Thread):
         time.sleep(2)
 
         #Grab information from ddrescue. (After ddrescue exits, attempt to keep reading chars until the last attempt gave an empty string)
-        while cmd.poll() == None and Char != "":
+        while cmd.poll() == None or Char != "":
             Char = cmd.stdout.read(1)
             Line += Char
 
