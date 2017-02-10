@@ -2669,12 +2669,12 @@ class BackendThread(threading.Thread):
                 TidyLine = Line.replace("\n", "").replace("\r", "").replace("\x1b[A", "")
 
                 if TidyLine != "":
-                    #try:
-                    self.ProcessLine(TidyLine)
+                    try:
+                        self.ProcessLine(TidyLine)
 
-                    #except:
+                    except:
                         #Handle unexpected errors.
-                    #    logger.error("MainBackendThread(): Unexpected error parsing ddrescue's output! Are you running a newer/older version of ddrescue than we support?")
+                        logger.error("MainBackendThread(): Unexpected error parsing ddrescue's output! Are you running a newer/older version of ddrescue than we support?")
 
                 wx.CallAfter(self.ParentWindow.UpdateOutputBox, Line.replace("\x1b[A", "¬"))
 
