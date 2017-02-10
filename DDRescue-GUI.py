@@ -376,8 +376,8 @@ class MainWindow(wx.Frame):
         logger.info("ddrescue version "+DDRescueVersion+"...")
 
         #Warn if not on a supported version.
-        if DDRescueVersion not in ["1.14", "1.15", "1.16", "1.17", "1.18", "1.19", "1.20"]: #*** Add 1.21 when supported ***
-            logger.warning("Unsupported ddrescue version "+DDRescueVersion+"! Please upgrade DDRescue-GUI if possible..")
+        if DDRescueVersion not in ["1.14", "1.15", "1.16", "1.17", "1.18", "1.19", "1.20", "1.21"]: #*** Add 1.22 when supported ***
+            logger.warning("Unsupported ddrescue version "+DDRescueVersion+"! Please upgrade DDRescue-GUI if possible.")
             dlg = wx.MessageDialog(self.Panel, "You are using an unsupported version of ddrescue! You are strongly advised to upgrade DDRescue-GUI if there is an update available. You can use this GUI anyway, but you may find there are formatting or other issues when performing your recovery.", 'DDRescue-GUI - Unsupported ddrescue version!', wx.OK | wx.ICON_ERROR)
             dlg.ShowModal()
             dlg.Destroy()
