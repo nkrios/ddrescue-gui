@@ -2651,6 +2651,7 @@ class BackendThread(threading.Thread):
 
         cmd = subprocess.Popen(ExecList, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         Line = ""
+        Char = ""
         LineList = []
         counter = 0
 
@@ -2678,6 +2679,11 @@ class BackendThread(threading.Thread):
 
                 #Reset Line.
                 Line = ""
+
+        #Parse any remaining lines afterwards.
+        if Line != "":
+            TidyLine = Line.replace("\n", "").replace("\r", "").replace("\x1b[A", "")
+            self.ProcessLine(TidyLine)
 
         #Let the GUI know that we are no longer recovering any data.
         Settings["RecoveringData"] = False
