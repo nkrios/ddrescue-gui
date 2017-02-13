@@ -1375,6 +1375,9 @@ class MainWindow(wx.Frame):
         #Stop the throbber.
         self.Throbber.Stop()
 
+        #Set time remaining to 0s (sometimes doesn't happen).
+        self.UpdateTimeRemaining("0s")
+
         #Handle any errors.
         if self.AbortedRecovery:
             logger.info("MainWindow().RecoveryEnded(): ddrescue was aborted by the user...")
@@ -2820,6 +2823,14 @@ class BackendThread(threading.Thread):
                 wx.CallAfter(self.ParentWindow.UpdateTimeRemaining, self.TimeRemaining)
 
             wx.CallAfter(self.ParentWindow.UpdateCurrentReadRate, self.CurrentReadRate)
+
+        else:
+            #Probably a status line (maybe the initial one).
+            Status = Line
+
+            if Status != self.OldStatus:
+                wx.CallAfter(self.ParentWindow.UpdateStatusBar, Status)
+                self.OldStatus = Status
             
     def ChangeUnits(self, NumberToChange, CurrentUnit, RequiredUnit):
         """Convert data so it uses the correct unit of measurement"""
