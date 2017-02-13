@@ -1372,11 +1372,14 @@ class MainWindow(wx.Frame):
         if SessionEnding:
             return True
 
+        self.DiskCapacity = DiskCapacity
+        self.RecoveredData = RecoveredData
+
         #Stop the throbber.
         self.Throbber.Stop()
 
         #Set time remaining to 0s (sometimes doesn't happen).
-        self.UpdateTimeRemaining("0s")
+        self.UpdateTimeRemaining("0 seconds")
 
         #Handle any errors.
         if self.AbortedRecovery:
@@ -1584,7 +1587,7 @@ class MainWindow(wx.Frame):
             if JustFinishedRec:
                 #If so return to finisheddlg.
                 logger.info("MainWindow().OnExit(): Showing FinishedWindow() again...")
-                FinishedWindow(self).Show()
+                FinishedWindow(self, self.DiskCapacity, self.RecoveredData).Show()
 
 #End Main Window
 #Begin Disk Info Window
