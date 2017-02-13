@@ -42,10 +42,25 @@ for Module in (allversions, onePointForteen, onePointEighteen, onePointTwenty, o
             Functions.append(vars(Module)[Function])
 
 def SetupForCorrectDDRescueVersion(DDRescueVersion):
+    #Select the best tools if we have an unsupported version of ddrescue.
+    MinorVersion = int(DDRescueVersion.split(".")[1])
+
+    if MinorVersion < 14:
+        #Too old.
+        BestVersion = "1.14"
+
+    elif MinorVersion > 22:
+        #Too new.
+        BestVersion = "1.22"
+
+    else:
+        #Supported version.
+        BestVersion = DDRescueVersion
+
     SuitableFunctions = []
 
     for Function in Functions:
-        if DDRescueVersion in Function.SUPPORTEDVERSIONS:
+        if BestVersion in Function.SUPPORTEDVERSIONS:
             SuitableFunctions.append(Function)
 
     return SuitableFunctions

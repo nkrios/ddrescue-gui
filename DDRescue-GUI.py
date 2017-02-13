@@ -1587,7 +1587,7 @@ class MainWindow(wx.Frame):
             if JustFinishedRec:
                 #If so return to finisheddlg.
                 logger.info("MainWindow().OnExit(): Showing FinishedWindow() again...")
-                FinishedWindow(self, self.DiskCapacity, self.RecoveredData).Show()
+                FinishedWindow(self, self.DiskCapacity, RecoveredData).Show()
 
 #End Main Window
 #Begin Disk Info Window
