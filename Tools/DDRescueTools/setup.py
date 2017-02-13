@@ -31,11 +31,12 @@ from . import onePointForteen
 from . import onePointEighteen
 from . import onePointTwenty
 from . import onePointTwentyOne
+from . import onePointTwentyTwo
 
 #Get a list of functions in all of our ddrescue tools modules.
 Functions = []
 
-for Module in (allversions, onePointForteen, onePointEighteen, onePointTwenty, onePointTwentyOne):
+for Module in (allversions, onePointForteen, onePointEighteen, onePointTwenty, onePointTwentyOne, onePointTwentyTwo):
     for Function in dir(Module):
         if isinstance(Module.__dict__.get(Function), types.FunctionType):
             Functions.append(vars(Module)[Function])

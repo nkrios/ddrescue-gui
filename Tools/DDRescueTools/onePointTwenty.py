@@ -25,5 +25,5 @@ from . import decorators
 
 @decorators.DefineVersions
 def GetTimeSinceLastRead(SplitLine):
-    """Get Time Since Last Read. Works with ddrescue versions: 1.20,1.21"""
+    """Get Time Since Last Read. Works with ddrescue versions: 1.20,1.21,1.22"""
     return SplitLine[-1]

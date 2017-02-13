@@ -25,5 +25,5 @@ from . import decorators
 
 @decorators.DefineVersions
 def GetInitialStatus(SplitLine):
-    """Function to get ddrescue's initial status. Works with ddrescue versions: 1.14,1.15,1.16,1.17,1.18,1.19,1.20,1.21"""
+    """Function to get ddrescue's initial status. Works with ddrescue versions: 1.14,1.15,1.16,1.17,1.18,1.19,1.20,1.21,1.22"""
     return int(SplitLine[3]), SplitLine[4]

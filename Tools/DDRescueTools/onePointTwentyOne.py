@@ -25,12 +25,12 @@ from . import decorators
 
 @decorators.DefineVersions
 def GetOPosAndAverageReadRate(SplitLine):
-    """Get Output Position and Average Read Rate. Works with ddrescue versions: 1.21"""
+    """Get Output Position and Average Read Rate. Works with ddrescue versions: 1.21,1.22"""
     return ' '.join(SplitLine[1:3]).replace(",", ""), SplitLine[8], SplitLine[9]
 
 @decorators.DefineVersions
 def GetUnreadableData(SplitLine):
-    """Get Unreadable Data. Works with ddrescue versions: 1.21"""
+    """Get Unreadable Data. Works with ddrescue versions: 1.21,1.22"""
     return ' '.join(SplitLine[4:6]).replace(",", "")
 
 @decorators.DefineVersions
@@ -40,5 +40,5 @@ def GetRecoveredDataAndNumErrors(SplitLine):
 
 @decorators.DefineVersions
 def GetCurrentReadRateAndIPos(SplitLine):
-    """Get Current Read Rate and Input Position. Works with ddrescue versions: 1.21"""
+    """Get Current Read Rate and Input Position. Works with ddrescue versions: 1.21,1.22"""
     return ' '.join(SplitLine[7:9]), ' '.join(SplitLine[0:2]).replace(",", "")

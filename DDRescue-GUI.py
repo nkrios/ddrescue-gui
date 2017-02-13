@@ -41,7 +41,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "1.7"
-ReleaseDate = "10/2/2017"
+ReleaseDate = "13/2/2017"
 SessionEnding = False
 
 def usage():
@@ -377,7 +377,7 @@ class MainWindow(wx.Frame):
         logger.info("ddrescue version "+DDRescueVersion+"...")
 
         #Warn if not on a supported version.
-        if DDRescueVersion not in ["1.14", "1.15", "1.16", "1.17", "1.18", "1.19", "1.20", "1.21"]: #*** Add 1.22 when supported ***
+        if DDRescueVersion not in ("1.14", "1.15", "1.16", "1.17", "1.18", "1.19", "1.20", "1.21", "1.22"):
             logger.warning("Unsupported ddrescue version "+DDRescueVersion+"! Please upgrade DDRescue-GUI if possible.")
             dlg = wx.MessageDialog(self.Panel, "You are using an unsupported version of ddrescue! You are strongly advised to upgrade DDRescue-GUI if there is an update available. You can use this GUI anyway, but you may find there are formatting or other issues when performing your recovery.", 'DDRescue-GUI - Unsupported ddrescue version!', wx.OK | wx.ICON_ERROR)
             dlg.ShowModal()
@@ -2595,7 +2595,6 @@ class BackendThread(threading.Thread):
         self.OldStatus = ""
         self.GotInitialStatus = False
         self.UnitList = ['null', 'B', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']
-        self.DDRescue121 = False
         self.InputPos = "0 B"
 
         threading.Thread.__init__(self)
@@ -2673,8 +2672,8 @@ class BackendThread(threading.Thread):
                         self.ProcessLine(TidyLine)
 
                     except:
-                        #Handle unexpected errors.
-                        logger.error("MainBackendThread(): Unexpected error parsing ddrescue's output! Are you running a newer/older version of ddrescue than we support?")
+                        #Handle unexpected errors. Can happen once in normal operation on ddrescue v1.22.
+                        logger.warning("MainBackendThread(): Unexpected error parsing ddrescue's output! Can happen once on newer versions in normal operation. Are you running a newer/older version of ddrescue than we support?")
 
                 wx.CallAfter(self.ParentWindow.UpdateOutputBox, Line.replace("\x1b[A", "¬"))
 
@@ -2723,7 +2722,7 @@ class BackendThread(threading.Thread):
         """Process a given line to get ddrescue's current status and recovery information and send it to the GUI Thread""" 
         SplitLine = Line.split()
 
-        if SplitLine[0] == "About":
+        if SplitLine[0] == "About": #All versions of ddrescue (1.14 - 1.22).
             #Initial status.
             logger.info("MainBackendThread().Processline(): Got Initial Status... Setting up the progressbar...")
             self.GotInitialStatus = True
@@ -2735,55 +2734,40 @@ class BackendThread(threading.Thread):
             #Start time elapsed thread.
             ElapsedTimeThread(self.ParentWindow)
 
-        elif SplitLine[0] == "ipos:" and not self.DDRescue121:
+        elif SplitLine[0] == "ipos:" and Settings["DDRescueVersion"] not in ("1.21", "1.22"): #Versions 1.14 - 1.20.
             self.InputPos, self.NumErrors, self.AverageReadRate, self.AverageReadRateUnit = self.GetIPosNumErrorsandAverageReadRate(SplitLine)
 
             wx.CallAfter(self.ParentWindow.UpdateIpos, self.InputPos)
             wx.CallAfter(self.ParentWindow.UpdateNumErrors, self.NumErrors)
             wx.CallAfter(self.ParentWindow.UpdateAverageReadRate, unicode(self.AverageReadRate)+" "+self.AverageReadRateUnit)
 
-        elif SplitLine[0] == "opos:":
-            #Add compatibility for newer versions of ddrescue (the output format changed when 'run time' was introduced with v1.18, and 'time remaining' in v1.20). Not on ddrescue 1.21.
-            if self.DDRescue121: #*** have a list of versions to compare against ***
-                #Get average read rate (ddrescue 1.21).
+        elif SplitLine[0] == "opos:": #Versions 1.14 - 1.20 & 1.21 - 1.22.
+            if Settings["DDRescueVersion"] in ("1.21", "1.22"):
+                #Get average read rate (ddrescue 1.21 & 1.22).
                 self.OutputPos, self.AverageReadRate, self.AverageReadRateUnit = self.GetOPosAndAverageReadRate(SplitLine)
                 wx.CallAfter(self.ParentWindow.UpdateAverageReadRate, unicode(self.AverageReadRate)+" "+self.AverageReadRateUnit)
 
             else:
-                if SplitLine[-1] == "ago":
-                    self.OutputPos, self.TimeSinceLastRead = self.GetOPosandTimeSinceLastRead(SplitLine) #v1.14 to v1.18.
-
-                else:
-                    self.OutputPos, self.TimeSinceLastRead = self.GetOPosandTimeSinceLastRead(SplitLine) #v1.18 to v1.20
+                #Output Pos and time since last read (1.14 - 1.20).
+                self.OutputPos, self.TimeSinceLastRead = self.GetOPosandTimeSinceLastRead(SplitLine)
 
                 wx.CallAfter(self.ParentWindow.UpdateTimeSinceLastRead, self.TimeSinceLastRead)
 
             wx.CallAfter(self.ParentWindow.UpdateOpos, self.OutputPos)
 
         elif SplitLine[0] == "non-tried:":
-            #Unreadable data (ddrescue 1.21).
+            #Unreadable data (ddrescue 1.21 & 1.22).
             self.ErrorSize = self.GetUnreadableData(SplitLine)
 
             wx.CallAfter(self.ParentWindow.UpdateErrorSize, self.ErrorSize)
 
-        elif SplitLine[0] == "time":
-            #Time since last read (ddrescue v1.20).
+        elif SplitLine[0] in ("time", "percent"): #Time since last read (ddrescue v1.20 - 1.22).
             self.TimeSinceLastRead = self.GetTimeSinceLastRead(SplitLine)
 
             wx.CallAfter(self.ParentWindow.UpdateTimeSinceLastRead, self.TimeSinceLastRead)
 
-        elif SplitLine[0] == "percent":
-            #Time since last read (ddrescue 1.21).
-            self.TimeSinceLastRead = self.GetTimeSinceLastRead(SplitLine)
-
-            wx.CallAfter(self.ParentWindow.UpdateTimeSinceLastRead, self.TimeSinceLastRead)
-
-        elif SplitLine[-1] == "1.21":
-            #We're on ddrescue 1.21.
-            self.DDRescue121 = True
-
-        elif SplitLine[0] == "rescued:" and self.DDRescue121:
-            #Recovered data and number of errors (ddrescue 1.21).
+        elif SplitLine[0] == "rescued:" and Settings["DDRescueVersion"] in ("1.21", "1.22"): #Versions 1.21 & 1.22
+            #Recovered data and number of errors (ddrescue 1.21 & 1.22).
             #Don't crash if we're reading the initial status from the logfile.
             try:
                 self.RecoveredData, self.RecoveredDataUnit, self.NumErrors = self.GetRecoveredDataAndNumErrors(SplitLine)
@@ -2802,8 +2786,8 @@ class BackendThread(threading.Thread):
             except AttributeError:
                 pass
 
-        elif ("rescued:" in Line and SplitLine[0] != "rescued:") or "ipos:" in Line:
-            if self.DDRescue121:
+        elif ("rescued:" in Line and SplitLine[0] != "rescued:") or "ipos:" in Line: #Versions 1.14 - 1.20 & 1.21 - 1.22
+            if Settings["DDRescueVersion"] in ("1.21", "1.22"):
                 Status, Info = Line.split("ipos:")
 
             else:
@@ -2816,7 +2800,7 @@ class BackendThread(threading.Thread):
 
             SplitLine = Info.split()
 
-            if self.DDRescue121:
+            if Settings["DDRescueVersion"] in ("1.21", "1.22"):
                 self.CurrentReadRate, self.InputPos = self.GetCurrentReadRateAndIPos(SplitLine)
 
                 wx.CallAfter(self.ParentWindow.UpdateIpos, self.InputPos)
