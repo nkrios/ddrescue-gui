@@ -59,7 +59,7 @@ def usage():
 #Determine if running on Linux or Mac.
 if "wxGTK" in wx.PlatformInfo:
     #Set the resource path to /usr/share/ddrescue-gui/
-    RescourcePath = '/usr/share/ddrescue-gui'
+    ResourcePath = '/usr/share/ddrescue-gui'
     Linux = True
 
     #Check if we're running on Parted Magic.
@@ -72,11 +72,11 @@ if "wxGTK" in wx.PlatformInfo:
 elif "wxMac" in wx.PlatformInfo:
     try:
         #Set the resource path from an environment variable, as mac .apps can be found in various places.
-        RescourcePath = os.environ['RESOURCEPATH']
+        ResourcePath = os.environ['RESOURCEPATH']
 
     except KeyError:
         #Use '.' as the rescource path instead as a fallback.
-        RescourcePath = "."
+        ResourcePath = "."
 
     Linux = False
     PartedMagic = False
@@ -111,7 +111,7 @@ for o, a in opts:
 #If we aren't running as root, relaunch immediately.
 if os.geteuid() != 0:
     #Relaunch as root.
-    execfile(RescourcePath+"/AuthenticationDialog.py")
+    execfile(ResourcePath+"/AuthenticationDialog.py")
     print("\nSorry, DDRescue-GUI must be run with root (superuser) privileges.\nRestarting as root...")
     sys.exit()
 
@@ -154,7 +154,7 @@ Tools.tools.logging = logging
 Tools.tools.plistlib = plistlib
 Tools.tools.time = time
 Tools.tools.Linux = Linux
-Tools.tools.RescourcePath = RescourcePath
+Tools.tools.ResourcePath = ResourcePath
 
 #Begin Disk Information Handler thread.
 class GetDiskInformation(threading.Thread):
@@ -187,7 +187,7 @@ class ShowSplash(wx.SplashScreen):
     def __init__(self, parent=None):
         """Prepare and display a splash screen"""
         #Convert the image to a bitmap.
-        Splash = wx.Image(name = RescourcePath+"/images/ddgoestotherescue.jpg").ConvertToBitmap()
+        Splash = wx.Image(name = ResourcePath+"/images/ddgoestotherescue.jpg").ConvertToBitmap()
 
         self.AlreadyExited = False
 
@@ -347,7 +347,7 @@ class MainWindow(wx.Frame):
             PATHS = os.getenv("PATH").split(":")
 
         else:
-            PATHS = [RescourcePath]
+            PATHS = [ResourcePath]
 
         FoundDDRescue = False
 
@@ -369,7 +369,7 @@ class MainWindow(wx.Frame):
             Command = "ddrescue --version"
 
         else:
-            Command = RescourcePath+"/ddrescue --version"
+            Command = ResourcePath+"/ddrescue --version"
 
         global DDRescueVersion
         DDRescueVersion = BackendTools().StartProcess(Command=Command, ReturnOutput=True)[1].split("\n")[0].split(" ")[-1]
@@ -385,7 +385,7 @@ class MainWindow(wx.Frame):
 
         #Set the frame's icon.
         global AppIcon
-        AppIcon = wx.Icon(RescourcePath+"/images/Logo.png", wx.BITMAP_TYPE_PNG)
+        AppIcon = wx.Icon(ResourcePath+"/images/Logo.png", wx.BITMAP_TYPE_PNG)
         wx.Frame.SetIcon(self, AppIcon)
 
         #Set some variables
@@ -523,10 +523,10 @@ class MainWindow(wx.Frame):
     def CreateOtherWidgets(self):
         """Create all other widgets for MainWindow"""
         #Create the animation for the throbber.
-        throb = wx.animate.Animation(RescourcePath+"/images/Throbber.gif")
+        throb = wx.animate.Animation(ResourcePath+"/images/Throbber.gif")
         self.Throbber = wx.animate.AnimationCtrl(self.Panel, -1, throb)
         self.Throbber.SetUseWindowBackgroundColour(True)
-        self.Throbber.SetInactiveBitmap(wx.Bitmap(RescourcePath+"/images/ThrobberRest.png", wx.BITMAP_TYPE_PNG))
+        self.Throbber.SetInactiveBitmap(wx.Bitmap(ResourcePath+"/images/ThrobberRest.png", wx.BITMAP_TYPE_PNG))
         self.Throbber.SetClientSize(wx.Size(30,30))
 
         #Create the list control for the detailed info.
@@ -542,8 +542,8 @@ class MainWindow(wx.Frame):
         self.OutputBox.SetMinSize(wx.Size(50, 240))
 
         #Create the arrows.
-        img1 = wx.Image(RescourcePath+"/images/ArrowDown.png", wx.BITMAP_TYPE_PNG)
-        img2 = wx.Image(RescourcePath+"/images/ArrowRight.png", wx.BITMAP_TYPE_PNG)
+        img1 = wx.Image(ResourcePath+"/images/ArrowDown.png", wx.BITMAP_TYPE_PNG)
+        img2 = wx.Image(ResourcePath+"/images/ArrowRight.png", wx.BITMAP_TYPE_PNG)
         self.DownArrowImage = wx.BitmapFromImage(img1)
         self.RightArrowImage = wx.BitmapFromImage(img2)
 
@@ -1631,10 +1631,10 @@ class DevInfoWindow(wx.Frame):
             self.RefreshButton.Disable()
 
         #Create the animation for the throbber.
-        throb = wx.animate.Animation(RescourcePath+"/images/Throbber.gif")
+        throb = wx.animate.Animation(ResourcePath+"/images/Throbber.gif")
         self.Throbber = wx.animate.AnimationCtrl(self.Panel, -1, throb)
         self.Throbber.SetUseWindowBackgroundColour(True)
-        self.Throbber.SetInactiveBitmap(wx.Bitmap(RescourcePath+"/images/ThrobberRest.png", wx.BITMAP_TYPE_PNG))
+        self.Throbber.SetInactiveBitmap(wx.Bitmap(ResourcePath+"/images/ThrobberRest.png", wx.BITMAP_TYPE_PNG))
         self.Throbber.SetClientSize(wx.Size(30,30))
 
     def SetupSizers(self):
@@ -2148,7 +2148,7 @@ class PrivPolWindow(wx.Frame):
         self.TextBox = wx.TextCtrl(self.Panel, -1, "", style=wx.TE_MULTILINE|wx.TE_READONLY|wx.TE_WORDWRAP)
 
         #Populate the text box.
-        self.TextBox.LoadFile(RescourcePath+"/other/privacypolicy.txt")
+        self.TextBox.LoadFile(ResourcePath+"/other/privacypolicy.txt")
 
         #Scroll the text box back up to the top.
         self.TextBox.SetInsertionPoint(0)
@@ -2625,7 +2625,7 @@ class BackendThread(threading.Thread):
             ExecList = ["ddrescue", "-v"]
 
         else:
-            ExecList = [RescourcePath+"/ddrescue", "-v"]
+            ExecList = [ResourcePath+"/ddrescue", "-v"]
 
         for Option in OptionsList:
             #Handle direct disk access on OS X.

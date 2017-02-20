@@ -96,7 +96,7 @@ class Main():
 
         else:
             #Use Cocoadialog. (use subprocess to avoid blocking GUI thread.)
-            subprocess.Popen(RescourcePath+"""/other/CocoaDialog.app/Contents/MacOS/CocoaDialog bubble --title "DDRescue-GUI" --text \""""+Message+"""\" --icon-file """+RescourcePath+"""/images/Logo.png  --background-top EFF7FD --border-color EFF7FD""", shell=True)
+            subprocess.Popen(ResourcePath+"""/other/CocoaDialog.app/Contents/MacOS/CocoaDialog bubble --title "DDRescue-GUI" --text \""""+Message+"""\" --icon-file """+ResourcePath+"""/images/Logo.png  --background-top EFF7FD --border-color EFF7FD""", shell=True)
 
     def DetermineOutputFileType(self, Settings, DiskInfo):
         """Determines Output File Type (Partition or Device)"""

@@ -32,17 +32,17 @@ import sys
 #Determine if running on Linux or Mac.
 if "wxGTK" in wx.PlatformInfo:
     #Set the resource path to /usr/share/ddrescue-gui/
-    RescourcePath = '/usr/share/ddrescue-gui'
+    ResourcePath = '/usr/share/ddrescue-gui'
     Linux = True
 
 elif "wxMac" in wx.PlatformInfo:
     try:
         #Set the resource path from an environment variable, as mac .apps can be found in various places.
-        RescourcePath = os.environ['RESOURCEPATH']
+        ResourcePath = os.environ['RESOURCEPATH']
 
     except KeyError:
         #Use '.' as the resource path instead as a fallback.
-        RescourcePath = "."
+        ResourcePath = "."
 
     Linux = False
 
@@ -55,7 +55,7 @@ class AuthWindow(wx.Frame):
 
         #Set the frame's icon.
         global AppIcon
-        AppIcon = wx.Icon(RescourcePath+"/images/Logo.png", wx.BITMAP_TYPE_PNG)
+        AppIcon = wx.Icon(ResourcePath+"/images/Logo.png", wx.BITMAP_TYPE_PNG)
         wx.Frame.SetIcon(self, AppIcon)
 
         self.CreateText()
@@ -89,7 +89,7 @@ class AuthWindow(wx.Frame):
     def CreateOtherWidgets(self):
         """Create all other widgets for AuthenticationWindow"""
         #Create the image.
-        img = wx.Image(RescourcePath+"/images/Logo.png", wx.BITMAP_TYPE_PNG)
+        img = wx.Image(ResourcePath+"/images/Logo.png", wx.BITMAP_TYPE_PNG)
         self.Image = wx.StaticBitmap(self.AuthPanel, -1, wx.BitmapFromImage(img))
 
         #Create the password field.
@@ -97,13 +97,13 @@ class AuthWindow(wx.Frame):
         self.PasswordField.SetBackgroundColour((255,255,255))
 
         #Create the throbber.
-        self.Busy = wx.animate.Animation(RescourcePath+"/images/Throbber.gif")
-        self.GreenPulse = wx.animate.Animation(RescourcePath+"/images/GreenPulse.gif")
-        self.RedPulse = wx.animate.Animation(RescourcePath+"/images/RedPulse.gif")
+        self.Busy = wx.animate.Animation(ResourcePath+"/images/Throbber.gif")
+        self.GreenPulse = wx.animate.Animation(ResourcePath+"/images/GreenPulse.gif")
+        self.RedPulse = wx.animate.Animation(ResourcePath+"/images/RedPulse.gif")
 
         self.Throbber = wx.animate.AnimationCtrl(self.AuthPanel, -1, self.GreenPulse)
         self.Throbber.SetUseWindowBackgroundColour(True)
-        self.Throbber.SetInactiveBitmap(wx.Bitmap(RescourcePath+"/images/ThrobberRest.png", wx.BITMAP_TYPE_PNG))
+        self.Throbber.SetInactiveBitmap(wx.Bitmap(ResourcePath+"/images/ThrobberRest.png", wx.BITMAP_TYPE_PNG))
         self.Throbber.SetClientSize(wx.Size(30,30))
 
     def SetupSizers(self):
@@ -221,10 +221,10 @@ class AuthWindow(wx.Frame):
     def StartDDRescueGUI(self, Password):
         """Start DDRescue-GUI and exit"""
         if Linux:
-            Cmd = subprocess.Popen("sudo -SH "+RescourcePath+"/DDRescue-GUI.py", stdin=subprocess.PIPE, stdout=sys.stdout, stderr=subprocess.PIPE, shell=True)
+            Cmd = subprocess.Popen("sudo -SH "+ResourcePath+"/DDRescue-GUI.py", stdin=subprocess.PIPE, stdout=sys.stdout, stderr=subprocess.PIPE, shell=True)
 
         else:
-            Cmd = subprocess.Popen("sudo -SH "+RescourcePath+"/../MacOS/DDRescue-GUI", stdin=subprocess.PIPE, stdout=sys.stdout, stderr=subprocess.PIPE, shell=True)
+            Cmd = subprocess.Popen("sudo -SH "+ResourcePath+"/../MacOS/DDRescue-GUI", stdin=subprocess.PIPE, stdout=sys.stdout, stderr=subprocess.PIPE, shell=True)
 
         #Send the password to sudo through stdin, to avoid showing the user's password in the system/activity monitor.
         Cmd.stdin.write(Password+"\n")

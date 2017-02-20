@@ -109,7 +109,7 @@ logger = logging
 #Set up resource path and determine OS.
 if "wxGTK" in wx.PlatformInfo:
     #Set the resource path to /usr/share/ddrescue-gui/
-    RescourcePath = '/usr/share/ddrescue-gui'
+    ResourcePath = '/usr/share/ddrescue-gui'
     Linux = True
 
     #Check if we're running on Parted Magic.
@@ -122,11 +122,11 @@ if "wxGTK" in wx.PlatformInfo:
 elif "wxMac" in wx.PlatformInfo:
     try:
         #Set the resource path from an environment variable, as mac .apps can be found in various places.
-        RescourcePath = os.environ['RESOURCEPATH']
+        ResourcePath = os.environ['RESOURCEPATH']
 
     except KeyError:
         #Use '.' as the rescource path instead as a fallback.
-        RescourcePath = "."
+        ResourcePath = "."
 
     Linux = False
     PartedMagic = False
@@ -146,7 +146,7 @@ Tools.tools.logger = logger
 Tools.tools.logging = logging
 Tools.tools.time = time
 Tools.tools.Linux = Linux
-Tools.tools.RescourcePath = RescourcePath
+Tools.tools.ResourcePath = ResourcePath
 
 #Setup test modules.
 GetDevInfoTests.DevInfoTools = DevInfoTools
