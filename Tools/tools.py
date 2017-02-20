@@ -159,9 +159,9 @@ class Main():
 
         #Handle this common error.
         if "Resource Temporarily Unavailable" in Output or "resource temporarily unavailable" in Output:
-            #Fix by detaching and then reattaching. *** Does this work? ***
-            self.StartProcess(Command="hdiutil detach "+Disk, ReturnOutput=True)
-            self.StartProcess(Command="hdiutil attach "+Disk, ReturnOutput=True)
+            #Fix by detaching and then reattaching. *** Verify that this works ***
+            self.StartProcess(Command="hdiutil detach "+Settings["OutputFile"], ReturnOutput=True)
+            self.StartProcess(Command="hdiutil attach "+Settings["OutputFile"], ReturnOutput=True)
 
             #Try again.
             Output = self.StartProcess(Command="hdiutil "+Options, ReturnOutput=True)[1]

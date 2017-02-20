@@ -41,7 +41,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "1.7"
-ReleaseDate = "13/2/2017"
+ReleaseDate = "14/2/2017"
 SessionEnding = False
 
 def usage():
@@ -1077,7 +1077,7 @@ class MainWindow(wx.Frame):
         aboutbox.Version = Version
         aboutbox.Copyright = "(C) 2013-2017 Hamish McIntyre-Bhatty"
         aboutbox.Description = "GUI frontend for GNU ddrescue\nRunning on ddrescue version "+Settings["DDRescueVersion"]
-        aboutbox.WebSite = ("https://launchpad.net/ddrescue-gui", "Launchpad page")
+        aboutbox.WebSite = ("http://hamishmb.altervista.org", "My Website")
         aboutbox.Developers = ["Hamish McIntyre-Bhatty", "Minnie McIntyre-Bhatty (GUI Design)"]
         aboutbox.Artists = ["Holly McIntyre-Bhatty", "Hamish McIntyre-Bhatty (Throbber designs)"]
         aboutbox.License = "DDRescue-GUI is free software: you can redistribute it and/or modify it\nunder the terms of the GNU General Public License version 3 or,\nat your option, any later version.\n\nDDRescue-GUI is distributed in the hope that it will be useful,\nbut WITHOUT ANY WARRANTY; without even the implied warranty of\nMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\nGNU General Public License for more details.\n\nYou should have received a copy of the GNU General Public License\nalong with DDRescue-GUI.  If not, see <http://www.gnu.org/licenses/>.\n\nGNU ddrescue and cocoaDialog are released under the GPLv2,\nmay be redistributed under the terms of the GPLv2 or newer, and are\nbundled with the Mac OS X version of DDRescue-GUI, but I am NOT\nthe author of GNU ddrescue or cocoaDialog.\n\nFor more information on GNU ddrescue, visit\nhttp://www.gnu.org/software/ddrescue/ddrescue.html\n\nFor more information on cocoaDialog, visit\nhttp://mstratman.github.io/cocoadialog/#"
