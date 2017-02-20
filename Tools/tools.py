@@ -161,7 +161,7 @@ class Main():
         if "Resource temporarily unavailable" in Output or Retval != 0:
             #Fix by detaching any disk images. *** Verify that this works ***
             #Try to find any disk images that are mounted.
-            for Line in self.StartProcess(Command="diskutil list", ReturnOutput=True).split("\n"):
+            for Line in self.StartProcess(Command="diskutil list", ReturnOutput=True)[1].split("\n"):
                 if Line.split()[1] == "(disk image):":
                     self.StartProcess(Command="hdiutil detach "+Line.split()[0])
 
