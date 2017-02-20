@@ -159,8 +159,8 @@ class Main():
 
         #Handle this common error.
         if "Resource temporarily unavailable" in Output or Retval != 0:
-            #Fix by detaching any disk images. *** Verify that this works ***
-            #Try to find any disk images that are mounted.
+            #Fix by detaching any disk images.
+            #Try to find any disk images that are attached, and detach them (if there are any).
             for Line in self.StartProcess(Command="diskutil list", ReturnOutput=True)[1].split("\n"):
                 try:
                     if ' '.join(Line.split()[1:3]) == "(disk image):":
