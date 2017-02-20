@@ -158,7 +158,7 @@ class Main():
         Retval, Output = self.StartProcess(Command="hdiutil "+Options, ReturnOutput=True)
 
         #Handle this common error.
-        if "Resource Temporarily Unavailable" in Output or "resource temporarily unavailable" in Output:
+        if "Resource temporarily unavailable" in Output or Retval != 0:
             #Fix by detaching any disk images. *** Verify that this works ***
             #Try to find any disk images that are mounted.
             for Line in self.StartProcess(Command="diskutil list", ReturnOutput=True).split("\n"):
