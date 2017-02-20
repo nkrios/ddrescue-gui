@@ -163,7 +163,7 @@ class Main():
             #Try to find any disk images that are mounted.
             for Line in self.StartProcess(Command="diskutil list", ReturnOutput=True)[1].split("\n"):
                 try:
-                    if Line.split()[1] == "(disk image):":
+                    if ' '.join(Line.split()[1:3]) == "(disk image):":
                         self.StartProcess(Command="hdiutil detach "+Line.split()[0])
 
                 except: pass
