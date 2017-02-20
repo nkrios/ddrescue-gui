@@ -159,12 +159,14 @@ class Main():
 
         #Handle this common error.
         if "Resource Temporarily Unavailable" in Output or "resource temporarily unavailable" in Output:
-            #Fix by detaching and then reattaching. *** Verify that this works ***
-            self.StartProcess(Command="hdiutil detach "+Settings["OutputFile"], ReturnOutput=True)
-            self.StartProcess(Command="hdiutil attach "+Settings["OutputFile"], ReturnOutput=True)
+            #Fix by detaching any disk images. *** Verify that this works ***
+            #Try to find any disk images that are mounted.
+            for Line in self.StartProcess(Command="diskutil list", ReturnOutput=True).split("\n"):
+                if Line.split()[1] == "(disk image):":
+                    self.StartProcess(Command="hdiutil detach "+Line.split()[0])
 
             #Try again.
-            Output = self.StartProcess(Command="hdiutil "+Options, ReturnOutput=True)[1]
+            Retval, Output = self.StartProcess(Command="hdiutil "+Options, ReturnOutput=True)
 
         return Retval, Output
 
