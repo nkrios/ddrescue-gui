@@ -10,7 +10,7 @@ from setuptools import setup
 
 APP = ['./DDRescue-GUI.py']
 
-DATA_FILES = ['./LICENSE', './AuthenticationDialog.py', './ddrescue', './images', './other']
+DATA_FILES = ['./LICENSE', './AuthenticationDialog.py', './Tests.py', './ddrescue', './images', './other']
 
 OPTIONS = {'arch': 'x86_64', 'argv_emulation': True, 'no_strip': True, 'iconfile': './images/Logo.icns', 'includes': 'wx,wx.animate,wx.lib.stattext,wx.lib.statbmp,threading,getopt,logging,time,subprocess,re,os,sys,plistlib,BeautifulSoup,traceback,unittest', 'packages': 'GetDevInfo,Tools,Tests'}
 
