@@ -154,13 +154,13 @@ class Main():
         return MountedDisk["dev-entry"], MountedDisk["mount-point"], True
 
     def MacRunHdiutil(self, Options, Disk):
-        """Runs hdiutil on behalf of the rest of the program when called. Tries to handle and fix hdiutil errors if they occurr."""
+        """Runs hdiutil on behalf of the rest of the program when called. Tries to handle and fix hdiutil errors if they occur."""
         Retval, Output = self.StartProcess(Command="hdiutil "+Options, ReturnOutput=True)
 
         #Handle this common error.
         if "Resource temporarily unavailable" in Output or Retval != 0:
             #Fix by detaching any disk images.
-            #Try to find any disk images that are attached, and detach them (if there are any).
+            #Try to find any disk images that are attached, and detach them (if there are any). *** Doesn't work on older versions of OS X but fix in next release. ***
             for Line in self.StartProcess(Command="diskutil list", ReturnOutput=True)[1].split("\n"):
                 try:
                     if ' '.join(Line.split()[1:3]) == "(disk image):":

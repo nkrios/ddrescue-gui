@@ -41,7 +41,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "1.7"
-ReleaseDate = "20/2/2017"
+ReleaseDate = "21/2/2017"
 SessionEnding = False
 
 def usage():
@@ -53,6 +53,7 @@ def usage():
     print("                                     Not the best for debugging, but acceptable if there is little disk space.")
     print("       -d, --debug:                  Log lots of boring debug messages, as well as information, warnings, errors and critical errors. Usually used for diagnostic purposes.")
     print("                                     The default, as it's very helpful if problems are encountered, and the user needs help\n")
+    print("       -t, --tests                   Run all unit tests.")
     print("DDRescue-GUI "+Version+" is released under the GNU GPL Version 3")
     print("Copyright (C) Hamish McIntyre-Bhatty 2013-2017")
 
@@ -83,7 +84,7 @@ elif "wxMac" in wx.PlatformInfo:
 
 #Check all cmdline options are valid.
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "hqvd", ["help", "quiet", "verbose", "debug"])
+    opts, args = getopt.getopt(sys.argv[1:], "hqvdt", ["help", "quiet", "verbose", "debug", "tests"])
 
 except getopt.GetoptError as err:
     #Invalid option. Show the help message and then exit.
@@ -102,6 +103,11 @@ for o, a in opts:
         loggerLevel = logging.INFO
     elif o in ["-d", "--debug"]:
         loggerLevel = logging.DEBUG
+    elif o in ["-t", "--tests"]:
+        #Run unit tests.
+        execfile(ResourcePath+"/Tests.py")
+        sys.exit()
+
     elif o in ["-h", "--help"]:
         usage()
         sys.exit()

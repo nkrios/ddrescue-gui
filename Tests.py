@@ -59,6 +59,7 @@ def usage():
     print("       -b, --backendtools:           Run tests for BackendTools module.")
     print("       -m, --main:                   Run tests for main file (DDRescue-GUI.py).")
     print("       -a, --all:                    Run all the tests. The default.\n")
+    print("       -t, --tests:                  Ignored.")
     print("DDRescue-GUI "+Version+" is released under the GNU GPL Version 3")
     print("Copyright (C) Hamish McIntyre-Bhatty 2013-2017")
 
@@ -68,7 +69,7 @@ if os.geteuid() != 0:
 
 #Check all cmdline options are valid.
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "hdgbma", ["help", "debug", "getdevinfo", "backendtools", "main", "all"])
+    opts, args = getopt.getopt(sys.argv[1:], "hdgbmat", ["help", "debug", "getdevinfo", "backendtools", "main", "all", "tests"])
 
 except getopt.GetoptError as err:
     #Invalid option. Show the help message and then exit.
@@ -94,6 +95,8 @@ for o, a in opts:
     elif o in ["-a", "--all"]:
         TestSuites = [GetDevInfoTests, BackendToolsTests]
         #TestSuites.append(MainTests)
+    elif o in ["-t", "--tests"]:
+        pass
     elif o in ["-d", "--debug"]:
         loggerLevel = logging.DEBUG
     elif o in ["-h", "--help"]:
