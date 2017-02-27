@@ -41,7 +41,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "1.7"
-ReleaseDate = "21/2/2017"
+ReleaseDate = "27/2/2017"
 SessionEnding = False
 
 def usage():
@@ -337,9 +337,9 @@ class CustomTextCtrl(wx.TextCtrl):
 class MainWindow(wx.Frame):
     def __init__(self):
         """Initialize MainWindow"""
-        wx.Frame.__init__(self, None, title="DDRescue-GUI", size=(936,360), style=wx.DEFAULT_FRAME_STYLE)
+        wx.Frame.__init__(self, None, title="DDRescue-GUI", size=(956,360), style=wx.DEFAULT_FRAME_STYLE)
         self.Panel = wx.Panel(self)
-        self.SetClientSize(wx.Size(936,360))
+        self.SetClientSize(wx.Size(956,360))
 
         print("DDRescue-GUI Version "+Version+" Starting...")
         logger.info("DDRescue-GUI Version "+Version+" Starting...")
@@ -657,7 +657,7 @@ class MainWindow(wx.Frame):
 
         #Get the sizer set up for the frame.
         self.Panel.SetSizer(self.MainSizer)
-        self.MainSizer.SetMinSize(wx.Size(1036,360))
+        self.MainSizer.SetMinSize(wx.Size(1056,360))
         self.MainSizer.SetSizeHints(self)
 
     def CreateMenus(self):
@@ -720,7 +720,7 @@ class MainWindow(wx.Frame):
         self.Bind(wx.EVT_SIZE, self.OnSize)
 
         #OnExit events.
-        self.Bind(wx.EVT_QUERY_END_SESSION, self.SessionEnding) #*** Test this works ***
+        self.Bind(wx.EVT_QUERY_END_SESSION, self.SessionEnding)
         self.Bind(wx.EVT_MENU, self.OnExit, self.MenuExit)
         self.Bind(wx.EVT_CLOSE, self.OnExit)
 
@@ -2360,7 +2360,7 @@ class FinishedWindow(wx.Frame):
 
         return True
 
-    def MountDisk(self): #*** Test this again ***
+    def MountDisk(self):
         """Mount the output file"""
         logger.info("FinishedWindow().MountDisk(): Mounting Disk: "+Settings["OutputFile"]+"...")
         wx.CallAfter(self.ParentWindow.UpdateStatusBar, "Preparing to mount output file. Please Wait...")
