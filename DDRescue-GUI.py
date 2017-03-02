@@ -41,7 +41,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "1.7"
-ReleaseDate = "1/3/2017"
+ReleaseDate = "2/3/2017"
 SessionEnding = False
 
 def usage():
@@ -1593,7 +1593,7 @@ class MainWindow(wx.Frame):
             if JustFinishedRec:
                 #If so return to finisheddlg.
                 logger.info("MainWindow().OnExit(): Showing FinishedWindow() again...")
-                FinishedWindow(self, self.DiskCapacity, RecoveredData).Show()
+                FinishedWindow(self, self.DiskCapacity, self.RecoveredData).Show()
 
 #End Main Window
 #Begin Disk Info Window
