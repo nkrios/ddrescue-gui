@@ -1334,7 +1334,7 @@ class MainWindow(wx.Frame):
         """Abort the recovery"""
         #Ask ddrescue to exit.
         logger.info("MainWindow().OnAbort(): Attempting to kill ddrescue...")
-        BackendTools().StartProcess("killall ddrescue.new")
+        BackendTools().StartProcess("killall ddrescue")
         self.AbortedRecovery = True
 
         #Disable control button.
