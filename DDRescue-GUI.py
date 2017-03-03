@@ -2327,7 +2327,7 @@ class FinishedWindow(wx.Frame):
 
             else:
                 logger.error("FinishedWindow().UnmountOutputFile(): Error unmounting output file! Warning user...")
-                dlg = wx.MessageDialog(self.Panel, "It seems your output file is in use. Please close all applications that could be using it and try again.", "DDRescue-GUI - Warning", style=wx.OK | wx.ICON_INFO)
+                dlg = wx.MessageDialog(self.Panel, "It seems your output file is in use. Please close all applications that could be using it and try again.", "DDRescue-GUI - Warning", style=wx.OK | wx.ICON_INFORMATION)
                 dlg.ShowModal()
                 dlg.Destroy()
                 return False
@@ -2353,7 +2353,7 @@ class FinishedWindow(wx.Frame):
 
         else:
             logger.info("FinishedWindow().UnmountOutputFile(): Failed to pull down the loop device! Warning user...")
-            dlg = wx.MessageDialog(self.Panel, "Couldn't finish unmounting your output file! Please close all applications that could be using it and try again.", "DDRescue-GUI - Warning", style=wx.OK | wx.ICON_INFO)
+            dlg = wx.MessageDialog(self.Panel, "Couldn't finish unmounting your output file! Please close all applications that could be using it and try again.", "DDRescue-GUI - Warning", style=wx.OK | wx.ICON_INFORMATION)
             dlg.ShowModal()
             dlg.Destroy()
             return False
