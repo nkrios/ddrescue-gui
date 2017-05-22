@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*- 
-# DDRescue-GUI Main Script Version 1.7
+# DDRescue-GUI Main Script Version 1.7.1
 # This file is part of DDRescue-GUI.
 # Copyright (C) 2013-2017 Hamish McIntyre-Bhatty
 # DDRescue-GUI is free software: you can redistribute it and/or modify it
@@ -40,8 +40,8 @@ import traceback
 from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
-Version = "1.7"
-ReleaseDate = "2/3/2017"
+Version = "1.7.1"
+ReleaseDate = "22/5/2017"
 SessionEnding = False
 
 def usage():
@@ -2683,7 +2683,7 @@ class BackendThread(threading.Thread):
                     try:
                         self.ProcessLine(TidyLine)
 
-                    except:
+                    except Exception as e:
                         #Handle unexpected errors. Can happen once in normal operation on ddrescue v1.22.
                         logger.warning("MainBackendThread(): Unexpected error parsing ddrescue's output! Can happen once on newer versions in normal operation. Are you running a newer/older version of ddrescue than we support?")
 
@@ -2798,7 +2798,7 @@ class BackendThread(threading.Thread):
             except AttributeError:
                 pass
 
-        elif ("rescued:" in Line and SplitLine[0] != "rescued:") or "ipos:" in Line: #Versions 1.14 - 1.20 & 1.21 - 1.22
+        elif ("rescued:" in Line and SplitLine[0] not in ("rescued:", "pct")) or "ipos:" in Line: #Versions 1.14 - 1.20 & 1.21 - 1.22
             if Settings["DDRescueVersion"] in ("1.21", "1.22"):
                 Status, Info = Line.split("ipos:")
 
@@ -2833,7 +2833,7 @@ class BackendThread(threading.Thread):
 
             wx.CallAfter(self.ParentWindow.UpdateCurrentReadRate, self.CurrentReadRate)
 
-        else:
+        elif ("pct" not in Line):
             #Probably a status line (maybe the initial one).
             Status = Line
 

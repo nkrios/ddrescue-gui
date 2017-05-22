@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# DDRescue Tools (setup scripts) for ddrescue v1.21 (or newer) in the Tools Package for DDRescue-GUI Version 1.7
+# DDRescue Tools (setup scripts) in the Tools Package for DDRescue-GUI Version 1.7.1
 # This file is part of DDRescue-GUI.
 # Copyright (C) 2013-2017 Hamish McIntyre-Bhatty
 # DDRescue-GUI is free software: you can redistribute it and/or modify it
