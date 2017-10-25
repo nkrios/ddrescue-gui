@@ -221,6 +221,13 @@ class AuthWindow(wx.Frame):
     def StartDDRescueGUI(self, Password):
         """Start DDRescue-GUI and exit"""
         if Linux:
+            #XXX Fix for running on Wayland until we get policy kit stuff done.
+            try:
+                if os.environ['XDG_SESSION_TYPE'] == "wayland":
+                    subprocess.Popen("xhost +si:localuser:root", shell=True).wait()
+
+            except KeyError: pass
+
             Cmd = subprocess.Popen("sudo -SH "+ResourcePath+"/DDRescue-GUI.py", stdin=subprocess.PIPE, stdout=sys.stdout, stderr=subprocess.PIPE, shell=True)
 
         else:
