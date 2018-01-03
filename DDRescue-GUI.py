@@ -55,7 +55,7 @@ def usage():
     print("                                     The default, as it's very helpful if problems are encountered, and the user needs help\n")
     print("       -t, --tests                   Run all unit tests.")
     print("DDRescue-GUI "+Version+" is released under the GNU GPL Version 3")
-    print("Copyright (C) Hamish McIntyre-Bhatty 2013-2017")
+    print("Copyright (C) Hamish McIntyre-Bhatty 2013-2018")
 
 #Determine if running on Linux or Mac.
 if "wxGTK" in wx.PlatformInfo:
@@ -1081,7 +1081,7 @@ class MainWindow(wx.Frame):
         aboutbox.SetIcon(AppIcon)
         aboutbox.Name = "DDRescue-GUI"
         aboutbox.Version = Version
-        aboutbox.Copyright = "(C) 2013-2017 Hamish McIntyre-Bhatty"
+        aboutbox.Copyright = "(C) 2013-2018 Hamish McIntyre-Bhatty"
         aboutbox.Description = "GUI frontend for GNU ddrescue\nRunning on ddrescue version "+Settings["DDRescueVersion"]
         aboutbox.WebSite = ("http://hamishmb.altervista.org", "My Website")
         aboutbox.Developers = ["Hamish McIntyre-Bhatty", "Minnie McIntyre-Bhatty (GUI Design)"]

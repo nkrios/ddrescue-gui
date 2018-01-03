@@ -61,7 +61,7 @@ def usage():
     print("       -a, --all:                    Run all the tests. The default.\n")
     print("       -t, --tests:                  Ignored.")
     print("DDRescue-GUI "+Version+" is released under the GNU GPL Version 3")
-    print("Copyright (C) Hamish McIntyre-Bhatty 2013-2017")
+    print("Copyright (C) Hamish McIntyre-Bhatty 2013-2018")
 
 #Exit if not running as root.
 if os.geteuid() != 0:
