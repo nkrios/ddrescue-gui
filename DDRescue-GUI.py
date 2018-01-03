@@ -1589,9 +1589,8 @@ class MainWindow(wx.Frame):
             #XXX Fix for running on Wayland until we get policy kit stuff done.
             if Linux:
                 try:
-                    if os.environ['XDG_SESSION_TYPE'] == "wayland":
-                        subprocess.Popen("xhost -si:localuser:root", shell=True).wait()
-                except KeyError: pass
+                    subprocess.check_call("xhost -si:localuser:root", shell=True)
+                except subprocess.CalledProcessError: pass
 
             self.Destroy()
 
