@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*- 
 # DDRescue-GUI Main Script Version 1.7.1
 # This file is part of DDRescue-GUI.
-# Copyright (C) 2013-2017 Hamish McIntyre-Bhatty
+# Copyright (C) 2013-2018 Hamish McIntyre-Bhatty
 # DDRescue-GUI is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 3 or,
 # at your option, any later version.
@@ -41,7 +41,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "1.7.1"
-ReleaseDate = "25/10/2017"
+ReleaseDate = "3/1/2018"
 SessionEnding = False
 
 def usage():
