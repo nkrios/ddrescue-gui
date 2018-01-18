@@ -35,14 +35,14 @@ from . import allversions
 from . import onePointForteen
 from . import onePointEighteen
 from . import onePointTwenty
-from . import onePointTwentyOne
+from . import one_point_twenty_one
 from . import one_point_twenty_two
 
 #Get a list of FUNCTIONS in all of our ddrescue tools modules.
 FUNCTIONS = []
 
 for Module in (allversions, onePointForteen, onePointEighteen, onePointTwenty,
-               onePointTwentyOne, one_point_twenty_two):
+               one_point_twenty_one, one_point_twenty_two):
 
     for function in dir(Module):
         if isinstance(Module.__dict__.get(function), types.FunctionType):
