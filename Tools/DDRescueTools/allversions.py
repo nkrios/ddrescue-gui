@@ -15,7 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with DDRescue-GUI.  If not, see <http://www.gnu.org/licenses/>.
 
-#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
+"""
+Tools for all versions of ddrescue.
+"""
+
+#Do future imports to prepare to support python 3.
+#Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -24,6 +29,10 @@ from __future__ import unicode_literals
 from . import decorators
 
 @decorators.define_versions
-def GetInitialStatus(SplitLine):
-    """Function to get ddrescue's initial status. Works with ddrescue versions: 1.14,1.15,1.16,1.17,1.18,1.19,1.20,1.21,1.22"""
-    return int(SplitLine[3]), SplitLine[4]
+def get_initial_status(split_line):
+    """
+    Function to get ddrescue's initial status.
+    Works with ddrescue versions: 1.14,1.15,1.16,1.17,1.18,1.19,1.20,1.21,1.22
+    """
+
+    return int(split_line[3]), split_line[4]
