@@ -16,6 +16,7 @@
 # along with DDRescue-GUI.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import absolute_import
 from . import setup
+from . import decorators
 from . import allversions
 from . import one_point_forteen
 from . import one_point_eighteen

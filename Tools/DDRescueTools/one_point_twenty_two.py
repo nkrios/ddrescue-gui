@@ -29,7 +29,7 @@ from __future__ import unicode_literals
 
 from . import decorators
 
-@decorators.DefineVersions
+@decorators.define_versions
 def get_recovered_data_num_errors(split_line):
     """Get Recovered Data and Number of Errors. Works with ddrescue versions: 1.22"""
     return split_line[1], split_line[2][:2], split_line[5].replace(",", "")

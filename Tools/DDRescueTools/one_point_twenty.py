@@ -28,7 +28,7 @@ from __future__ import unicode_literals
 
 from . import decorators
 
-@decorators.DefineVersions
+@decorators.define_versions
 def get_time_since_last_read(split_line):
     """Get Time Since Last Read. Works with ddrescue versions: 1.20,1.21,1.22"""
     return split_line[-1]

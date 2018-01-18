@@ -28,7 +28,7 @@ from __future__ import unicode_literals
 
 from . import decorators
 
-@decorators.DefineVersions
+@decorators.define_versions
 def get_inputpos_numerrors_averagereadrate(split_line):
     """
     Get Input Position, Number of Errors, and Average Read Rate.
@@ -38,7 +38,7 @@ def get_inputpos_numerrors_averagereadrate(split_line):
     return (' '.join(split_line[1:3]).replace(",", ""),
             split_line[4].replace(",", ""), split_line[7], split_line[8])
 
-@decorators.DefineVersions
+@decorators.define_versions
 def get_outputpos_time_since_last_read(split_line):
     """
     Get Output Position and Time Since Last Successful Read.
@@ -47,7 +47,7 @@ def get_outputpos_time_since_last_read(split_line):
 
     return (' '.join(split_line[1:3]).replace(",", ""), ' '.join(split_line[-2:]))
 
-@decorators.DefineVersions
+@decorators.define_versions
 def get_current_rate_error_size_recovered_data(split_line):
     """
     Get Current Read Rate, Error Size, and Recovered Data.

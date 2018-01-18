@@ -28,7 +28,7 @@ from __future__ import unicode_literals
 
 from . import decorators
 
-@decorators.DefineVersions
+@decorators.define_versions
 def get_outputpos_time_since_last_read(split_line):
     """
     Get Output Position and Time Since Last Successful Read.

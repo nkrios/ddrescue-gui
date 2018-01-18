@@ -15,17 +15,26 @@
 # You should have received a copy of the GNU General Public License
 # along with DDRescue-GUI.  If not, see <http://www.gnu.org/licenses/>.
 
-#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
+"""
+Decorators for DDRescue tools
+"""
+
+#Do future imports to prepare to support python 3.
+#Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-def DefineVersions(Function):
-    #Read the docstring to find the version the function supports.
-    Function.SUPPORTEDVERSIONS = []
+def define_versions(function):
+    """
+    Reads the function docstring to find the
+    ddrescue versions the function supports.
+    """
 
-    for VERSION in Function.__doc__.split(": ")[1].split(","):
-        Function.SUPPORTEDVERSIONS.append(VERSION)
+    function.SUPPORTEDVERSIONS = []
 
-    return Function
+    for version in function.__doc__.split(": ")[1].split(","):
+        function.SUPPORTEDVERSIONS.append(version)
+
+    return function
