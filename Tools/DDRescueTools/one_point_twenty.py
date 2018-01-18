@@ -15,7 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with DDRescue-GUI.  If not, see <http://www.gnu.org/licenses/>.
 
-#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
+"""
+Tools for ddrescue v1.20 or newer.
+"""
+
+#Do future imports to prepare to support python 3.
+#Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -24,6 +29,6 @@ from __future__ import unicode_literals
 from . import decorators
 
 @decorators.DefineVersions
-def GetTimeSinceLastRead(SplitLine):
+def get_time_since_last_read(split_line):
     """Get Time Since Last Read. Works with ddrescue versions: 1.20,1.21,1.22"""
-    return SplitLine[-1]
+    return split_line[-1]
