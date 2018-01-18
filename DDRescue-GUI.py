@@ -1132,9 +1132,9 @@ class MainWindow(wx.Frame):
                     logger.info("MainWindow().OnStart(): "+Disk+" is a file (or not in collected disk info), ignoring it...")
                     continue
 
-                if BackendTools().IsMounted(Disk) or DevInfoTools().IsPartition(Disk) == False:
+                if BackendTools().IsMounted(Disk) or (Disk in DiskInfo and DiskInfo[Disk]["Type"] != "Partition"):
                     #The Disk is mounted, or may have partitions that are mounted.
-                    if DevInfoTools().IsPartition(Disk):
+                    if DiskInfo[Disk]["Type"] == "Partition":
                         #Unmount the disk.
                         logger.debug("MainWindow().OnStart(): "+Disk+" is a partition. Unmounting "+Disk+"...")
                         self.UpdateStatusBar("Unmounting "+Disk+". This may take a few moments...")
