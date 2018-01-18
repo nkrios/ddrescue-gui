@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*- 
-# DDRescue-GUI Main Script Version 1.7.1
+# DDRescue-GUI Main Script Version 1.8
 # This file is part of DDRescue-GUI.
 # Copyright (C) 2013-2018 Hamish McIntyre-Bhatty
 # DDRescue-GUI is free software: you can redistribute it and/or modify it
@@ -40,8 +40,8 @@ import traceback
 from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
-Version = "1.7.1"
-ReleaseDate = "3/1/2018"
+Version = "1.8"
+ReleaseDate = "18/1/2018"
 SessionEnding = False
 
 def usage():
@@ -137,21 +137,14 @@ else:
     logger.debug("Detected Mac OS X...")
 
 #Import custom-made modules
-import GetDevInfo
+import getdevinfo
 import Tools
 
-from GetDevInfo.getdevinfo import Main as DevInfoTools
+from getdevinfo import getdevinfo as DevInfoTools
 from Tools.tools import Main as BackendTools
 import Tools.DDRescueTools.setup as DDRescueTools
 
 #Setup custom-made modules (make global variables accessible inside the packages).
-GetDevInfo.getdevinfo.subprocess = subprocess
-GetDevInfo.getdevinfo.re = re
-GetDevInfo.getdevinfo.logger = logger
-GetDevInfo.getdevinfo.Linux = Linux
-GetDevInfo.getdevinfo.plistlib = plistlib
-GetDevInfo.getdevinfo.BeautifulSoup = BeautifulSoup
-
 Tools.tools.wx = wx
 Tools.tools.os = os
 Tools.tools.subprocess = subprocess
@@ -173,7 +166,7 @@ class GetDiskInformation(threading.Thread):
     def run(self):
         """Get Disk Information and return it as a list with embedded lists"""
         #Use a module I've written to collect data about connected Disks, and return it.
-        wx.CallAfter(self.ParentWindow.ReceiveDiskInfo, DevInfoTools().GetInfo())
+        wx.CallAfter(self.ParentWindow.ReceiveDiskInfo, DevInfoTools.get_info())
 
 #End Disk Information Handler thread.
 #Begin Starter Class
