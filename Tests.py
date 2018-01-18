@@ -38,16 +38,13 @@ from bs4 import BeautifulSoup
 Version = "1.8"
 
 #Custom made modules.
-import GetDevInfo
 import Tools
 
-from GetDevInfo.getdevinfo import Main as DevInfoTools
 from Tools.tools import Main as BackendTools
 
 #Import test modules.
 import Tests
 
-from Tests import GetDevInfoTests
 from Tests import BackendToolsTests
 
 def usage():
@@ -55,7 +52,6 @@ def usage():
     print("Options:\n")
     print("       -h, --help:                   Display this help text.")
     print("       -d, --debug:                  Set logging level to debug, to show all logging messages. Default: show only critical logging messages.")
-    print("       -g, --getdevinfo:             Run tests for GetDevInfo module.")
     print("       -b, --backendtools:           Run tests for BackendTools module.")
     print("       -m, --main:                   Run tests for main file (DDRescue-GUI.py).")
     print("       -a, --all:                    Run all the tests. The default.\n")
@@ -79,21 +75,19 @@ except getopt.GetoptError as err:
     sys.exit(2)
 
 #Set up which tests to run based on options given.
-TestSuites = [GetDevInfoTests, BackendToolsTests] #*** Set up full defaults when finished ***
+TestSuites = [BackendToolsTests] #*** Set up full defaults when finished ***
 
 #Log only critical message by default.
 loggerLevel = logging.CRITICAL
 
 for o, a in opts:
-    if o in ["-g", "--getdevinfo"]:
-        TestSuites = [GetDevInfoTests]
-    elif o in ["-b", "--backendtools"]:
+    if o in ["-b", "--backendtools"]:
         TestSuites = [BackendToolsTests]
     elif o in ["-m", "--main"]:
         #TestSuites = [MainTests]
         assert False, "Not implemented yet"
     elif o in ["-a", "--all"]:
-        TestSuites = [GetDevInfoTests, BackendToolsTests]
+        TestSuites = [BackendToolsTests]
         #TestSuites.append(MainTests)
     elif o in ["-t", "--tests"]:
         pass
@@ -135,13 +129,6 @@ elif "wxMac" in wx.PlatformInfo:
     PartedMagic = False
 
 #Setup custom-made modules (make global variables accessible inside the packages).
-GetDevInfo.getdevinfo.subprocess = subprocess
-GetDevInfo.getdevinfo.re = re
-GetDevInfo.getdevinfo.logger = logger
-GetDevInfo.getdevinfo.Linux = Linux
-GetDevInfo.getdevinfo.plistlib = plistlib
-GetDevInfo.getdevinfo.BeautifulSoup = BeautifulSoup
-
 Tools.tools.wx = wx
 Tools.tools.os = os
 Tools.tools.subprocess = subprocess
@@ -152,9 +139,6 @@ Tools.tools.Linux = Linux
 Tools.tools.ResourcePath = ResourcePath
 
 #Setup test modules.
-GetDevInfoTests.DevInfoTools = DevInfoTools
-GetDevInfoTests.GetDevInfo = GetDevInfo
-
 BackendToolsTests.BackendTools = BackendTools
 BackendToolsTests.Tools = Tools
 
