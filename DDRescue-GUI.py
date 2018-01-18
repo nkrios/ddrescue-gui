@@ -144,6 +144,12 @@ from getdevinfo import getdevinfo as DevInfoTools
 from Tools.tools import Main as BackendTools
 import Tools.DDRescueTools.setup as DDRescueTools
 
+if Linux:
+    import getdevinfo.linux
+
+else:
+    import getdevinfo.macos
+
 #Setup custom-made modules (make global variables accessible inside the packages).
 Tools.tools.wx = wx
 Tools.tools.os = os
@@ -2108,7 +2114,14 @@ class SettingsWindow(wx.Frame):
 
         #BlockSize detection.
         logger.info("SettingsWindow().SaveOptions(): Determining blocksize of input file...")
-        Settings["InputFileBlockSize"] = DevInfoTools.get_block_size(Settings["InputFile"])
+
+        if Linux:
+            function = getdevinfo.linux.get_block_size
+
+        else:
+            function = getdevinfo.macos.get_block_size
+
+        Settings["InputFileBlockSize"] = function(Settings["InputFile"])
 
         if Settings["InputFileBlockSize"] != None:
             logger.info("SettingsWindow().SaveOptions(): BlockSize of input file: "+Settings["InputFileBlockSize"]+" (bytes).")
@@ -2617,9 +2630,9 @@ class BackendThread(threading.Thread):
         logger.debug("MainBackendThread(): Setting up ddrescue tools...")
 
         #Find suitable functions.
-        SuitableFunctions = DDRescueTools.setup_for_correct_ddrescue_version(Settings["DDRescueVersion"])
+        SuitableFunctions = DDRescueTools.setup_for_ddrescue_version(Settings["DDRescueVersion"])
 
-        #Define all of these functions under their correct names.
+        #Define all of these functions here under their correct names.
         for Function in SuitableFunctions:
             vars(self)[Function.__name__] = Function
 
