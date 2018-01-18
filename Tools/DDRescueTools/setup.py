@@ -15,7 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with DDRescue-GUI.  If not, see <http://www.gnu.org/licenses/>.
 
-#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
+"""
+Used to set up the GUI to use the correct version of tools for
+the user's version of ddrescue.
+"""
+
+#Do future imports to prepare to support python 3.
+#Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -25,7 +31,6 @@ from __future__ import unicode_literals
 import types
 
 #Import tools modules.
-from . import decorators
 from . import allversions
 from . import onePointForteen
 from . import onePointEighteen
@@ -33,34 +38,40 @@ from . import onePointTwenty
 from . import onePointTwentyOne
 from . import onePointTwentyTwo
 
-#Get a list of functions in all of our ddrescue tools modules.
-Functions = []
+#Get a list of FUNCTIONS in all of our ddrescue tools modules.
+FUNCTIONS = []
 
-for Module in (allversions, onePointForteen, onePointEighteen, onePointTwenty, onePointTwentyOne, onePointTwentyTwo):
-    for Function in dir(Module):
-        if isinstance(Module.__dict__.get(Function), types.FunctionType):
-            Functions.append(vars(Module)[Function])
+for Module in (allversions, onePointForteen, onePointEighteen, onePointTwenty,
+               onePointTwentyOne, onePointTwentyTwo):
 
-def SetupForCorrectDDRescueVersion(DDRescueVersion):
+    for function in dir(Module):
+        if isinstance(Module.__dict__.get(function), types.FunctionType):
+            FUNCTIONS.append(vars(Module)[function])
+
+def setup_for_ddrescue_version(ddrescue_version):
+    """
+    Selects the correct tools for our version of ddrescue.
+    """
+
     #Select the best tools if we have an unsupported version of ddrescue.
-    MinorVersion = int(DDRescueVersion.split(".")[1])
+    minor_version = int(ddrescue_version.split(".")[1])
 
-    if MinorVersion < 14:
+    if minor_version < 14:
         #Too old.
-        BestVersion = "1.14"
+        best_version = "1.14"
 
-    elif MinorVersion > 22:
+    elif minor_version > 22:
         #Too new.
-        BestVersion = "1.22"
+        best_version = "1.22"
 
     else:
         #Supported version.
-        BestVersion = DDRescueVersion
+        best_version = ddrescue_version
 
-    SuitableFunctions = []
+    suitable_functions = []
 
-    for Function in Functions:
-        if BestVersion in Function.SUPPORTEDVERSIONS:
-            SuitableFunctions.append(Function)
+    for function in FUNCTIONS: #pylint: disable=redefined-outer-name
+        if best_version in function.SUPPORTEDVERSIONS:
+            suitable_functions.append(function)
 
-    return SuitableFunctions
+    return suitable_functions

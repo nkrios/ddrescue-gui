@@ -2108,7 +2108,7 @@ class SettingsWindow(wx.Frame):
 
         #BlockSize detection.
         logger.info("SettingsWindow().SaveOptions(): Determining blocksize of input file...")
-        Settings["InputFileBlockSize"] = DevInfoTools().GetBlockSize(Settings["InputFile"])
+        Settings["InputFileBlockSize"] = DevInfoTools.get_block_size(Settings["InputFile"])
 
         if Settings["InputFileBlockSize"] != None:
             logger.info("SettingsWindow().SaveOptions(): BlockSize of input file: "+Settings["InputFileBlockSize"]+" (bytes).")
@@ -2617,7 +2617,7 @@ class BackendThread(threading.Thread):
         logger.debug("MainBackendThread(): Setting up ddrescue tools...")
 
         #Find suitable functions.
-        SuitableFunctions = DDRescueTools.SetupForCorrectDDRescueVersion(Settings["DDRescueVersion"])
+        SuitableFunctions = DDRescueTools.setup_for_correct_ddrescue_version(Settings["DDRescueVersion"])
 
         #Define all of these functions under their correct names.
         for Function in SuitableFunctions:
