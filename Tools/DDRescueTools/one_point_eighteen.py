@@ -15,7 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with DDRescue-GUI.  If not, see <http://www.gnu.org/licenses/>.
 
-#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
+"""
+Tools for ddrescue v1.18 or newer.
+"""
+
+#Do future imports to prepare to support python 3.
+#Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -24,6 +29,10 @@ from __future__ import unicode_literals
 from . import decorators
 
 @decorators.DefineVersions
-def GetOPosandTimeSinceLastRead(SplitLine):
-    """Get Output Position and Time Since Last Successful Read. Works with ddrescue versions: 1.18,1.19,1.20"""
-    return ' '.join(SplitLine[1:3]).replace(",", ""), ' '.join(SplitLine[-3:-1])
+def get_outputpos_time_since_last_read(split_line):
+    """
+    Get Output Position and Time Since Last Successful Read.
+    Works with ddrescue versions: 1.18,1.19,1.20
+    """
+
+    return ' '.join(split_line[1:3]).replace(",", ""), ' '.join(split_line[-3:-1])
