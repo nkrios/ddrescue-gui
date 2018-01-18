@@ -33,7 +33,7 @@ import types
 #Import tools modules.
 from . import allversions
 from . import one_point_forteen
-from . import onePointEighteen
+from . import one_point_eighteen
 from . import one_point_twenty
 from . import one_point_twenty_one
 from . import one_point_twenty_two
@@ -41,7 +41,7 @@ from . import one_point_twenty_two
 #Get a list of FUNCTIONS in all of our ddrescue tools modules.
 FUNCTIONS = []
 
-for Module in (allversions, one_point_forteen, onePointEighteen, one_point_twenty,
+for Module in (allversions, one_point_forteen, one_point_eighteen, one_point_twenty,
                one_point_twenty_one, one_point_twenty_two):
 
     for function in dir(Module):
