@@ -322,6 +322,28 @@ class Main():
         #Return the return value
         return Retval
 
+    def IsPartition(self, Disk, DiskList=None):
+        """Check if the given Disk is a partition"""
+        logger.debug("Tools: Main().IsPartition(): Checking if Disk: "+Disk+" is a partition...")
+
+        if Linux:
+            if Disk[0:7] not in ["/dev/sr", "/dev/fd"] and Disk[-1].isdigit() and Disk[0:8] in DiskInfo.keys():
+                Result =  True
+
+            else:
+                Result = False
+
+        else:
+            if "s" in Disk.split("disk")[1]:
+                Result = True
+
+            else:
+                Result = False
+
+        logger.info("Tools: Main().IsPartition(): Result: "+str(Result)+"...")
+
+        return Result
+
     def EmergencyExit(self, Message):
         """Handle emergency exits. Warn the user, log, and exit to terminal with the given message"""
         logger.critical("CoreTools: Main().EmergencyExit(): Emergency exit has been triggered! Giving user message dialog and saving the logfile...")

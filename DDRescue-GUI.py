@@ -41,7 +41,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "1.8"
-ReleaseDate = "18/1/2018"
+ReleaseDate = "23/1/2018"
 SessionEnding = False
 
 def usage():
@@ -1138,9 +1138,9 @@ class MainWindow(wx.Frame):
                     logger.info("MainWindow().OnStart(): "+Disk+" is a file (or not in collected disk info), ignoring it...")
                     continue
 
-                if BackendTools().IsMounted(Disk) or (Disk in DiskInfo and DiskInfo[Disk]["Type"] != "Partition"):
+                if BackendTools().IsMounted(Disk) or BackendTools().IsPartition(Disk):
                     #The Disk is mounted, or may have partitions that are mounted.
-                    if DiskInfo[Disk]["Type"] == "Partition":
+                    if BackendTools().IsPartition(Disk):
                         #Unmount the disk.
                         logger.debug("MainWindow().OnStart(): "+Disk+" is a partition. Unmounting "+Disk+"...")
                         self.UpdateStatusBar("Unmounting "+Disk+". This may take a few moments...")
