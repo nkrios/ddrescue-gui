@@ -366,7 +366,7 @@ class MainWindow(wx.Frame):
             Command = ResourcePath+"/ddrescue --version"
 
         global DDRescueVersion
-        DDRescueVersion = BackendTools.start_process(Command=Command, ReturnOutput=True)[1].split("\n")[0].split(" ")[-1]
+        DDRescueVersion = BackendTools.start_process(cmd=Command, return_output=True)[1].split("\n")[0].split(" ")[-1]
 
         logger.info("ddrescue version "+DDRescueVersion+"...")
 
@@ -1127,9 +1127,9 @@ class MainWindow(wx.Frame):
                     logger.info("MainWindow().OnStart(): "+Disk+" is a file (or not in collected disk info), ignoring it...")
                     continue
 
-                if BackendTools.is_mounted(Disk) or not BackendTools.is_partition(Disk):
+                if BackendTools.is_mounted(Disk) or not BackendTools.is_partition(Disk, DiskInfo):
                     #The Disk is mounted, or may have partitions that are mounted.
-                    if BackendTools.is_partition(Disk):
+                    if BackendTools.is_partition(Disk, DiskInfo):
                         #Unmount the disk.
                         logger.debug("MainWindow().OnStart(): "+Disk+" is a partition. Unmounting "+Disk+"...")
                         self.UpdateStatusBar("Unmounting "+Disk+". This may take a few moments...")
@@ -1552,7 +1552,7 @@ class MainWindow(wx.Frame):
 
                         else:
                             #Copy it to the specified path, using a one-liner, and don't bother handling any errors, because this is run as root.
-                            BackendTools.start_process(Command="cp /tmp/ddrescue-gui.log "+File, ReturnOutput=False)
+                            BackendTools.start_process(cmd="cp /tmp/ddrescue-gui.log "+File, return_output=False)
 
                             dlg = wx.MessageDialog(self.Panel, 'Done! DDRescue-GUI will now exit.', 'DDRescue-GUI - Information', wx.OK | wx.ICON_INFORMATION)
                             dlg.ShowModal()
@@ -2350,7 +2350,7 @@ class FinishedWindow(wx.Frame):
             logger.debug("FinishedWindow().UnmountOutputFile(): No further action required.")
             return True
 
-        if BackendTools.start_process(Command=Command, ReturnOutput=False) == 0:
+        if BackendTools.start_process(cmd=Command, return_output=False) == 0:
             logger.info("FinishedWindow().UnmountOutputFile(): Successfully pulled down loop device...")
 
         else:
@@ -2369,7 +2369,7 @@ class FinishedWindow(wx.Frame):
         wx.Yield()
 
         #Determine what type of OutputFile we have (Partition or Device).
-        self.OutputFileType, Retval, Output = BackendTools.determine_output_file_type(Settings=Settings, DiskInfo=DiskInfo)
+        self.OutputFileType, Retval, Output = BackendTools.determine_output_file_type(settings=Settings, disk_info=DiskInfo)
 
         #If retval != 0 report to user.
         if Retval != 0:
@@ -2388,10 +2388,10 @@ class FinishedWindow(wx.Frame):
             #Attempt to mount the disk.
             if Linux:
                 self.OutputFileMountPoint = "/mnt"+Settings["InputFile"]
-                Retval = BackendTools.mount_disk(Partition=Settings["OutputFile"], MountPoint=self.OutputFileMountPoint)
+                Retval = BackendTools.mount_disk(partition=Settings["OutputFile"], mount_point=self.OutputFileMountPoint)
 
             else:
-                Retval, Output = BackendTools.mac_run_hdiutil(Options="mount "+Settings["OutputFile"]+" -plist", Disk=Settings["OutputFile"])
+                Retval, Output = BackendTools.mac_run_hdiutil(options="mount "+Settings["OutputFile"]+" -plist")
 
             if Retval != 0:
                 logger.error("FinishedWindow().MountDisk(): Error! Warning the user...")
@@ -2407,7 +2407,7 @@ class FinishedWindow(wx.Frame):
 
             else:
                 #More steps required on macOS.
-                self.OutputFileDeviceName, self.OutputFileMountPoint, Result = BackendTools.mac_get_device_name_mount_point(Output)
+                self.OutputFileDeviceName, self.OutputFileMountPoint, Result = BackendTools.mac_get_device_name_mount_point(output)
 
                 if Result == "UnicodeError":
                     logger.error("FinishedWindow().MountDisk(): FIXME: Couldn't parse output of hdiutil mount due to UnicodeDecodeError. Cleaning up and warning user...")
@@ -2427,10 +2427,10 @@ class FinishedWindow(wx.Frame):
             if Linux:
                 #Create loop devices for all contained partitions.
                 logger.info("FinishedWindow().MountDisk(): Creating loop device...")
-                BackendTools.start_process(Command="kpartx -a "+Settings["OutputFile"], ReturnOutput=False)
+                BackendTools.start_process(cmd="kpartx -a "+Settings["OutputFile"], return_output=False)
 
                 #Get some Disk information.
-                LsblkOutput = BackendTools.start_process(Command="lsblk -r -o NAME,FSTYPE,SIZE", ReturnOutput=True)[1].split('\n')
+                LsblkOutput = BackendTools.start_process(cmd="lsblk -r -o NAME,FSTYPE,SIZE", return_output=True)[1].split('\n')
 
             else:
                 ImageinfoOutput = Output
@@ -2483,11 +2483,11 @@ class FinishedWindow(wx.Frame):
                 self.OutputFileMountPoint = "/mnt"+PartitionToMount
 
                 #Attempt to mount the disk.
-                Retval = BackendTools.mount_disk(Partition=PartitionToMount, MountPoint=self.OutputFileMountPoint)
+                Retval = BackendTools.mount_disk(partition=PartitionToMount, mount_point=self.OutputFileMountPoint)
 
             else:
                 #Attempt to mount the disk (this mounts all partitions inside), and parse the resulting plist.
-                Retval, MountOutput = BackendTools.mac_run_hdiutil(Options="mount "+Settings["OutputFile"]+" -plist", Disk=Settings["OutputFile"])
+                Retval, MountOutput = BackendTools.mac_run_hdiutil(options="mount "+Settings["OutputFile"]+" -plist")
                 MountOutput = plistlib.readPlistFromString(MountOutput)
 
             #Handle it if the mount attempt failed.
