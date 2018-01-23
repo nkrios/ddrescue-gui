@@ -1138,7 +1138,7 @@ class MainWindow(wx.Frame):
                     logger.info("MainWindow().OnStart(): "+Disk+" is a file (or not in collected disk info), ignoring it...")
                     continue
 
-                if BackendTools().IsMounted(Disk) or BackendTools().IsPartition(Disk):
+                if BackendTools().IsMounted(Disk) or not BackendTools().IsPartition(Disk):
                     #The Disk is mounted, or may have partitions that are mounted.
                     if BackendTools().IsPartition(Disk):
                         #Unmount the disk.
@@ -2752,7 +2752,7 @@ class BackendThread(threading.Thread):
             logger.info("MainBackendThread().Processline(): Got Initial Status... Setting up the progressbar...")
             self.GotInitialStatus = True
 
-            self.DiskCapacity, self.DiskCapacityUnit = self.GetInitialStatus(SplitLine)
+            self.DiskCapacity, self.DiskCapacityUnit = self.get_initial_status(SplitLine)
 
             wx.CallAfter(self.ParentWindow.SetProgressBarRange, self.DiskCapacity)
 
@@ -2760,7 +2760,7 @@ class BackendThread(threading.Thread):
             ElapsedTimeThread(self.ParentWindow)
 
         elif SplitLine[0] == "ipos:" and Settings["DDRescueVersion"] not in ("1.21", "1.22"): #Versions 1.14 - 1.20.
-            self.InputPos, self.NumErrors, self.AverageReadRate, self.AverageReadRateUnit = self.GetIPosNumErrorsandAverageReadRate(SplitLine)
+            self.InputPos, self.NumErrors, self.AverageReadRate, self.AverageReadRateUnit = self.get_inputpos_numerrors_averagereadrate(SplitLine)
 
             wx.CallAfter(self.ParentWindow.UpdateIpos, self.InputPos)
             wx.CallAfter(self.ParentWindow.UpdateNumErrors, self.NumErrors)
@@ -2769,12 +2769,12 @@ class BackendThread(threading.Thread):
         elif SplitLine[0] == "opos:": #Versions 1.14 - 1.20 & 1.21 - 1.22.
             if Settings["DDRescueVersion"] in ("1.21", "1.22"):
                 #Get average read rate (ddrescue 1.21 & 1.22).
-                self.OutputPos, self.AverageReadRate, self.AverageReadRateUnit = self.GetOPosAndAverageReadRate(SplitLine)
+                self.OutputPos, self.AverageReadRate, self.AverageReadRateUnit = self.get_outputpos_average_read_rate(SplitLine)
                 wx.CallAfter(self.ParentWindow.UpdateAverageReadRate, unicode(self.AverageReadRate)+" "+self.AverageReadRateUnit)
 
             else:
                 #Output Pos and time since last read (1.14 - 1.20).
-                self.OutputPos, self.TimeSinceLastRead = self.GetOPosandTimeSinceLastRead(SplitLine)
+                self.OutputPos, self.TimeSinceLastRead = self.get_outputpos_time_since_last_read(SplitLine)
 
                 wx.CallAfter(self.ParentWindow.UpdateTimeSinceLastRead, self.TimeSinceLastRead)
 
@@ -2782,12 +2782,12 @@ class BackendThread(threading.Thread):
 
         elif SplitLine[0] == "non-tried:":
             #Unreadable data (ddrescue 1.21 & 1.22).
-            self.ErrorSize = self.GetUnreadableData(SplitLine)
+            self.ErrorSize = self.get_unreadable_data(SplitLine)
 
             wx.CallAfter(self.ParentWindow.UpdateErrorSize, self.ErrorSize)
 
         elif SplitLine[0] in ("time", "percent"): #Time since last read (ddrescue v1.20 - 1.22).
-            self.TimeSinceLastRead = self.GetTimeSinceLastRead(SplitLine)
+            self.TimeSinceLastRead = self.get_time_since_last_read(SplitLine)
 
             wx.CallAfter(self.ParentWindow.UpdateTimeSinceLastRead, self.TimeSinceLastRead)
 
@@ -2795,7 +2795,7 @@ class BackendThread(threading.Thread):
             #Recovered data and number of errors (ddrescue 1.21 & 1.22).
             #Don't crash if we're reading the initial status from the logfile.
             try:
-                self.RecoveredData, self.RecoveredDataUnit, self.NumErrors = self.GetRecoveredDataAndNumErrors(SplitLine)
+                self.RecoveredData, self.RecoveredDataUnit, self.NumErrors = self.get_recovered_data_num_errors(SplitLine)
 
                 #Change the unit of measurement of the current amount of recovered data if needed.
                 self.RecoveredData, self.RecoveredDataUnit = self.ChangeUnits(float(self.RecoveredData), self.RecoveredDataUnit, self.DiskCapacityUnit)
@@ -2826,12 +2826,12 @@ class BackendThread(threading.Thread):
             SplitLine = Info.split()
 
             if Settings["DDRescueVersion"] in ("1.21", "1.22"):
-                self.CurrentReadRate, self.InputPos = self.GetCurrentReadRateAndIPos(SplitLine)
+                self.CurrentReadRate, self.InputPos = self.get_current_rate_inputpos(SplitLine)
 
                 wx.CallAfter(self.ParentWindow.UpdateIpos, self.InputPos)
 
             else:
-                self.CurrentReadRate, self.ErrorSize, self.RecoveredData, self.RecoveredDataUnit = self.GetCurrentReadRateErrorSizeandRecoveredData(SplitLine)
+                self.CurrentReadRate, self.ErrorSize, self.RecoveredData, self.RecoveredDataUnit = self.get_current_rate_error_size_recovered_data(SplitLine)
 
                 #Change the unit of measurement of the current amount of recovered data if needed.
                 self.RecoveredData, self.RecoveredDataUnit = self.ChangeUnits(float(self.RecoveredData), self.RecoveredDataUnit, self.DiskCapacityUnit)
