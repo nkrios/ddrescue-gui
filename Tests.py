@@ -128,16 +128,6 @@ elif "wxMac" in wx.PlatformInfo:
     Linux = False
     PartedMagic = False
 
-#Setup custom-made modules (make global variables accessible inside the packages).
-Tools.tools.wx = wx
-Tools.tools.os = os
-Tools.tools.subprocess = subprocess
-Tools.tools.logger = logger
-Tools.tools.logging = logging
-Tools.tools.time = time
-Tools.tools.Linux = Linux
-Tools.tools.ResourcePath = ResourcePath
-
 #Setup test modules.
 BackendToolsTests.BackendTools = BackendTools
 BackendToolsTests.Tools = Tools
