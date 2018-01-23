@@ -99,12 +99,12 @@ def is_mounted(partition, mount_point=None):
         if not LINUX and "/tmp" in mount_point:
             mount_point = mount_point.replace("/tmp", "/private/tmp")
 
-        if get_mount_point_of(partition) == mount_point:
+        if get_mount_point(partition) == mount_point:
             mounted = True
 
     return mounted
 
-def get_mount_point_of(partition):
+def get_mount_point(partition):
     """
     Returns the mount_point of the given partition, if any.
     Otherwise, return None
@@ -123,7 +123,7 @@ def get_mount_point_of(partition):
 
     return mount_point
 
-def mount_partition(partition, mount_point, options=""):
+def mount_disk(partition, mount_point, options=""):
     """
     Mounts the given partition.
     partition is the partition to mount.
@@ -135,7 +135,7 @@ def mount_partition(partition, mount_point, options=""):
     mount_info = start_process("mount", return_output=True)[1]
 
     #There is a partition mounted here. Check if it's ours.
-    if mount_point == get_mount_point_of(partition):
+    if mount_point == get_mount_point(partition):
         #The correct partition is already mounted here.
         return 0
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 # BackendTools tests for DDRescue-GUI Version 1.8
 # This file is part of DDRescue-GUI.
 # Copyright (C) 2013-2018 Hamish McIntyre-Bhatty
@@ -15,7 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with DDRescue-GUI.  If not, see <http://www.gnu.org/licenses/>.
 
-#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
+"""
+These are the backend tools tests.
+"""
+
+#Do future imports to prepare to support python 3.
+#Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -23,10 +28,19 @@ from __future__ import unicode_literals
 
 #Import modules
 import unittest
-import wx
 import os
-import subprocess
-import time
+import sys
+import logging
+import wx
+
+#Allow imports of modules & packages 1 level up.
+sys.path.insert(0, os.path.abspath('..'))
+
+#Import tools.
+from Tools import tools as BackendTools
+
+#Silence tools logger.
+BackendTools.logger.setLevel(logging.CRITICAL)
 
 #Import test data and functions.
 from . import BackendToolsTestData as Data
@@ -34,68 +48,56 @@ from . import BackendToolsTestFunctions as Functions
 
 #Set up resource path and determine OS.
 if "wxGTK" in wx.PlatformInfo:
-    #Set the resource path to /usr/share/ddrescue-gui/
-    ResourcePath = '/usr/share/ddrescue-gui'
-    Linux = True
+    LINUX = True
 
     #Check if we're running on Parted Magic.
-    if os.uname()[1] == "PartedMagic":
-        PartedMagic = True
-
-    else:
-        PartedMagic = False
+    PARTED_MAGIC = (os.uname()[1] == "PartedMagic")
 
 elif "wxMac" in wx.PlatformInfo:
-    try:
-        #Set the resource path from an environment variable, as mac .apps can be found in various places.
-        ResourcePath = os.environ['RESOURCEPATH']
-
-    except KeyError:
-        #Use '.' as the rescource path instead as a fallback.
-        ResourcePath = "."
-
-    Linux = False
-    PartedMagic = False
-
-#Set up test functions.
-Functions.subprocess = subprocess
-Functions.os = os
-Functions.time = time
-Functions.Linux = Linux
+    LINUX = False
+    PARTED_MAGIC = False
 
 #Set up autocomplete vars.
-PotentialDevicePath = ""
-PotentialPartitionPath = ""
+POTENTIAL_DEVICE_PATH = ""
+POTENTIAL_PARTITION_PATH = ""
 
 class TestStartProcess(unittest.TestCase):
+    """Tests for start_process()"""
+
     def setUp(self):
-        self.Commands = Data.ReturnFakeCommands()
+        self.commands = Data.return_fake_commands()
 
     def tearDown(self):
-        del self.Commands
+        del self.commands
 
-    def testStartProcess(self):
-        for Command in self.Commands.keys():
-            Retval, Output = BackendTools().StartProcess(Command=Command, ReturnOutput=True)
-            self.assertEqual(Retval, self.Commands[Command]["Retval"])
-            self.assertEqual(Output, self.Commands[Command]["Output"])
+    def test_start_process(self):
+        """Simple test for start_process()"""
+        for command in self.commands.keys():
+            retval, output = BackendTools.start_process(cmd=command, return_output=True)
+            self.assertEqual(retval, self.commands[command]["Retval"])
+            self.assertEqual(output, self.commands[command]["Output"])
 
 class TestCreateUniqueKey(unittest.TestCase):
+    """Tests for create_unique_key()"""
+
     def setUp(self):
-        self.KeysDict = {}
-        self.Filenames = Data.ReturnFakeFilenames()
+        self.keys_dictionary = {}
+        self.filenames = Data.return_fake_filenames()
 
     def tearDown(self):
-        del self.KeysDict
-        del self.Filenames
+        del self.keys_dictionary
+        del self.filenames
 
-    def testCreateUniqueKey(self):
-        for File in self.Filenames:
-            Key = BackendTools().CreateUniqueKey(self.KeysDict, File, 15)
-            self.assertTrue(Key in self.Filenames[File]["Result"])
-            self.KeysDict[Key] = ""
+    def test_create_unique_key(self):
+        """Simple test for create_unique_key()"""
+        for file in self.filenames:
+            key = BackendTools.create_unique_key(self.keys_dictionary, file, 15)
+            self.assertTrue(key in self.filenames[file]["Result"])
+            self.keys_dictionary[key] = ""
 
 class TestSendNotification(unittest.TestCase):
+    """Tests for send_notification()"""
+
     def setUp(self):
         self.app = wx.App()
 
@@ -103,23 +105,32 @@ class TestSendNotification(unittest.TestCase):
         self.app.Destroy()
         del self.app
 
-    def testSendNotification(self):
+    def test_send_notification(self):
+        """Simple test for send_notification()"""
         #Tell the user we are about to send a notification.
-        dlg = wx.MessageDialog(None, "DDRescue-GUI's BackendTools tests are about to send you a notification to test that notifications are working. You will then be prompted to confirm if they are working or not.", "DDRescue-GUI - Tests", wx.OK | wx.ICON_INFORMATION)
+        dlg = wx.MessageDialog(None, "DDRescue-GUI's BackendTools tests are about to send you a "
+                               +"notification to test that notifications are working. You will "
+                               +"then be prompted to confirm if they are working or not.",
+                               "DDRescue-GUI - Tests", wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()
         dlg.Destroy()
         
         #Send it.
-        BackendTools().SendNotification("Test Message from unit tests.")
+        BackendTools.send_notification("Test Message from unit tests.")
 
         #Ask the user if they got it.
-        dlg = wx.MessageDialog(None, "Did you see the notification? Note that on some systems (Macs especially) they can take up to 10 seconds to come through.", "DDRescue-GUI - Tests", wx.YES_NO | wx.ICON_QUESTION)
-        Result = dlg.ShowModal()
+        dlg = wx.MessageDialog(None, "Did you see the notification? Note that on some "
+                               +"systems (Macs especially) they can take up to 10 seconds "
+                               +"to come through.", "DDRescue-GUI - Tests",
+                               wx.YES_NO | wx.ICON_QUESTION)
+        result = dlg.ShowModal()
         dlg.Destroy()
 
-        self.assertEqual(Result, wx.ID_YES)
+        self.assertEqual(result, wx.ID_YES)
 
-class TestMacHdiutil(unittest.TestCase):
+class TestMacRunHdiutil(unittest.TestCase):
+    """Tests for mac_run_hdiutil()"""
+
     def setUp(self):
         self.app = wx.App()
 
@@ -127,39 +138,52 @@ class TestMacHdiutil(unittest.TestCase):
         self.app.Destroy()
         del self.app
 
-    @unittest.skipUnless(not Linux, "Mac-specific test")
-    def testMacRunHdiutil(self):
-        #*** Add more tests for when "resource is temporarily unavailable" errors happen *** *** Create image to test against? *** *** Test against a device too. ***
+    @unittest.skipUnless(not LINUX, "Mac-specific test")
+    def test_mac_run_hdiutil(self):
+        """Simple test for mac_run_hdiutil()"""
+        #*** Add more tests for when "resource is temporarily unavailable" errors happen ***
+        #*** Create image to test against? ***
+        #*** Test against a device too. ***
         #Get a device path from the user to test against.
-        dlg = wx.TextEntryDialog(None, "DDRescue-GUI needs a device name to test against.\nNo data on your device will be modified. Suggested: insert a USB disk and leave it mounted.\nNote: Do not use your device while these test are running, or it may interfere with the tests.", "DDRescue-GUI Tests", PotentialDevicePath, style=wx.OK)
+        dlg = wx.TextEntryDialog(None, "DDRescue-GUI needs a device name to test against.\n"
+                                 +"No data on your device will be modified. Suggested: insert "
+                                 +"a USB disk and leave it mounted.\nNote: Do not use your device "
+                                 +"while these test are running, or it may interfere with the "
+                                 +"tests.", "DDRescue-GUI Tests", POTENTIAL_DEVICE_PATH, style=wx.OK)
         dlg.ShowModal()
-        DevicePath = dlg.GetValue()
+        device_path = dlg.GetValue()
         dlg.Destroy()
 
         #Save it for autocomplete with other dialogs.
-        global PotentialDevicePath
-        PotentialDevicePath = DevicePath
+        global POTENTIAL_DEVICE_PATH
+        POTENTIAL_DEVICE_PATH = device_path
 
-        self.assertEqual(BackendTools().MacRunHdiutil("info", DevicePath)[0], 0)
+        self.assertEqual(BackendTools.mac_run_hdiutil("info")[0], 0)
 
 class TestIsMounted(unittest.TestCase):
+    """Tests for is_mounted()"""
+
     def setUp(self):
         self.app = wx.App()
 
         #Get a device path from the user to test against.
-        dlg = wx.TextEntryDialog(None, "DDRescue-GUI needs a partition name to test against.\nNo data on your device will be modified. Suggested: insert a USB disk and leave it mounted.\nNote: Do not use your device while these test are running, or it may interfere with the tests.", "DDRescue-GUI Tests", PotentialPartitionPath, style=wx.OK)
+        dlg = wx.TextEntryDialog(None, "DDRescue-GUI needs a device name to test against.\n"
+                                 +"No data on your device will be modified. Suggested: insert "
+                                 +"a USB disk and leave it mounted.\nNote: Do not use your device "
+                                 +"while these test are running, or it may interfere with the "
+                                 +"tests.", "DDRescue-GUI Tests", POTENTIAL_PARTITION_PATH, style=wx.OK)
         dlg.ShowModal()
-        self.Path = dlg.GetValue()
+        self.path = dlg.GetValue()
         dlg.Destroy()
 
         #Save it for autocomplete with other dialogs.
-        global PotentialPartitionPath
-        PotentialPartitionPath = self.Path
+        global POTENTIAL_PARTITION_PATH
+        POTENTIAL_PARTITION_PATH = self.path
 
     def tearDown(self):
         #Check if anything is mounted at our temporary mount point.
-        if Functions.IsMounted(self.Path):
-            Functions.UnmountDisk(self.Path)
+        if Functions.is_mounted(self.path):
+            Functions.unmount_disk(self.path)
 
         #Remove the mount point.
         if os.path.isdir("/tmp/ddrescueguimtpt"):
@@ -170,83 +194,99 @@ class TestIsMounted(unittest.TestCase):
 
         self.app.Destroy()
         del self.app
-        del self.Path
+        del self.path
 
-    def testIsMounted1(self):
+    def test_is_mounted1(self):
+        """Test #1: Check if it's detected when a disk is mounted."""
         #If not mounted, mount it
-        if not Functions.IsMounted(self.Path):
-            self.assertEqual(BackendTools().MountPartition(self.Path, "/tmp/ddrescueguimtpt"), 0)
+        if not Functions.is_mounted(self.path):
+            self.assertEqual(BackendTools.mount_disk(self.path, "/tmp/ddrescueguimtpt"), 0)
 
-        self.assertTrue(BackendTools().IsMounted(self.Path))
+        self.assertTrue(BackendTools.is_mounted(self.path))
 
-    def testIsMounted2(self):
+    def test_is_mounted2(self):
+        """Test #2: Check if it's detected when a disk isn't mounted."""
         #Unmount it.
-        Functions.UnmountDisk(self.Path)
+        Functions.unmount_disk(self.path)
 
-        self.assertFalse(BackendTools().IsMounted(self.Path))
+        self.assertFalse(BackendTools.is_mounted(self.path))
 
-class TestGetMountPointOf(unittest.TestCase):
+class TestGetMountPoint(unittest.TestCase):
+    """Tests for get_mount_point()"""
+
     def setUp(self):
         self.app = wx.App()
 
         #Get a device path from the user to test against.
-        dlg = wx.TextEntryDialog(None, "DDRescue-GUI needs a partition name to test against.\nNo data on your device will be modified. Suggested: insert a USB disk and leave it mounted.\nNote: Do not use your device while these test are running, or it may interfere with the tests.", "DDRescue-GUI Tests", PotentialPartitionPath, style=wx.OK)
+        dlg = wx.TextEntryDialog(None, "DDRescue-GUI needs a device name to test against.\n"
+                                 +"No data on your device will be modified. Suggested: insert "
+                                 +"a USB disk and leave it mounted.\nNote: Do not use your device "
+                                 +"while these test are running, or it may interfere with the "
+                                 +"tests.", "DDRescue-GUI Tests", POTENTIAL_PARTITION_PATH, style=wx.OK)
         dlg.ShowModal()
-        self.Path = dlg.GetValue()
-        self.MountPoint = Functions.GetMountPointOf(self.Path)
+        self.path = dlg.GetValue()
+        self.mount_point = Functions.get_mount_point(self.path)
         dlg.Destroy()
 
         #Save it for autocomplete with other dialogs.
-        global PotentialPartitionPath
-        PotentialPartitionPath = self.Path
+        global POTENTIAL_PARTITION_PATH
+        POTENTIAL_PARTITION_PATH = self.path
 
     def tearDown(self):
         self.app.Destroy()
         del self.app
-        del self.Path
+        del self.path
 
-    def testGetMountPointOf1(self):
+    def test_get_mount_point1(self):
+        """Test #1: Get mount point of a mounted disk."""
         #Mount disk if not mounted.
-        if not Functions.IsMounted(self.Path):
-            Functions.MountPartition(self.Path, "/tmp/ddrescueguimtpt")
+        if not Functions.is_mounted(self.path):
+            Functions.mount_disk(self.path, "/tmp/ddrescueguimtpt")
 
         #Get mount point and verify.
-        self.assertEqual(BackendTools().GetMountPointOf(self.Path), Functions.GetMountPointOf(self.Path))
+        self.assertEqual(BackendTools.get_mount_point(self.path), Functions.get_mount_point(self.path))
 
-    def testGetMountPointOf2(self):
+    def test_get_mount_point2(self):
+        """Test #2: Get mount point of an unmounted disk."""
         #Unmount disk.
-        Functions.UnmountDisk(self.Path)
+        Functions.unmount_disk(self.path)
 
         #Get mount point.
-        self.assertIsNone(BackendTools().GetMountPointOf(self.Path))
+        self.assertIsNone(BackendTools.get_mount_point(self.path))
 
-class TestMountPartition(unittest.TestCase):
+class TestMountDisk(unittest.TestCase):
+    """Tests for mount_disk()"""
+
     def setUp(self):
         self.app = wx.App()
 
         #Get a device path from the user to test against.
-        dlg = wx.TextEntryDialog(None, "DDRescue-GUI needs a partition name to test against.\nNo data on your device will be modified. Suggested: insert a USB disk and leave it mounted.\nNote: Do not use your device while these test are running, or it may interfere with the tests.", "DDRescue-GUI Tests", PotentialPartitionPath, style=wx.OK)
+        dlg = wx.TextEntryDialog(None, "DDRescue-GUI needs a device name to test against.\n"
+                                 +"No data on your device will be modified. Suggested: insert "
+                                 +"a USB disk and leave it mounted.\nNote: Do not use your device "
+                                 +"while these test are running, or it may interfere with the "
+                                 +"tests.", "DDRescue-GUI Tests", POTENTIAL_PARTITION_PATH, style=wx.OK)
         dlg.ShowModal()
-        self.Path = dlg.GetValue()
-        self.MountPoint = Functions.GetMountPointOf(self.Path)
+        self.path = dlg.GetValue()
+        self.mount_point = Functions.get_mount_point(self.path)
         dlg.Destroy()
 
-        if self.MountPoint == None:
-            self.MountPoint = "/tmp/ddrescueguimtpt"
-            os.mkdir(self.MountPoint)
+        if self.mount_point is None:
+            self.mount_point = "/tmp/ddrescueguimtpt"
+            os.mkdir(self.mount_point)
 
         #Save it for autocomplete with other dialogs.
-        global PotentialPartitionPath
-        PotentialPartitionPath = self.Path
+        global POTENTIAL_PARTITION_PATH
+        POTENTIAL_PARTITION_PATH = self.path
 
     def tearDown(self):
         self.app.Destroy()
 
         #Unmount.
-        BackendTools().UnmountDisk(self.Path)
+        BackendTools.unmount_disk(self.path)
 
         del self.app
-        del self.Path
+        del self.path
 
         if os.path.isdir("/tmp/ddrescueguimtpt"):
             if os.path.isdir("/tmp/ddrescueguimtpt/subdir"):
@@ -254,62 +294,71 @@ class TestMountPartition(unittest.TestCase):
 
             os.rmdir("/tmp/ddrescueguimtpt")
 
-    def testMountPartition1(self):
-        Functions.MountPartition(self.Path, self.MountPoint)
+    def test_mount_disk1(self):
+        """Test #1: Mounting a disk that is already mounted."""
+        Functions.mount_disk(self.path, self.mount_point)
 
-        #Partition should be mounted, so we should pass this without doing anything.
-        self.assertEqual(BackendTools().MountPartition(self.Path, self.MountPoint), 0)
+        #partition should be mounted, so we should pass this without doing anything.
+        self.assertEqual(BackendTools.mount_disk(self.path, self.mount_point), 0)
 
-        Functions.UnmountDisk(self.Path)
+        Functions.unmount_disk(self.path)
 
-    def testMountPartition2(self):
+    def test_mount_disk2(self):
+        """Test #2: Mounting a disk that isn't already mounted."""
         #Unmount disk.
-        Functions.UnmountDisk(self.Path)
+        Functions.unmount_disk(self.path)
 
-        self.assertEqual(BackendTools().MountPartition(self.Path, self.MountPoint), 0)
+        self.assertEqual(BackendTools.mount_disk(self.path, self.mount_point), 0)
 
-        Functions.UnmountDisk(self.Path)
+        Functions.unmount_disk(self.path)
 
-    def testMountPartition3(self):
+    def test_mount_partition3(self):
+        """Test #3: Mounting a disk where there is another disk in the way."""
         #Get another device path from the user to test against.
-        dlg = wx.TextEntryDialog(None, "DDRescue-GUI needs a second (different) partition name to test against.\nNo data on your device will be modified. Suggested: insert a USB disk and leave it mounted.\nNote: Do not use your device while these test are running, or it may interfere with the tests.", "DDRescue-GUI Tests", "", style=wx.OK)
+        dlg = wx.TextEntryDialog(None, "DDRescue-GUI needs a second (different) device name to "
+                                 +"test against.\nNo data on your device will be modified. "
+                                 +"Suggested: insert a USB disk and leave it mounted.\nNote: "
+                                 +"Do not use your device while these test are running, or it "
+                                 +"may interfere with the tests.", "DDRescue-GUI Tests",
+                                 POTENTIAL_PARTITION_PATH, style=wx.OK)
         dlg.ShowModal()
-        self.Path2 = dlg.GetValue()
+        self.path2 = dlg.GetValue()
         dlg.Destroy()
 
         #Unmount both partitions.
-        for Partition in [self.Path, self.Path2]:
-            Functions.UnmountDisk(Partition)
+        for partition in [self.path, self.path2]:
+            Functions.unmount_disk(partition)
 
         #Mount the 2nd one on the desired path for the 1st one.
-        BackendTools().MountPartition(self.Path2, self.MountPoint)
+        BackendTools.mount_disk(self.path2, self.mount_point)
 
         #Now try to mount the first one there.
-        BackendTools().MountPartition(self.Path, self.MountPoint)
+        BackendTools.mount_disk(self.path, self.mount_point)
 
         #Now the 2nd should have been unmounted to get it out of the way, and the 1st should be there.
-        self.assertFalse(Functions.IsMounted(self.Path2, self.MountPoint))
-        self.assertTrue(Functions.IsMounted(self.Path, self.MountPoint))
+        self.assertFalse(Functions.is_mounted(self.path2, self.mount_point))
+        self.assertTrue(Functions.is_mounted(self.path, self.mount_point))
 
-        Functions.UnmountDisk(self.Path)
+        Functions.unmount_disk(self.path)
 
         #Clean up.
-        del self.Path2
+        del self.path2
 
-    def testMountPartition4(self):
+    def test_mount_partition4(self):
+        """Test #4: Mounting a disk in the subdir of the usual mount point (sanity check)."""
         #Unmount partition.
-        Functions.UnmountDisk(self.Path)
+        Functions.unmount_disk(self.path)
 
         #Try to mount in subdir of usual mount point.
-        BackendTools().MountPartition(self.Path, self.MountPoint+"/subdir")
+        BackendTools.mount_disk(self.path, self.mount_point+"/subdir")
 
         #Check is mounted.
-        self.assertTrue(Functions.IsMounted(self.Path, self.MountPoint+"/subdir"))
+        self.assertTrue(Functions.is_mounted(self.path, self.mount_point+"/subdir"))
 
         #Unmount.
-        BackendTools().UnmountDisk(self.Path)
+        BackendTools.unmount_disk(self.path)
 
         #Clean up.
-        if os.path.isdir(self.MountPoint+"/subdir"):
-            os.rmdir(self.MountPoint+"/subdir")
+        if os.path.isdir(self.mount_point+"/subdir"):
+            os.rmdir(self.mount_point+"/subdir")
 

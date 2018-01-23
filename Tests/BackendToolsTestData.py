@@ -38,11 +38,11 @@ def return_fake_commands():
     dictionary["echo 'This returns 2'; exit 2"]["Output"] = "This returns 2\n"
     dictionary["echo 'This returns 2'; exit 2"]["Retval"] = 2
     dictionary["TIMES=1; while [ $TIMES -lt 6 ]; do echo 'Slow task'; sleep 2; TIMES=$(( $TIMES + 1 )); done"] = {}
-    dictionary["TIMES=1; while [ $TIMES -lt 6 ]; do echo 'Slow task'; sleep 2; TIMES=$(( $TIMES + 1 )); done"]["Output"] = "Slow Slow Slow Slow Slow "
+    dictionary["TIMES=1; while [ $TIMES -lt 6 ]; do echo 'Slow task'; sleep 2; TIMES=$(( $TIMES + 1 )); done"]["Output"] = "Slow task\n"*5
     dictionary["TIMES=1; while [ $TIMES -lt 6 ]; do echo 'Slow task'; sleep 2; TIMES=$(( $TIMES + 1 )); done"]["Retval"] = 0
-    dictionary["TIMES=1; while [ $TIMES -lt 6000 ]; do echo 'task'; sleep 0.001; TIMES=$(( $TIMES + 1 )); done"] = {}
-    dictionary["TIMES=1; while [ $TIMES -lt 6000 ]; do echo 'task'; sleep 0.001; TIMES=$(( $TIMES + 1 )); done"]["Output"] = "Fast Task\n"*5999
-    dictionary["TIMES=1; while [ $TIMES -lt 6000 ]; do echo 'task'; sleep 0.001; TIMES=$(( $TIMES + 1 )); done"]["Retval"] = 0
+    dictionary["TIMES=1; while [ $TIMES -lt 6000 ]; do echo 'Fast Task'; sleep 0.001; TIMES=$(( $TIMES + 1 )); done"] = {}
+    dictionary["TIMES=1; while [ $TIMES -lt 6000 ]; do echo 'Fast Task'; sleep 0.001; TIMES=$(( $TIMES + 1 )); done"]["Output"] = "Fast Task\n"*5999
+    dictionary["TIMES=1; while [ $TIMES -lt 6000 ]; do echo 'Fast Task'; sleep 0.001; TIMES=$(( $TIMES + 1 )); done"]["Retval"] = 0
 
     return dictionary
 
