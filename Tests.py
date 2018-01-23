@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*- 
-# Unit tests for DDRescue-GUI Version 1.8
+# -*- coding: utf-8 -*-
+# Unit tests for DDRescue-GUI VERSION 1.8
 # This file is part of DDRescue-GUI.
 # Copyright (C) 2013-2018 Hamish McIntyre-Bhatty
 # DDRescue-GUI is free software: you can redistribute it and/or modify it
@@ -15,7 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with DDRescue-GUI.  If not, see <http://www.gnu.org/licenses/>.
 
-#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
+"""
+This file is used to start the test suites for DDRescue-GUI.
+"""
+
+#Do future imports to prepare to support python 3.
+#Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -23,40 +28,34 @@ from __future__ import unicode_literals
 
 #Import modules.
 import unittest
-import wx
-import subprocess
-import re
 import logging
-import plistlib
 import os
-import time
 import getopt
 import sys
-from bs4 import BeautifulSoup
+import wx
 
-#Global vars.
-Version = "1.8"
-
-#Custom made modules.
+#Custom tools module.
 import Tools
-
-from Tools.tools import Main as BackendTools
+from Tools import tools as BackendTools
 
 #Import test modules.
-import Tests
-
 from Tests import BackendToolsTests
 
+#Global vars.
+VERSION = "1.8"
+
 def usage():
+    """Outputs usage information"""
     print("\nUsage: Tests.py [OPTION]\n\n")
     print("Options:\n")
     print("       -h, --help:                   Display this help text.")
-    print("       -d, --debug:                  Set logging level to debug, to show all logging messages. Default: show only critical logging messages.")
+    print("       -d, --debug:                  Set logging level to debug, to show all logging messages.")
+    print("                                     Default: show only critical logging messages.\n")
     print("       -b, --backendtools:           Run tests for BackendTools module.")
     print("       -m, --main:                   Run tests for main file (DDRescue-GUI.py).")
     print("       -a, --all:                    Run all the tests. The default.\n")
     print("       -t, --tests:                  Ignored.")
-    print("DDRescue-GUI "+Version+" is released under the GNU GPL Version 3")
+    print("DDRescue-GUI "+VERSION+" is released under the GNU GPL VERSION 3")
     print("Copyright (C) Hamish McIntyre-Bhatty 2013-2018")
 
 #Exit if not running as root.
@@ -65,7 +64,8 @@ if os.geteuid() != 0:
 
 #Check all cmdline options are valid.
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "hdgbmat", ["help", "debug", "getdevinfo", "backendtools", "main", "all", "tests"])
+    OPTIONS, ARGUMENTS = getopt.getopt(sys.argv[1:], "hdbmat", ["help", "debug", "backendtools",
+                                                                "main", "all", "tests"])
 
 except getopt.GetoptError as err:
     #Invalid option. Show the help message and then exit.
@@ -75,24 +75,24 @@ except getopt.GetoptError as err:
     sys.exit(2)
 
 #Set up which tests to run based on options given.
-TestSuites = [BackendToolsTests] #*** Set up full defaults when finished ***
+TEST_SUITES = [BackendToolsTests] #*** Set up full defaults when finished ***
 
 #Log only critical message by default.
-loggerLevel = logging.CRITICAL
+LOGGER_LEVEL = logging.CRITICAL
 
-for o, a in opts:
+for o, a in OPTIONS:
     if o in ["-b", "--backendtools"]:
-        TestSuites = [BackendToolsTests]
+        TEST_SUITES = [BackendToolsTests]
     elif o in ["-m", "--main"]:
-        #TestSuites = [MainTests]
+        #TEST_SUITES = [MainTests]
         assert False, "Not implemented yet"
     elif o in ["-a", "--all"]:
-        TestSuites = [BackendToolsTests]
-        #TestSuites.append(MainTests)
+        TEST_SUITES = [BackendToolsTests]
+        #TEST_SUITES.append(MainTests)
     elif o in ["-t", "--tests"]:
         pass
     elif o in ["-d", "--debug"]:
-        loggerLevel = logging.DEBUG
+        LOGGER_LEVEL = logging.DEBUG
     elif o in ["-h", "--help"]:
         usage()
         sys.exit()
@@ -100,39 +100,38 @@ for o, a in opts:
         assert False, "unhandled option"
 
 #Set up the logger (silence all except critical logging messages).
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s: %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p', level=loggerLevel)
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s: %(message)s',
+                    datefmt='%d/%m/%Y %I:%M:%S %p', level=LOGGER_LEVEL)
+
 logger = logging
 
 #Set up resource path and determine OS.
 if "wxGTK" in wx.PlatformInfo:
     #Set the resource path to /usr/share/ddrescue-gui/
-    ResourcePath = '/usr/share/ddrescue-gui'
-    Linux = True
+    RESOURCEPATH = '/usr/share/ddrescue-gui'
+    LINUX = True
 
     #Check if we're running on Parted Magic.
-    if os.uname()[1] == "PartedMagic":
-        PartedMagic = True
-
-    else:
-        PartedMagic = False
+    PARTED_MAGIC = (os.uname()[1] == "PartedMagic")
 
 elif "wxMac" in wx.PlatformInfo:
     try:
-        #Set the resource path from an environment variable, as mac .apps can be found in various places.
-        ResourcePath = os.environ['RESOURCEPATH']
+        #Set the resource path from an environment variable,
+        #as mac .apps can be found in various places.
+        RESOURCEPATH = os.environ['RESOURCEPATH']
 
     except KeyError:
         #Use '.' as the rescource path instead as a fallback.
-        ResourcePath = "."
+        RESOURCEPATH = "."
 
-    Linux = False
-    PartedMagic = False
+    LINUX = False
+    PARTED_MAGIC = False
 
 #Setup test modules.
 BackendToolsTests.BackendTools = BackendTools
 BackendToolsTests.Tools = Tools
 
 if __name__ == "__main__":
-    for SuiteModule in TestSuites:
+    for SuiteModule in TEST_SUITES:
         print("\n\n---------------------------- Tests for "+unicode(SuiteModule)+" ----------------------------\n\n")
         unittest.TextTestRunner(verbosity=2).run(unittest.TestLoader().loadTestsFromModule(SuiteModule))

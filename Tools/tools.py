@@ -42,7 +42,7 @@ if "wxGTK" in wx.PlatformInfo:
     LINUX = True
 
     #Check if we're running on Parted Magic.
-    PARTED_MAGIC = (os.uname()[1] == "PARTED_MAGIC")
+    PARTED_MAGIC = (os.uname()[1] == "PartedMagic")
 
 elif "wxMac" in wx.PlatformInfo:
     try:
