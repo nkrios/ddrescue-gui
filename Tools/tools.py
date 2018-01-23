@@ -22,9 +22,46 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+#Import other modules.
+import wx
+import os
+import subprocess
+import logging
+import plistlib
+import time
+
+#Determine if running on Linux or Mac.
+if "wxGTK" in wx.PlatformInfo:
+    #Set the resource path to /usr/share/ddrescue-gui/
+    ResourcePath = '/usr/share/ddrescue-gui'
+    Linux = True
+
+    #Check if we're running on Parted Magic.
+    if os.uname()[1] == "PartedMagic":
+        PartedMagic = True
+
+    else:
+        PartedMagic = False
+
+elif "wxMac" in wx.PlatformInfo:
+    try:
+        #Set the resource path from an environment variable, as mac .apps can be found in various places.
+        ResourcePath = os.environ['RESOURCEPATH']
+
+    except KeyError:
+        #Use '.' as the rescource path instead as a fallback.
+        ResourcePath = "."
+
+    Linux = False
+    PartedMagic = False
+
+#Set up logging.
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
 def StartProcess(Command, ReturnOutput=False):
     """Start a given process, and return output and return value if needed"""
-    logger.debug("Tools: Main().StartProcess(): Starting process: "+Command)
+    logger.debug("StartProcess(): Starting process: "+Command)
     runcmd = subprocess.Popen("LC_ALL=C "+Command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 
     while runcmd.poll() == None:
@@ -39,7 +76,7 @@ def StartProcess(Command, ReturnOutput=False):
     Retval = int(runcmd.returncode)
 
     #Log this info in a debug message.
-    logger.debug("Tools: Main().StartProcess(): Process: "+Command+": Return Value: "+unicode(Retval)+", Output: \"\n\n"+''.join(Output)+"\"\n")
+    logger.debug("StartProcess(): Process: "+Command+": Return Value: "+unicode(Retval)+", Output: \"\n\n"+''.join(Output)+"\"\n")
 
     if ReturnOutput == False:
         #Return the return code back to whichever function ran this process, so it can handle any errors.
@@ -179,7 +216,7 @@ def IsMounted(Partition, MountPoint=None):
     Return boolean True/False.
     """
     if MountPoint == None:
-        logger.debug("Tools: Main().IsMounted(): Checking if "+Partition+" is mounted...")
+        logger.debug("IsMounted(): Checking if "+Partition+" is mounted...")
         MountInfo = StartProcess("mount", ReturnOutput=True)[1]
 
         Mounted = False
@@ -197,7 +234,7 @@ def IsMounted(Partition, MountPoint=None):
 
     else:
         #Check where it's mounted to.
-        logger.debug("Tools: Main().IsMounted(): Checking if "+Partition+" is mounted at "+MountPoint+"...")
+        logger.debug("IsMounted(): Checking if "+Partition+" is mounted at "+MountPoint+"...")
 
         Mounted = False
 
@@ -209,17 +246,17 @@ def IsMounted(Partition, MountPoint=None):
             Mounted = True
 
     if Mounted:
-        logger.debug("Tools: Main().IsMounted(): It is. Returning True...")
+        logger.debug("IsMounted(): It is. Returning True...")
         return True
 
     else:
-        logger.debug("Tools: Main().IsMounted(): It isn't. Returning False...")
+        logger.debug("IsMounted(): It isn't. Returning False...")
         return False
 
 def GetMountPointOf(Partition):
     """Returns the mountpoint of the given partition, if any.
     Otherwise, return None"""
-    logger.info("Tools: Main().GetMountPointOf(): Trying to get mount point of partition "+Partition+"...")
+    logger.info("GetMountPointOf(): Trying to get mount point of partition "+Partition+"...")
 
     MountInfo = StartProcess("mount", ReturnOutput=True)[1]
     MountPoint = None
@@ -233,10 +270,10 @@ def GetMountPointOf(Partition):
                 break
 
     if MountPoint != None:
-        logger.info("Tools: Main().GetMountPointOf(): Found it! MountPoint is "+MountPoint+"...")
+        logger.info("GetMountPointOf(): Found it! MountPoint is "+MountPoint+"...")
 
     else:
-        logger.info("Tools: Main().GetMountPointOf(): Didn't find it...")
+        logger.info("GetMountPointOf(): Didn't find it...")
 
     return MountPoint
 
@@ -248,24 +285,24 @@ def MountPartition(Partition, MountPoint, Options=""):
     The default value for Options is an empty string.
     """
     if Options != "":
-        logger.info("Tools: Main().MountPartition(): Preparing to mount "+Partition+" at "+MountPoint+" with extra options "+Options+"...")
+        logger.info("MountPartition(): Preparing to mount "+Partition+" at "+MountPoint+" with extra options "+Options+"...")
 
     else:
-        logger.info("Tools: Main().MountPartition(): Preparing to mount "+Partition+" at "+MountPoint+" with no extra options...")
+        logger.info("MountPartition(): Preparing to mount "+Partition+" at "+MountPoint+" with no extra options...")
         
     MountInfo = StartProcess("mount", ReturnOutput=True)[1]
 
     #There is a partition mounted here. Check if our partition is already mounted in the right place.
     if MountPoint == GetMountPointOf(Partition):
         #The correct partition is already mounted here.
-        logger.debug("Tools: Main().MountPartition(): Partition: "+Partition+" was already mounted at: "+MountPoint+". Continuing...")
+        logger.debug("MountPartition(): Partition: "+Partition+" was already mounted at: "+MountPoint+". Continuing...")
         return 0
 
     elif MountPoint in MountInfo:
         #Something else is in the way. Unmount that partition, and continue.
-        logger.warning("Tools: Main().MountPartition(): Unmounting filesystem in the way at "+MountPoint+"...")
+        logger.warning("MountPartition(): Unmounting filesystem in the way at "+MountPoint+"...")
         if UnmountDisk(MountPoint) != 0:
-            logger.error("Tools: Main().MountPartition(): Couldn't unmount "+MountPoint+", preventing the mounting of "+Partition+"! Skipping mount attempt.")
+            logger.error("MountPartition(): Couldn't unmount "+MountPoint+", preventing the mounting of "+Partition+"! Skipping mount attempt.")
             return False
 
     #Create the dir if needed.
@@ -281,27 +318,27 @@ def MountPartition(Partition, MountPoint, Options=""):
         Retval = StartProcess("diskutil mount "+Options+" "+" -mountPoint "+MountPoint+" "+Partition)
 
     if Retval == 0:
-        logger.debug("Tools: Main().MountPartition(): Successfully mounted partition!")
+        logger.debug("MountPartition(): Successfully mounted partition!")
 
     else:
-        logger.warning("Tools: Main().MountPartition(): Failed to mount partition!")
+        logger.warning("MountPartition(): Failed to mount partition!")
 
     return Retval
 
 def UnmountDisk(Disk):
     """Unmount the given disk"""
-    logger.debug("Tools: Main().UnmountDisk(): Checking if "+Disk+" is mounted...")
+    logger.debug("UnmountDisk(): Checking if "+Disk+" is mounted...")
 
     #Check if it is mounted.
     if IsMounted(Disk) == False:
         #The disk isn't mounted.
         #Set Retval to 0 and log this.
         Retval = 0
-        logger.info("Tools: Main().UnmountDisk(): "+Disk+" was not mounted. Continuing...")
+        logger.info("UnmountDisk(): "+Disk+" was not mounted. Continuing...")
 
     else:
         #The disk is mounted.
-        logger.debug("Tools: Main().UnmountDisk(): Unmounting "+Disk+"...")
+        logger.debug("UnmountDisk(): Unmounting "+Disk+"...")
 
         #Unmount it.
         if Linux:
@@ -313,17 +350,17 @@ def UnmountDisk(Disk):
         #Check that this worked okay.
         if Retval != 0:
             #It didn't, for some strange reason.
-            logger.warning("Tools: Main().UnmountDisk(): Unmounting "+Disk+": Failed!")
+            logger.warning("UnmountDisk(): Unmounting "+Disk+": Failed!")
 
         else:
-            logger.info("Tools: Main().UnmountDisk(): Unmounting "+Disk+": Success!")
+            logger.info("UnmountDisk(): Unmounting "+Disk+": Success!")
         
     #Return the return value
     return Retval
 
 def IsPartition(Disk, DiskList=None):
     """Check if the given Disk is a partition"""
-    logger.debug("Tools: Main().IsPartition(): Checking if Disk: "+Disk+" is a partition...")
+    logger.debug("IsPartition(): Checking if Disk: "+Disk+" is a partition...")
 
     if Linux:
         if Disk[0:7] not in ["/dev/sr", "/dev/fd"] and Disk[-1].isdigit() and Disk[0:8] in DiskInfo.keys():
@@ -339,14 +376,14 @@ def IsPartition(Disk, DiskList=None):
         else:
             Result = False
 
-    logger.info("Tools: Main().IsPartition(): Result: "+str(Result)+"...")
+    logger.info("IsPartition(): Result: "+str(Result)+"...")
 
     return Result
 
 def EmergencyExit(Message):
     """Handle emergency exits. Warn the user, log, and exit to terminal with the given message"""
-    logger.critical("CoreTools: Main().EmergencyExit(): Emergency exit has been triggered! Giving user message dialog and saving the logfile...")
-    logger.critical("CoreTools: Main().EmergencyExit(): The error is: "+Message)
+    logger.critical("CoreEmergencyExit(): Emergency exit has been triggered! Giving user message dialog and saving the logfile...")
+    logger.critical("CoreEmergencyExit(): The error is: "+Message)
 
     #Warn the user.
     Dlg = wx.MessageDialog(None, "Emergency exit triggered.\n\n"+Message+"\n\nYou'll now be asked for a location to save the log file.\nIf you email me at hamishmb@live.co.uk with the contents of that file I'll be happy to help you fix this problem.", "DDRescue-GUI - Emergency Exit!", wx.OK | wx.ICON_ERROR)

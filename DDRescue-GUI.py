@@ -141,7 +141,7 @@ import getdevinfo
 import Tools
 
 from getdevinfo import getdevinfo as DevInfoTools
-from Tools.tools import Main as BackendTools
+from Tools import tools as BackendTools
 import Tools.DDRescueTools.setup as DDRescueTools
 
 if Linux:
@@ -149,17 +149,6 @@ if Linux:
 
 else:
     import getdevinfo.macos
-
-#Setup custom-made modules (make global variables accessible inside the packages).
-Tools.tools.wx = wx
-Tools.tools.os = os
-Tools.tools.subprocess = subprocess
-Tools.tools.logger = logger
-Tools.tools.logging = logging
-Tools.tools.plistlib = plistlib
-Tools.tools.time = time
-Tools.tools.Linux = Linux
-Tools.tools.ResourcePath = ResourcePath
 
 #Begin Disk Information Handler thread.
 class GetDiskInformation(threading.Thread):
@@ -377,7 +366,7 @@ class MainWindow(wx.Frame):
             Command = ResourcePath+"/ddrescue --version"
 
         global DDRescueVersion
-        DDRescueVersion = BackendTools().StartProcess(Command=Command, ReturnOutput=True)[1].split("\n")[0].split(" ")[-1]
+        DDRescueVersion = BackendTools.StartProcess(Command=Command, ReturnOutput=True)[1].split("\n")[0].split(" ")[-1]
 
         logger.info("ddrescue version "+DDRescueVersion+"...")
 
@@ -989,7 +978,7 @@ class MainWindow(wx.Frame):
             #If it's in the dictionary or in DiskInfo, don't add it.
             if UserSelection in Paths:
                 #Set the selection using the unique key.
-                ChoiceBox.SetStringSelection(BackendTools().CreateUniqueKey(Paths, UserSelection, 30))
+                ChoiceBox.SetStringSelection(BackendTools.CreateUniqueKey(Paths, UserSelection, 30))
 
             elif UserSelection in DiskInfo.keys():
                 #No need to add it to the choice box.
@@ -997,7 +986,7 @@ class MainWindow(wx.Frame):
 
             else:
                 #Get a unqiue key for the dictionary using the tools function.
-                Key = BackendTools().CreateUniqueKey(Paths, UserSelection, 30)
+                Key = BackendTools.CreateUniqueKey(Paths, UserSelection, 30)
 
                 #Use it to organise the data.
                 Paths[Key] = UserSelection
@@ -1138,14 +1127,14 @@ class MainWindow(wx.Frame):
                     logger.info("MainWindow().OnStart(): "+Disk+" is a file (or not in collected disk info), ignoring it...")
                     continue
 
-                if BackendTools().IsMounted(Disk) or not BackendTools().IsPartition(Disk):
+                if BackendTools.IsMounted(Disk) or not BackendTools.IsPartition(Disk):
                     #The Disk is mounted, or may have partitions that are mounted.
-                    if BackendTools().IsPartition(Disk):
+                    if BackendTools.IsPartition(Disk):
                         #Unmount the disk.
                         logger.debug("MainWindow().OnStart(): "+Disk+" is a partition. Unmounting "+Disk+"...")
                         self.UpdateStatusBar("Unmounting "+Disk+". This may take a few moments...")
                         wx.Yield()
-                        Retval = BackendTools().UnmountDisk(Disk)
+                        Retval = BackendTools.UnmountDisk(Disk)
 
                     else:
                         #Unmount any partitions belonging to the device.
@@ -1158,7 +1147,7 @@ class MainWindow(wx.Frame):
  
                         for Partition in DiskInfo[Disk]["Partitions"]:
                             logger.info("MainWindow().OnStart(): Unmounting "+Partition+"...")
-                            Retvals.append(BackendTools().UnmountDisk(Partition))
+                            Retvals.append(BackendTools.UnmountDisk(Partition))
 
                         #Check the return values, and raise an error if any of them aren't 0.
                         for Integer in Retvals:
@@ -1212,7 +1201,7 @@ class MainWindow(wx.Frame):
             wx.Yield()
 
             #Notify the user.
-            BackendTools().SendNotification("Starting Recovery...")
+            BackendTools.SendNotification("Starting Recovery...")
 
             #Disable and enable all necessary items.
             self.SettingsButton.Disable()
@@ -1233,7 +1222,7 @@ class MainWindow(wx.Frame):
 
             except:
                 logger.critical("Unexpected error \n\n"+unicode(traceback.format_exc())+"\n\n while recovering data. Warning user and exiting.")
-                BackendTools().EmergencyExit("There was an unexpected error:\n\n"+unicode(traceback.format_exc())+"\n\nWhile recovering data!")
+                BackendTools.EmergencyExit("There was an unexpected error:\n\n"+unicode(traceback.format_exc())+"\n\nWhile recovering data!")
 
         else:
             logger.error("MainWindow().OnStart(): One or more of InputFile, OutputFile or LogFile hasn't been set! Aborting Recovery...")
@@ -1333,7 +1322,7 @@ class MainWindow(wx.Frame):
         """Abort the recovery"""
         #Ask ddrescue to exit.
         logger.info("MainWindow().OnAbort(): Attempting to kill ddrescue...")
-        BackendTools().StartProcess("killall ddrescue")
+        BackendTools.StartProcess("killall ddrescue")
         self.AbortedRecovery = True
 
         #Disable control button.
@@ -1391,7 +1380,7 @@ class MainWindow(wx.Frame):
             logger.info("MainWindow().RecoveryEnded(): ddrescue was aborted by the user...")
 
             #Notify the user.
-            BackendTools().SendNotification("Recovery was aborted by user.")
+            BackendTools.SendNotification("Recovery was aborted by user.")
 
             dlg = wx.MessageDialog(self.Panel, "Your recovery has been aborted as you requested.\n\nNote: Your recovered data may be incomplete at this point, so you may now want to run a second recovery to try and grab the remaining data. If you wish to, you may now use DDRescue-GUI to mount your destination drive/file so you can access your data, although some/all of it may be unreadable in its current state.", "DDRescue-GUI - Information", wx.OK | wx.ICON_INFORMATION)
             dlg.ShowModal()
@@ -1401,7 +1390,7 @@ class MainWindow(wx.Frame):
             logger.error("MainWindow().RecoveryEnded(): We didn't get ddrescue's initial status! This probably means ddrescue aborted immediately. Maybe settings are incorrect?")
 
             #Notify the user.
-            BackendTools().SendNotification("Recovery Error! ddrescue aborted immediately. See GUI for more info.")
+            BackendTools.SendNotification("Recovery Error! ddrescue aborted immediately. See GUI for more info.")
 
             dlg = wx.MessageDialog(self.Panel, "We didn't get ddrescue's initial status! This probably means ddrescue aborted immediately. Please check all of your settings, and try again. Here is ddrescue's output, which may tell you what went wrong:\n\n"+self.OutputBox.GetValue(), "DDRescue-GUI - Error!", wx.OK | wx.ICON_ERROR)
             dlg.ShowModal()
@@ -1411,7 +1400,7 @@ class MainWindow(wx.Frame):
             logger.error("MainWindow().RecoveryEnded(): ddrescue exited with nonzero exit status "+unicode(ReturnCode)+"! Perhaps the output file/disk is full?")
 
             #Notify the user.
-            BackendTools().SendNotification("Recovery Error! ddrescue exited with exit status "+unicode(ReturnCode)+"!")
+            BackendTools.SendNotification("Recovery Error! ddrescue exited with exit status "+unicode(ReturnCode)+"!")
 
             dlg = wx.MessageDialog(self.Panel, "Ddrescue exited with nonzero exit status "+unicode(ReturnCode)+"! Perhaps the output file/disk is full? Please check all of your settings, and try again. Here is ddrescue's output, which may tell you what went wrong:\n\n"+self.OutputBox.GetValue(), "DDRescue-GUI - Error!", wx.OK | wx.ICON_ERROR)
             dlg.ShowModal()
@@ -1425,13 +1414,13 @@ class MainWindow(wx.Frame):
                 Message = "Your recovery is complete, with all data recovered from your source disk/file.\n\nNote: If you wish to, you may now use DDRescue-GUI to mount your destination drive/file so you can access your data."
 
                 #Notify the user.
-                BackendTools().SendNotification("Recovery finished with all data!")
+                BackendTools.SendNotification("Recovery finished with all data!")
 
             else:
                 Message = "Your recovery is finished, but not all of your data appears to have been recovered. You may now want to run a second recovery to try and grab the remaining data. If you wish to, you may now use DDRescue-GUI to mount your destination drive/file so you can access your data, although some/all of it may be unreadable in its current state."
 
                 #Notify the user.
-                BackendTools().SendNotification("Recovery finished, but not all data was recovered.")
+                BackendTools.SendNotification("Recovery finished, but not all data was recovered.")
 
             dlg = wx.MessageDialog(self.Panel, Message, "DDRescue-GUI - Information", wx.OK | wx.ICON_INFORMATION)
             dlg.ShowModal()
@@ -1563,7 +1552,7 @@ class MainWindow(wx.Frame):
 
                         else:
                             #Copy it to the specified path, using a one-liner, and don't bother handling any errors, because this is run as root.
-                            BackendTools().StartProcess(Command="cp /tmp/ddrescue-gui.log "+File, ReturnOutput=False)
+                            BackendTools.StartProcess(Command="cp /tmp/ddrescue-gui.log "+File, ReturnOutput=False)
 
                             dlg = wx.MessageDialog(self.Panel, 'Done! DDRescue-GUI will now exit.', 'DDRescue-GUI - Information', wx.OK | wx.ICON_INFORMATION)
                             dlg.ShowModal()
@@ -2335,7 +2324,7 @@ class FinishedWindow(wx.Frame):
 
         #Try to umount the output file, if it has been mounted.
         if self.OutputFileMountPoint != None:
-            if BackendTools().UnmountDisk(self.OutputFileMountPoint) == 0:
+            if BackendTools.UnmountDisk(self.OutputFileMountPoint) == 0:
                 logger.info("FinishedWindow().UnmountOutputFile(): Successfully unmounted output file...")
 
             else:
@@ -2361,7 +2350,7 @@ class FinishedWindow(wx.Frame):
             logger.debug("FinishedWindow().UnmountOutputFile(): No further action required.")
             return True
 
-        if BackendTools().StartProcess(Command=Command, ReturnOutput=False) == 0:
+        if BackendTools.StartProcess(Command=Command, ReturnOutput=False) == 0:
             logger.info("FinishedWindow().UnmountOutputFile(): Successfully pulled down loop device...")
 
         else:
@@ -2380,7 +2369,7 @@ class FinishedWindow(wx.Frame):
         wx.Yield()
 
         #Determine what type of OutputFile we have (Partition or Device).
-        self.OutputFileType, Retval, Output = BackendTools().DetermineOutputFileType(Settings=Settings, DiskInfo=DiskInfo)
+        self.OutputFileType, Retval, Output = BackendTools.DetermineOutputFileType(Settings=Settings, DiskInfo=DiskInfo)
 
         #If retval != 0 report to user.
         if Retval != 0:
@@ -2399,10 +2388,10 @@ class FinishedWindow(wx.Frame):
             #Attempt to mount the disk.
             if Linux:
                 self.OutputFileMountPoint = "/mnt"+Settings["InputFile"]
-                Retval = BackendTools().MountPartition(Partition=Settings["OutputFile"], MountPoint=self.OutputFileMountPoint)
+                Retval = BackendTools.MountPartition(Partition=Settings["OutputFile"], MountPoint=self.OutputFileMountPoint)
 
             else:
-                Retval, Output = BackendTools().MacRunHdiutil(Options="mount "+Settings["OutputFile"]+" -plist", Disk=Settings["OutputFile"])
+                Retval, Output = BackendTools.MacRunHdiutil(Options="mount "+Settings["OutputFile"]+" -plist", Disk=Settings["OutputFile"])
 
             if Retval != 0:
                 logger.error("FinishedWindow().MountDisk(): Error! Warning the user...")
@@ -2418,7 +2407,7 @@ class FinishedWindow(wx.Frame):
 
             else:
                 #More steps required on macOS.
-                self.OutputFileDeviceName, self.OutputFileMountPoint, Result = BackendTools().MacGetDevNameAndMountPoint(Output)
+                self.OutputFileDeviceName, self.OutputFileMountPoint, Result = BackendTools.MacGetDevNameAndMountPoint(Output)
 
                 if Result == "UnicodeError":
                     logger.error("FinishedWindow().MountDisk(): FIXME: Couldn't parse output of hdiutil mount due to UnicodeDecodeError. Cleaning up and warning user...")
@@ -2438,10 +2427,10 @@ class FinishedWindow(wx.Frame):
             if Linux:
                 #Create loop devices for all contained partitions.
                 logger.info("FinishedWindow().MountDisk(): Creating loop device...")
-                BackendTools().StartProcess(Command="kpartx -a "+Settings["OutputFile"], ReturnOutput=False)
+                BackendTools.StartProcess(Command="kpartx -a "+Settings["OutputFile"], ReturnOutput=False)
 
                 #Get some Disk information.
-                LsblkOutput = BackendTools().StartProcess(Command="lsblk -r -o NAME,FSTYPE,SIZE", ReturnOutput=True)[1].split('\n')
+                LsblkOutput = BackendTools.StartProcess(Command="lsblk -r -o NAME,FSTYPE,SIZE", ReturnOutput=True)[1].split('\n')
 
             else:
                 ImageinfoOutput = Output
@@ -2494,11 +2483,11 @@ class FinishedWindow(wx.Frame):
                 self.OutputFileMountPoint = "/mnt"+PartitionToMount
 
                 #Attempt to mount the disk.
-                Retval = BackendTools().MountPartition(Partition=PartitionToMount, MountPoint=self.OutputFileMountPoint)
+                Retval = BackendTools.MountPartition(Partition=PartitionToMount, MountPoint=self.OutputFileMountPoint)
 
             else:
                 #Attempt to mount the disk (this mounts all partitions inside), and parse the resulting plist.
-                Retval, MountOutput = BackendTools().MacRunHdiutil(Options="mount "+Settings["OutputFile"]+" -plist", Disk=Settings["OutputFile"])
+                Retval, MountOutput = BackendTools.MacRunHdiutil(Options="mount "+Settings["OutputFile"]+" -plist", Disk=Settings["OutputFile"])
                 MountOutput = plistlib.readPlistFromString(MountOutput)
 
             #Handle it if the mount attempt failed.
