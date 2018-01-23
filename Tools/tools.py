@@ -15,6 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with DDRescue-GUI.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+This is the tools package for DDRescue-GUI.
+"""
+
 #Do future imports to prepare to support python 3.
 #Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -23,400 +27,427 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 #Import other modules.
-import wx
 import os
+import sys
 import subprocess
 import logging
 import plistlib
 import time
+import wx
 
 #Determine if running on Linux or Mac.
 if "wxGTK" in wx.PlatformInfo:
     #Set the resource path to /usr/share/ddrescue-gui/
-    ResourcePath = '/usr/share/ddrescue-gui'
-    Linux = True
+    RESOURCEPATH = '/usr/share/ddrescue-gui'
+    LINUX = True
 
     #Check if we're running on Parted Magic.
-    if os.uname()[1] == "PartedMagic":
-        PartedMagic = True
-
-    else:
-        PartedMagic = False
+    PARTED_MAGIC = (os.uname()[1] == "PARTED_MAGIC")
 
 elif "wxMac" in wx.PlatformInfo:
     try:
-        #Set the resource path from an environment variable, as mac .apps can be found in various places.
-        ResourcePath = os.environ['RESOURCEPATH']
+        #Set the resource path from an environment variable,
+        #as mac .apps can be found in various places.
+        RESOURCEPATH = os.environ['RESOURCEPATH']
 
     except KeyError:
         #Use '.' as the rescource path instead as a fallback.
-        ResourcePath = "."
+        RESOURCEPATH = "."
 
-    Linux = False
-    PartedMagic = False
+    LINUX = False
+    PARTED_MAGIC = False
 
 #Set up logging.
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-def StartProcess(Command, ReturnOutput=False):
+def start_process(cmd, return_output=False):
     """Start a given process, and return output and return value if needed"""
-    logger.debug("StartProcess(): Starting process: "+Command)
-    runcmd = subprocess.Popen("LC_ALL=C "+Command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+    logger.debug("start_process(): Starting process: "+cmd)
+    runcmd = subprocess.Popen("LC_ALL=C "+cmd, stdout=subprocess.PIPE,
+                              stderr=subprocess.STDOUT, shell=True)
 
-    while runcmd.poll() == None:
+    while runcmd.poll() is None:
         time.sleep(0.25)
 
-    #Save runcmd.stdout.readlines, and runcmd.returncode, as they tend to reset fairly quickly. Handle unicode properly.
-    Output = []
+    #Save runcmd.stdout.readlines, and runcmd.returncode,
+    #as they tend to reset fairly quickly. Handle unicode properly.
+    output = []
 
     for line in runcmd.stdout.readlines():
-        Output.append(line.decode("UTF-8", errors="ignore"))
+        output.append(line.decode("UTF-8", errors="ignore"))
 
-    Retval = int(runcmd.returncode)
+    retval = int(runcmd.returncode)
 
     #Log this info in a debug message.
-    logger.debug("StartProcess(): Process: "+Command+": Return Value: "+unicode(Retval)+", Output: \"\n\n"+''.join(Output)+"\"\n")
+    logger.debug("start_process(): Process: "+cmd+": Return Value: "
+                 +unicode(retval)+", output: \"\n\n"+''.join(output)+"\"\n")
 
-    if ReturnOutput == False:
-        #Return the return code back to whichever function ran this process, so it can handle any errors.
-        return Retval
+    if not return_output:
+        #Return the return code back to whichever function ran this process, so it handles errors.
+        return retval
 
     else:
         #Return the return code, as well as the output.
-        return Retval, ''.join(Output)
+        return retval, ''.join(output)
 
-def CreateUniqueKey(Dict, Data, Length):
-    """Create a unqiue dictionary key of Length for dictionary Dict for the item Data.
-    The unique key is created by adding a number on the the end of Data, while keeping it at the correct length.
-    The key will also start with '...'."""
+def create_unique_key(dictionary, data, length):
+    """
+    Create a unqiue dictionary key of length for dictionary dictionary for the item data.
+    The unique key is created by adding a number on the the end of data,
+    while keeping it at the correct length.
+    The key will also start with '...'.
+    """
+
     #Only add numbers to the key if needed.
-    if "..."+Data[-Length:] in Dict.keys():
-        #Digit to add to the end of the key.
-        Digit = 0
-        Key = Data
+    if "..."+data[-length:] in dictionary.keys():
+        #digit to add to the end of the key.
+        digit = 0
+        key = data
 
         while True:
             #Add a digit to the end of the key to get a new key, repeat until the key is unique.
-            DigitLength = len(unicode(Digit))
+            digit_length = len(unicode(digit))
 
-            if Key[-DigitLength:] == Digit and Key[-DigitLength-1] == "~":
-               #Remove the old non-unique digit and underscore at the end.
-               Key = Key[0:-DigitLength-1]
+            if key[-digit_length:] == digit and key[-digit_length-1] == "~":
+                #Remove the old non-unique digit and underscore at the end.
+                key = key[0:-digit_length-1]
 
             #Add 1 to the digit.
-            Digit += 1
+            digit += 1
 
-            Key = Key+unicode(Digit)
-            Key = Key[-Length:]
+            key = key+unicode(digit)
+            key = key[-length:]
 
-            if "..."+Key not in Dict.keys():
-               #Yay! Unique!
-               Key = "..."+Key
+            if "..."+key not in dictionary.keys():
+                #Yay! Unique!
+                key = "..."+key
 
     else:
-        Key = Data[-Length:]
-        Key = "..."+Key
+        key = data[-length:]
+        key = "..."+key
 
-    #Remove '...' if Key is shorter than Length+3 chars (to account for...).
-    if len(Key) < Length+3:
-        Key = Key[3:]
+    #Remove '...' if key is shorter than length+3 chars (to account for...).
+    if len(key) < length+3:
+        key = key[3:]
 
-    return Key
+    return key
 
-def SendNotification(Message):
+def send_notification(msg):
     """Send a notification, created to reduce clutter in the rest of the code."""
-    if Linux:
+    if LINUX:
         #Use notify-send. *** Sometimes doesn't work as root. Find uid of logged-in user? ***
-        StartProcess(Command="notify-send 'DDRescue-GUI' '"+Message+"' -i /usr/share/pixmaps/ddrescue-gui.png", ReturnOutput=False)
+        start_process(cmd="notify-send 'DDRescue-GUI' '"+msg
+                      +"' -i /usr/share/pixmaps/ddrescue-gui.png", return_output=False)
 
     else:
         #Use Cocoadialog. (use subprocess to avoid blocking GUI thread.)
-        subprocess.Popen(ResourcePath+"""/other/CocoaDialog.app/Contents/MacOS/CocoaDialog bubble --title "DDRescue-GUI" --text \""""+Message+"""\" --icon-file """+ResourcePath+"""/images/Logo.png  --background-top EFF7FD --border-color EFF7FD""", shell=True)
+        subprocess.Popen(RESOURCEPATH+"""/other/CocoaDialog.app/Contents/MacOS/CocoaDialog bubble --title "DDRescue-GUI" --text \""""+msg+"""\" --icon-file """+RESOURCEPATH+"""/images/Logo.png  --background-top EFF7FD --border-color EFF7FD""", shell=True)
 
-def DetermineOutputFileType(Settings, DiskInfo):
-    """Determines Output File Type (Partition or Device)"""
-    if Settings["InputFile"] in DiskInfo:
-		#Read from DiskInfo if possible (OutputFile type = InputFile type)
-        OutputFileType = DiskInfo[Settings["InputFile"]]["Type"]
-        Retval = 0
-        Output = ""
+def determine_output_file_type(settings, disk_info):
+    """Determines output File Type (partition or Device)"""
+    if settings["InputFile"] in disk_info:
+		#Read from disk_info if possible (OutputFile type = InputFile type)
+        output_file_type = disk_info[settings["InputFile"]]["Type"]
+        retval = 0
+        output = ""
 
-        if OutputFileType == "Device":
-            if Linux:
-                Retval, Output = StartProcess(Command="kpartx -l "+Settings["OutputFile"], ReturnOutput=True)
-                Output = Output.split("\n")
+        if output_file_type == "Device":
+            if LINUX:
+                retval, output = start_process(cmd="kpartx -l "+settings["OutputFile"],
+                                               return_output=True)
+                output = output.split("\n")
 
             else:
-                Retval, Output = MacRunHdiutil(Options="imageinfo "+Settings["OutputFile"]+" -plist", Disk=Settings["OutputFile"])
+                retval, output = mac_run_hdiutil(options="imageinfo "+settings["OutputFile"]
+                                                 +" -plist")
 
     else:
-        if Linux:
+        if LINUX:
             #If list of partitions is empty (or 1 partition), we have a partition.
-            Retval, Output = StartProcess(Command="kpartx -l "+Settings["OutputFile"], ReturnOutput=True)
-            Output = Output.split("\n")
+            retval, output = start_process(cmd="kpartx -l "+settings["OutputFile"],
+                                           return_output=True)
+            output = output.split("\n")
 
         else:
-            Retval, Output = MacRunHdiutil(Options="imageinfo "+Settings["OutputFile"]+" -plist", Disk=Settings["OutputFile"])
+            retval, output = mac_run_hdiutil(options="imageinfo "+settings["OutputFile"]
+                                             +" -plist")
 
-        if Output == [""] or len(Output) == 1 or "whole disk" in Output:
-            OutputFileType = "Partition"
+        if output == [""] or len(output) == 1 or "whole disk" in output:
+            output_file_type = "partition"
 
         else:
-            OutputFileType = "Device"
+            output_file_type = "Device"
 
-    if not Linux and Output != "":
+    if not LINUX and output != "":
         #Parse the plist (Property List).
-        Output = plistlib.readPlistFromString(Output)
+        output = plistlib.readPlistFromString(output)
 
-    return OutputFileType, Retval, Output
+    return output_file_type, retval, output
 
-def MacGetDevNameAndMountPoint(Output):
-    """Get the device name and mount point of an output file, given output from hdiutil mount -plist"""
+def mac_get_device_name_mount_point(output):
+    """
+    Get the device name and mount point of an output file,
+    given output from hdiutil mount -plist
+    """
+
     #Parse the plist (Property List).
     try:
-        HdiutilOutput = plistlib.readPlistFromString(Output)
+        hdiutil_output = plistlib.readPlistFromString(output)
 
     except UnicodeDecodeError:
         return None, None, "UnicodeError"
 
     #Find the disk and get the mountpoint.
-    if len(HdiutilOutput["system-entities"]) > 1:
-        MountedDisk = HdiutilOutput["system-entities"][1]
+    if len(hdiutil_output["system-entities"]) > 1:
+        mounted_disk = hdiutil_output["system-entities"][1]
 
     else:
-        MountedDisk = HdiutilOutput["system-entities"][0]
+        mounted_disk = hdiutil_output["system-entities"][0]
 
-    return MountedDisk["dev-entry"], MountedDisk["mount-point"], True
+    return mounted_disk["dev-entry"], mounted_disk["mount-point"], True
 
-def MacRunHdiutil(Options, Disk):
-    """Runs hdiutil on behalf of the rest of the program when called. Tries to handle and fix hdiutil errors if they occur."""
-    Retval, Output = StartProcess(Command="hdiutil "+Options, ReturnOutput=True)
+def mac_run_hdiutil(options):
+    """
+    Runs hdiutil on behalf of the rest of the program when called.
+    Tries to handle and fix hdiutil errors if they occur.
+    """
+
+    retval, output = start_process(cmd="hdiutil "+options, return_output=True)
 
     #Handle this common error.
-    if "Resource temporarily unavailable" in Output or Retval != 0:
+    if "Resource temporarily unavailable" in output or retval != 0:
         #Fix by detaching any disk images.
-        #Try to find any disk images that are attached, and detach them (if there are any). *** Doesn't work on older versions of OS X but fix in next release. ***
-        for Line in StartProcess(Command="diskutil list", ReturnOutput=True)[1].split("\n"):
+        #Try to find any disk images that are attached, and detach them (if there are any).
+        #*** Doesn't work on older versions of OS X but fix in next release. ***
+        for line in start_process(cmd="diskutil list", return_output=True)[1].split("\n"):
             try:
-                if ' '.join(Line.split()[1:3]) == "(disk image):":
-                    StartProcess(Command="hdiutil detach "+Line.split()[0])
+                if ' '.join(line.split()[1:3]) == "(disk image):":
+                    start_process(cmd="hdiutil detach "+line.split()[0])
 
-            except: pass
+            except:
+                pass
 
         #Try again.
-        Retval, Output = StartProcess(Command="hdiutil "+Options, ReturnOutput=True)
+        retval, output = start_process(cmd="hdiutil "+options, return_output=True)
 
-    return Retval, Output
+    return retval, output
 
-def IsMounted(Partition, MountPoint=None):
-    """Checks if the given partition is mounted.
-    Partition is the given partition to check.
-    If MountPoint is specified, check if the partition is mounted there, rather than just if it's mounted.
+def is_mounted(partition, mount_point=None):
+    """
+    Checks if the given partition is mounted.
+    partition is the given partition to check.
+    If mount_point is specified, check if the partition is mounted there,
+    rather than just if it's mounted.
     Return boolean True/False.
     """
-    if MountPoint == None:
-        logger.debug("IsMounted(): Checking if "+Partition+" is mounted...")
-        MountInfo = StartProcess("mount", ReturnOutput=True)[1]
 
-        Mounted = False
+    if mount_point is None:
+        logger.debug("is_mounted(): Checking if "+partition+" is mounted...")
+        mount_info = start_process("mount", return_output=True)[1]
+
+        disk_is_mounted = False
 
         #OS X fix: Handle paths with /tmp in them, as paths with /private/tmp.
-        if not Linux and "/tmp" in Partition:
-            Partition = Partition.replace("/tmp", "/private/tmp")
+        if not LINUX and "/tmp" in partition:
+            partition = partition.replace("/tmp", "/private/tmp")
 
-        #Linux fix: Accept any mountpoint when called with just one argument.
-        for Line in MountInfo.split("\n"):
-            if len(Line) != 0:
-                if Line.split()[0] == Partition or Line.split()[2] == Partition:
-                    Mounted = True
+        #LINUX fix: Accept any mountpoint when called with just one argument.
+        for line in mount_info.split("\n"):
+            if len(line) != 0:
+                if line.split()[0] == partition or line.split()[2] == partition:
+                    disk_is_mounted = True
                     break
 
     else:
         #Check where it's mounted to.
-        logger.debug("IsMounted(): Checking if "+Partition+" is mounted at "+MountPoint+"...")
+        logger.debug("is_mounted(): Checking if "+partition+" is mounted at "+mount_point+"...")
 
-        Mounted = False
+        disk_is_mounted = False
 
         #OS X fix: Handle paths with /tmp in them, as paths with /private/tmp.
-        if not Linux and "/tmp" in MountPoint:
-            MountPoint = MountPoint.replace("/tmp", "/private/tmp")
+        if not LINUX and "/tmp" in mount_point:
+            mount_point = mount_point.replace("/tmp", "/private/tmp")
 
-        if GetMountPointOf(Partition) == MountPoint:
-            Mounted = True
+        if get_mount_point(partition) == mount_point:
+            disk_is_mounted = True
 
-    if Mounted:
-        logger.debug("IsMounted(): It is. Returning True...")
+    if disk_is_mounted:
+        logger.debug("is_mounted(): It is. Returning True...")
         return True
 
     else:
-        logger.debug("IsMounted(): It isn't. Returning False...")
+        logger.debug("is_mounted(): It isn't. Returning False...")
         return False
 
-def GetMountPointOf(Partition):
+def get_mount_point(partition):
     """Returns the mountpoint of the given partition, if any.
     Otherwise, return None"""
-    logger.info("GetMountPointOf(): Trying to get mount point of partition "+Partition+"...")
+    logger.info("get_mount_point(): Trying to get mount point of partition "+partition+"...")
 
-    MountInfo = StartProcess("mount", ReturnOutput=True)[1]
-    MountPoint = None
+    mount_info = start_process("mount", return_output=True)[1]
+    mount_point = None
 
-    for Line in MountInfo.split("\n"):
-        SplitLine = Line.split()
+    for line in mount_info.split("\n"):
+        split_line = line.split()
 
-        if len(SplitLine) != 0:
-            if Partition == SplitLine[0]:
-                MountPoint = SplitLine[2]
+        if len(split_line) != 0:
+            if partition == split_line[0]:
+                mount_point = split_line[2]
                 break
 
-    if MountPoint != None:
-        logger.info("GetMountPointOf(): Found it! MountPoint is "+MountPoint+"...")
+    if mount_point != None:
+        logger.info("get_mount_point(): Found it! mount_point is "+mount_point+"...")
 
     else:
-        logger.info("GetMountPointOf(): Didn't find it...")
+        logger.info("get_mount_point(): Didn't find it...")
 
-    return MountPoint
+    return mount_point
 
-def MountPartition(Partition, MountPoint, Options=""):
+def mount_disk(partition, mount_point, options=""):
     """Mounts the given partition.
-    Partition is the partition to mount.
-    MountPoint is where you want to mount the partition.
-    Options is non-mandatory and contains whatever options you want to pass to the mount command.
-    The default value for Options is an empty string.
+    partition is the partition to mount.
+    mount_point is where you want to mount the partition.
+    options is non-mandatory and contains whatever options you want to pass to the mount command.
+    The default value for options is an empty string.
     """
-    if Options != "":
-        logger.info("MountPartition(): Preparing to mount "+Partition+" at "+MountPoint+" with extra options "+Options+"...")
+    if options != "":
+        logger.info("mount_disk(): Preparing to mount "+partition+" at "+mount_point
+                    +" with extra options "+options+"...")
 
     else:
-        logger.info("MountPartition(): Preparing to mount "+Partition+" at "+MountPoint+" with no extra options...")
-        
-    MountInfo = StartProcess("mount", ReturnOutput=True)[1]
+        logger.info("mount_disk(): Preparing to mount "+partition+" at "+mount_point
+                    +" with no extra options...")
 
-    #There is a partition mounted here. Check if our partition is already mounted in the right place.
-    if MountPoint == GetMountPointOf(Partition):
+    mount_info = start_process("mount", return_output=True)[1]
+
+    #There is a partition mounted here. Check if it's ours.
+    if mount_point == get_mount_point(partition):
         #The correct partition is already mounted here.
-        logger.debug("MountPartition(): Partition: "+Partition+" was already mounted at: "+MountPoint+". Continuing...")
+        logger.debug("mount_disk(): partition: "+partition+" was already mounted at: "
+                     +mount_point+". Continuing...")
         return 0
 
-    elif MountPoint in MountInfo:
+    elif mount_point in mount_info:
         #Something else is in the way. Unmount that partition, and continue.
-        logger.warning("MountPartition(): Unmounting filesystem in the way at "+MountPoint+"...")
-        if UnmountDisk(MountPoint) != 0:
-            logger.error("MountPartition(): Couldn't unmount "+MountPoint+", preventing the mounting of "+Partition+"! Skipping mount attempt.")
+        logger.warning("mount_disk(): Unmounting filesystem in the way at "+mount_point+"...")
+        if unmount_disk(mount_point) != 0:
+            logger.error("mount_disk(): Couldn't unmount "+mount_point
+                         +", preventing the mounting of "+partition+"! Skipping mount attempt.")
             return False
 
     #Create the dir if needed.
-    if os.path.isdir(MountPoint) == False:
-        os.makedirs(MountPoint)
+    if os.path.isdir(mount_point) is False:
+        os.makedirs(mount_point)
 
     #Mount the device to the mount point.
     #Use diskutil on OS X.
-    if Linux:
-        Retval = StartProcess("mount "+Options+" "+Partition+" "+MountPoint)
+    if LINUX:
+        retval = start_process("mount "+options+" "+partition+" "+mount_point)
 
     else:
-        Retval = StartProcess("diskutil mount "+Options+" "+" -mountPoint "+MountPoint+" "+Partition)
+        retval = start_process("diskutil mount "+options+" "+" -mountPoint "
+                               +mount_point+" "+partition)
 
-    if Retval == 0:
-        logger.debug("MountPartition(): Successfully mounted partition!")
+    if retval == 0:
+        logger.debug("mount_disk(): Successfully mounted partition!")
 
     else:
-        logger.warning("MountPartition(): Failed to mount partition!")
+        logger.warning("mount_disk(): Failed to mount partition!")
 
-    return Retval
+    return retval
 
-def UnmountDisk(Disk):
+def unmount_disk(disk):
     """Unmount the given disk"""
-    logger.debug("UnmountDisk(): Checking if "+Disk+" is mounted...")
+    logger.debug("unmount_disk(): Checking if "+disk+" is mounted...")
 
     #Check if it is mounted.
-    if IsMounted(Disk) == False:
+    if not is_mounted(disk):
         #The disk isn't mounted.
-        #Set Retval to 0 and log this.
-        Retval = 0
-        logger.info("UnmountDisk(): "+Disk+" was not mounted. Continuing...")
+        #Set retval to 0 and log this.
+        retval = 0
+        logger.info("unmount_disk(): "+disk+" was not mounted. Continuing...")
 
     else:
         #The disk is mounted.
-        logger.debug("UnmountDisk(): Unmounting "+Disk+"...")
+        logger.debug("unmount_disk(): Unmounting "+disk+"...")
 
         #Unmount it.
-        if Linux:
-            Retval = StartProcess(Command="umount "+Disk, ReturnOutput=False)
+        if LINUX:
+            retval = start_process(cmd="umount "+disk, return_output=False)
 
         else:
-            Retval = StartProcess(Command="diskutil umount "+Disk, ReturnOutput=False)
+            retval = start_process(cmd="diskutil umount "+disk, return_output=False)
 
         #Check that this worked okay.
-        if Retval != 0:
+        if retval != 0:
             #It didn't, for some strange reason.
-            logger.warning("UnmountDisk(): Unmounting "+Disk+": Failed!")
+            logger.warning("unmount_disk(): Unmounting "+disk+": Failed!")
 
         else:
-            logger.info("UnmountDisk(): Unmounting "+Disk+": Success!")
-        
+            logger.info("unmount_disk(): Unmounting "+disk+": Success!")
+
     #Return the return value
-    return Retval
+    return retval
 
-def IsPartition(Disk, DiskList=None):
-    """Check if the given Disk is a partition"""
-    logger.debug("IsPartition(): Checking if Disk: "+Disk+" is a partition...")
+def is_partition(disk, disk_info):
+    """Check if the given disk is a partition"""
+    logger.debug("is_partition(): Checking if disk: "+disk+" is a partition...")
 
-    if Linux:
-        if Disk[0:7] not in ["/dev/sr", "/dev/fd"] and Disk[-1].isdigit() and Disk[0:8] in DiskInfo.keys():
-            Result =  True
-
-        else:
-            Result = False
+    if LINUX:
+        result = (disk[0:7] not in ["/dev/sr", "/dev/fd"] and disk[-1].isdigit() and disk[0:8] in disk_info.keys())
 
     else:
-        if "s" in Disk.split("disk")[1]:
-            Result = True
+        result = ("s" in disk.split("disk")[1])
 
-        else:
-            Result = False
+    logger.info("is_partition(): result: "+str(result)+"...")
 
-    logger.info("IsPartition(): Result: "+str(Result)+"...")
+    return result
 
-    return Result
-
-def EmergencyExit(Message):
+def emergency_exit(msg):
     """Handle emergency exits. Warn the user, log, and exit to terminal with the given message"""
-    logger.critical("CoreEmergencyExit(): Emergency exit has been triggered! Giving user message dialog and saving the logfile...")
-    logger.critical("CoreEmergencyExit(): The error is: "+Message)
+    logger.critical("CoreEmergencyExit(): Emergency exit has been triggered! "
+                    +"Giving user message dialog and saving the logfile...")
+    logger.critical("CoreEmergencyExit(): The error is: "+msg)
 
     #Warn the user.
-    Dlg = wx.MessageDialog(None, "Emergency exit triggered.\n\n"+Message+"\n\nYou'll now be asked for a location to save the log file.\nIf you email me at hamishmb@live.co.uk with the contents of that file I'll be happy to help you fix this problem.", "DDRescue-GUI - Emergency Exit!", wx.OK | wx.ICON_ERROR)
-    Dlg.ShowModal()
-    Dlg.Destroy()
+    dialog = wx.MessageDialog(None, "Emergency exit triggered.\n\n"+msg
+                              +"\n\nYou'll now be asked for a location to save the log file."
+                              +"\nIf you email me at hamishmb@live.co.uk with the contents of "
+                              +"that file I'll be happy to help you fix this problem."
+                              , "DDRescue-GUI - Emergency Exit!", wx.OK | wx.ICON_ERROR)
+    dialog.ShowModal()
+    dialog.Destroy()
 
     #Shut down the logger.
     logging.shutdown()
 
     #Save the log file.
     while True:
-        Dlg = wx.FileDialog(None, "Enter File Name", defaultDir="/home", style=wx.SAVE)
+        dialog = wx.FileDialog(None, "Enter File Name", defaultDir="/home", style=wx.SAVE)
 
         #Change the default dir on OS X.
-        if Linux == False:
-            InputFileDlg.SetDirectory("/Users")
+        if not LINUX:
+            dialog.SetDirectory("/Users")
 
-        if Dlg.ShowModal() == wx.ID_OK:
-            LogFile = Dlg.GetPath()
+        if dialog.ShowModal() == wx.ID_OK:
+            log_file = dialog.GetPath()
             break
 
         else:
             #Warn the user.
-            Dlg = wx.MessageDialog(None, "Please enter a file name.", "DDRescue-GUI - Emergency Exit!", wx.OK | wx.ICON_ERROR)
-            Dlg.ShowModal()
-            Dlg.Destroy()
+            dialog = wx.MessageDialog(None, "Please enter a file name.",
+                                      "DDRescue-GUI - Emergency Exit!", wx.OK | wx.ICON_ERROR)
+            dialog.ShowModal()
+            dialog.Destroy()
 
-    StartProcess("mv -v /tmp/ddrescue-gui.log "+LogFile)
+    start_process("mv -v /tmp/ddrescue-gui.log "+log_file)
 
     #Exit.
-    Dlg = wx.MessageDialog(None, "Done. DDRescue-GUI will now exit.", "DDRescue-GUI - Emergency Exit!", wx.OK | wx.ICON_INFORMATION)
-    Dlg.ShowModal()
-    Dlg.Destroy()
+    dialog = wx.MessageDialog(None, "Done. DDRescue-GUI will now exit.",
+                              "DDRescue-GUI - Emergency Exit!", wx.OK | wx.ICON_INFORMATION)
+    dialog.ShowModal()
+    dialog.Destroy()
 
     wx.Exit()
-    sys.exit(Message)
+    sys.exit(msg)
