@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 # BackendTools test functions for DDRescue-GUI Version 1.8
 # This file is part of DDRescue-GUI.
 # Copyright (C) 2013-2018 Hamish McIntyre-Bhatty
@@ -15,137 +15,165 @@
 # You should have received a copy of the GNU General Public License
 # along with DDRescue-GUI.  If not, see <http://www.gnu.org/licenses/>.
 
-#If you're wondering why this is here, it's so that there are some known good/sane functions to aid testing the ones in BackendTools.
+"""
+If you're wondering why this is here, it's so that there are some known good/sane
+functions to aid testing the ones in BackendTools.
+"""
 
-#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
+#Do future imports to prepare to support python 3.
+#Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-def StartProcess(Command, ReturnOutput=False):
-    """Start a given process, and return output and return value if needed"""
-    runcmd = subprocess.Popen("LC_ALL=C "+Command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+#Do other imports.
+import subprocess
+import time
+import os
+import wx
 
-    while runcmd.poll() == None:
+#Determine if running on LINUX or Mac.
+if "wxGTK" in wx.PlatformInfo:
+    LINUX = True
+
+    #Check if we're running on Parted Magic.
+    PARTED_MAGIC = (os.uname()[1] == "PartedMagic")
+
+elif "wxMac" in wx.PlatformInfo:
+    LINUX = False
+    PARTED_MAGIC = False
+
+def start_process(cmd, return_output=False):
+    """Start a given process, and return output and return value if needed"""
+    runcmd = subprocess.Popen("LC_ALL=C "+cmd, stdout=subprocess.PIPE,
+                              stderr=subprocess.STDOUT, shell=True)
+
+    while runcmd.poll() is None:
         time.sleep(0.25)
 
-    #Save runcmd.stdout.readlines, and runcmd.returncode, as they tend to reset fairly quickly. Handle unicode properly.
-    Output = []
+    #Save runcmd.stdout.readlines, and runcmd.returncode, as they tend to reset fairly quickly.
+    #Handle unicode properly.
+    output = []
 
     for line in runcmd.stdout.readlines():
-        Output.append(line.decode("UTF-8", errors="ignore"))
+        output.append(line.decode("UTF-8", errors="ignore"))
 
-    Retval = int(runcmd.returncode)
+    retval = int(runcmd.returncode)
 
-    if ReturnOutput == False:
+    if return_output is False:
         #Return the return code back to whichever function ran this process, so it can handle any errors.
-        return Retval
+        return retval
 
     else:
         #Return the return code, as well as the output.
-        return Retval, ''.join(Output)
+        return retval, ''.join(output)
 
-def IsMounted(Partition, MountPoint=None):
+def is_mounted(partition, mount_point=None):
     """Checks if the given partition is mounted.
-    Partition is the given partition to check.
-    If MountPoint is specified, check if the partition is mounted there, rather than just if it's mounted.
+    partition is the given partition to check.
+    If mount_point is specified, check if the partition is mounted there, rather than just if it's mounted.
     Return boolean True/False.
     """
-    if MountPoint == None:
-        MountInfo = StartProcess("mount", ReturnOutput=True)[1]
+    if mount_point is None:
+        mount_info = start_process("mount", return_output=True)[1]
 
-        Mounted = False
+        mounted = False
 
         #OS X fix: Handle paths with /tmp in them, as paths with /private/tmp.
-        if not Linux and "/tmp" in Partition:
-            Partition = Partition.replace("/tmp", "/private/tmp")
+        if not LINUX and "/tmp" in partition:
+            partition = partition.replace("/tmp", "/private/tmp")
 
-        #Linux fix: Accept any mountpoint when called with just one argument.
-        for Line in MountInfo.split("\n"):
-            if len(Line) != 0:
-                if Line.split()[0] == Partition or Line.split()[2] == Partition:
-                    Mounted = True
+        #LINUX fix: Accept any mount_point when called with just one argument.
+        for line in mount_info.split("\n"):
+            if len(line) != 0:
+                if line.split()[0] == partition or line.split()[2] == partition:
+                    mounted = True
                     break
 
     else:
         #Check where it's mounted to.
-        Mounted = False
+        mounted = False
 
         #OS X fix: Handle paths with /tmp in them, as paths with /private/tmp.
-        if not Linux and "/tmp" in MountPoint:
-            MountPoint = MountPoint.replace("/tmp", "/private/tmp")
+        if not LINUX and "/tmp" in mount_point:
+            mount_point = mount_point.replace("/tmp", "/private/tmp")
 
-        if GetMountPointOf(Partition) == MountPoint:
-            Mounted = True
+        if get_mount_point_of(partition) == mount_point:
+            mounted = True
 
-    return Mounted
+    return mounted
 
-def GetMountPointOf( Partition):
-    """Returns the mountpoint of the given partition, if any.
-    Otherwise, return None"""
-    MountInfo = StartProcess("mount", ReturnOutput=True)[1]
-    MountPoint = None
+def get_mount_point_of(partition):
+    """
+    Returns the mount_point of the given partition, if any.
+    Otherwise, return None
+    """
 
-    for Line in MountInfo.split("\n"):
-        SplitLine = Line.split()
+    mount_info = start_process("mount", return_output=True)[1]
+    mount_point = None
 
-        if len(SplitLine) != 0:
-            if Partition == SplitLine[0]:
-                MountPoint = SplitLine[2]
+    for line in mount_info.split("\n"):
+        split_line = line.split()
+
+        if len(split_line) != 0:
+            if partition == split_line[0]:
+                mount_point = split_line[2]
                 break
 
-    return MountPoint
+    return mount_point
 
-def MountPartition(Partition, MountPoint, Options=""):
-    """Mounts the given partition.
-    Partition is the partition to mount.
-    MountPoint is where you want to mount the partition.
-    Options is non-mandatory and contains whatever options you want to pass to the mount command.
-    The default value for Options is an empty string.
-    """     
-    MountInfo = StartProcess("mount", ReturnOutput=True)[1]
+def mount_partition(partition, mount_point, options=""):
+    """
+    Mounts the given partition.
+    partition is the partition to mount.
+    mount_point is where you want to mount the partition.
+    options is non-mandatory and contains whatever options you want to pass to the mount command.
+    The default value for options is an empty string.
+    """
 
-    #There is a partition mounted here. Check if our partition is already mounted in the right place.
-    if MountPoint == GetMountPointOf(Partition):
+    mount_info = start_process("mount", return_output=True)[1]
+
+    #There is a partition mounted here. Check if it's ours.
+    if mount_point == get_mount_point_of(partition):
         #The correct partition is already mounted here.
         return 0
 
-    elif MountPoint in MountInfo:
+    elif mount_point in mount_info:
         #Something else is in the way. Unmount that partition, and continue.
-        if UnmountDisk(MountPoint) != 0:
+        if unmount_disk(mount_point) != 0:
             return False
 
     #Create the dir if needed.
-    if os.path.isdir(MountPoint) == False:
-        os.makedirs(MountPoint)
-    
+    if os.path.isdir(mount_point) is False:
+        os.makedirs(mount_point)
+
     #Mount the device to the mount point.
     #Use diskutil on OS X.
-    if Linux:
-        Retval = StartProcess("mount "+Options+" "+Partition+" "+MountPoint)
+    if LINUX:
+        retval = start_process("mount "+options+" "+partition+" "+mount_point)
 
     else:
-        Retval = StartProcess("diskutil mount "+Options+" "+Partition+" -mountPoint "+MountPoint)
+        retval = start_process("diskutil mount "+options+" "+partition+" -mount_point "+mount_point)
 
-    return Retval
+    return retval
 
-def UnmountDisk(Disk):
+def unmount_disk(disk):
     """Unmount the given disk"""
     #Check if it is mounted.
-    if IsMounted(Disk) == False:
+    if is_mounted(disk) is False:
         #The disk isn't mounted.
-        #Set Retval to 0.
-        Retval = 0
+        #Set retval to 0.
+        retval = 0
 
     else:
         #The disk is mounted.
         #Unmount it.
-        if Linux:
-            Retval = StartProcess(Command="umount "+Disk, ReturnOutput=False)
+        if LINUX:
+            retval = start_process(cmd="umount "+disk, return_output=False)
 
         else:
-            Retval = StartProcess(Command="diskutil umount "+Disk, ReturnOutput=False)
-            
+            retval = start_process(cmd="diskutil umount "+disk, return_output=False)
+
     #Return the return value
-    return Retval
+    return retval
