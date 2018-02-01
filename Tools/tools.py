@@ -151,33 +151,33 @@ def send_notification(msg):
         #Use Cocoadialog. (use subprocess to avoid blocking GUI thread.)
         subprocess.Popen(RESOURCEPATH+"""/other/CocoaDialog.app/Contents/MacOS/CocoaDialog bubble --title "DDRescue-GUI" --text \""""+msg+"""\" --icon-file """+RESOURCEPATH+"""/images/Logo.png  --background-top EFF7FD --border-color EFF7FD""", shell=True)
 
-def determine_output_file_type(settings, disk_info):
+def determine_output_file_type(SETTINGS, disk_info):
     """Determines output File Type (partition or Device)"""
-    if settings["InputFile"] in disk_info:
+    if SETTINGS["InputFile"] in disk_info:
 		#Read from disk_info if possible (OutputFile type = InputFile type)
-        output_file_type = disk_info[settings["InputFile"]]["Type"]
+        output_file_type = disk_info[SETTINGS["InputFile"]]["Type"]
         retval = 0
         output = ""
 
         if output_file_type == "Device":
             if LINUX:
-                retval, output = start_process(cmd="kpartx -l "+settings["OutputFile"],
+                retval, output = start_process(cmd="kpartx -l "+SETTINGS["OutputFile"],
                                                return_output=True)
                 output = output.split("\n")
 
             else:
-                retval, output = mac_run_hdiutil(options="imageinfo "+settings["OutputFile"]
+                retval, output = mac_run_hdiutil(options="imageinfo "+SETTINGS["OutputFile"]
                                                  +" -plist")
 
     else:
         if LINUX:
             #If list of partitions is empty (or 1 partition), we have a partition.
-            retval, output = start_process(cmd="kpartx -l "+settings["OutputFile"],
+            retval, output = start_process(cmd="kpartx -l "+SETTINGS["OutputFile"],
                                            return_output=True)
             output = output.split("\n")
 
         else:
-            retval, output = mac_run_hdiutil(options="imageinfo "+settings["OutputFile"]
+            retval, output = mac_run_hdiutil(options="imageinfo "+SETTINGS["OutputFile"]
                                              +" -plist")
 
         if output == [""] or len(output) == 1 or "whole disk" in output:

@@ -421,8 +421,8 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.panel = wx.Panel(self)
         self.SetClientSize(wx.Size(956, 360))
 
-        print("DDRescue-GUI Version "+VERSION+" starting up...")
-        logger.info("DDRescue-GUI Version "+VERSION+" starting up...")
+        print("DDRescue-GUI Version "+VERSION+" Starting up...")
+        logger.info("DDRescue-GUI Version "+VERSION+" Starting up...")
         logger.info("Release date: "+RELEASE_DATE)
         logger.info("Running on Python version: "+unicode(sys.version_info)+"...")
         logger.info("Running on wxPython version: "+wx.version()+"...")
@@ -1179,13 +1179,13 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                 choice_box.SetStringSelection(user_selection)
 
             else:
-                #Get a unqiue key for the dictionary using the tools function.
-                key = BackendTools.create_unique_key(paths, user_selection, 30)
+                #Get a unique key for the dictionary using the tools function.
+                unique_key = BackendTools.create_unique_key(paths, user_selection, 30)
 
                 #Use it to organise the data.
-                paths[key] = user_selection
-                choice_box.Append(key)
-                choice_box.SetStringSelection(key)
+                paths[unique_key] = user_selection
+                choice_box.Append(unique_key)
+                choice_box.SetStringSelection(unique_key)
 
         if (user_selection not in [None, "-- Please Select --"] and user_selection in \
            [SETTINGS[others[0]], SETTINGS[others[1]]]):
@@ -1473,10 +1473,10 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             self.list_ctrl.SetStringItem(index=7, col=1, label="Unknown")
             self.list_ctrl.SetColumnWidth(1, width - 150)
 
-            logger.info("MainWindow().on_start(): Settings check complete. starting up "
+            logger.info("MainWindow().on_start(): Settings check complete. Starting up "
                         "BackendThread()...")
 
-            self.update_status_bar("starting up ddrescue...")
+            self.update_status_bar("Starting up ddrescue...")
             wx.Yield()
 
             #Notify the user.
@@ -1488,9 +1488,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             self.input_choice_box.Disable()
             self.output_choice_box.Disable()
             self.log_choice_box.Disable()
-            self.menu_about.Enable(False)
             self.menu_exit.Enable(False)
-            self.menu_disk_info.Enable(False)
             self.menu_settings.Enable(False)
             self.control_button.SetLabel("Abort")
 
@@ -1520,12 +1518,12 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             self.update_status_bar("Ready.")
 
     #The next functions are to update the display with info from the backend.
-    def set_progress_bar_range(self, messeage):
+    def set_progress_bar_range(self, message):
         """Set the progressbar's range"""
         logger.debug("MainWindow().set_progress_bar_range(): Setting range "+unicode(message)
                      + " for self.progress_bar...")
 
-        self.progress_bar.SetRange(messeage)
+        self.progress_bar.SetRange(message)
 
     def update_time_elapsed(self, line):
         """Update the time elapsed text"""
@@ -2916,8 +2914,8 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         wx.Yield()
 
         #Determine what type of OutputFile we have (Partition or Device).
-        self.output_file_type, retval, output = \
-        BackendTools.determine_output_file_type(settings, disk_info=DISKINFO) #TODO pylint false positive?
+        (self.output_file_type, retval, output) = \
+        BackendTools.determine_output_file_type(SETTINGS, disk_info=DISKINFO) #TODO pylint false positive?
 
         #If retval != 0 report to user.
         if retval != 0:
@@ -3078,7 +3076,7 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
             else:
                 #Attempt to mount the disk (this mounts all partitions inside),
                 #and parse the resulting plist.
-                retval, mount_output = \
+                (retval, mount_output) = \
                 BackendTools.mac_run_hdiutil("mount "+SETTINGS["OutputFile"]+" -plist")
 
                 mount_output = plistlib.readPlistFromString(mount_output)
@@ -3336,16 +3334,16 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
                 tidy_line = line.replace("\n", "").replace("\r", "").replace("\x1b[A", "")
 
                 if tidy_line != "":
-                    try:
-                        self.process_line(tidy_line)
+                    #try:
+                    self.process_line(tidy_line)
 
-                    except Exception:
+                    #except Exception:
                         #Handle unexpected errors. Can happen once in normal operation on
                         #ddrescue v1.22. TODO make smarter, don't fill log with these.
-                        logger.warning("MainBackendThread(): Unexpected error parsing ddrescue's "
-                                       "output! Can happen once on newer versions of ddrescue "
-                                       "(1.22+) in normal operation. Are you running a "
-                                       "newer/older version of ddrescue than we support?")
+                    #    logger.warning("MainBackendThread(): Unexpected error parsing ddrescue's "
+                    #                   "output! Can happen once on newer versions of ddrescue "
+                    #                   "(1.22+) in normal operation. Are you running a "
+                    #                   "newer/older version of ddrescue than we support?")
 
                 #The ¬ is being used to denote where the output box should go up
                 #one line before continuing to write. A bit like a carriage return
@@ -3469,7 +3467,7 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
 
             if SETTINGS["DDRescueVersion"] in ("1.21", "1.22"):
                 #Get average read rate (ddrescue 1.21 & 1.22).
-                self.output_pos, self.average_read_rate, self.average_read_rate_unit = \
+                (self.output_pos, self.average_read_rate, self.average_read_rate_unit) = \
                 self.get_outputpos_average_read_rate(split_line) #pylint: disable=no-member
 
                 wx.CallAfter(self.parent.update_average_read_rate, unicode(self.average_read_rate)
@@ -3477,7 +3475,7 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
 
             else:
                 #Output Pos and time since last read (1.14 - 1.20).
-                self.output_pos, self.time_since_last_read = \
+                (self.output_pos, self.time_since_last_read) = \
                 self.get_outputpos_time_since_last_read(split_line) #pylint: disable=no-member
 
                 wx.CallAfter(self.parent.update_time_since_last_read, self.time_since_last_read)
@@ -3504,11 +3502,11 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
             #Don't crash if we're reading the initial status from the logfile.
             try:
                 #pylint: disable=no-member
-                self.recovered_data, self.recovered_data_unit, self.num_errors = \
+                (self.recovered_data, self.recovered_data_unit, self.num_errors) = \
                 self.get_recovered_data_num_errors(split_line)
 
                 #Change the unit of measurement of the current amount of recovered data if needed.
-                self.recovered_data, self.recovered_data_unit = \
+                (self.recovered_data, self.recovered_data_unit) = \
                 self.change_units(float(self.recovered_data), self.recovered_data_unit,
                                   self.disk_capacity_unit)
 
@@ -3549,12 +3547,14 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
                 wx.CallAfter(self.parent.update_input_pos, self.input_pos)
 
             else:
-                self.current_read_rate, self.error_size, self.recovered_data,
-                self.recovered_data_unit = \
+                (self.current_read_rate, self.error_size, self.recovered_data,
+                 self.recovered_data_unit) = \
                 self.get_current_rate_error_size_recovered_data(split_line) #pylint: disable=no-member,line-too-long
 
+                print(self.recovered_data_unit)
+
                 #Change the unit of measurement of the current amount of recovered data if needed.
-                self.recovered_data, self.recovered_data_unit = \
+                (self.recovered_data, self.recovered_data_unit) = \
                 self.change_units(float(self.recovered_data), self.recovered_data_unit,
                                   self.disk_capacity_unit)
 
