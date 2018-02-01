@@ -46,6 +46,10 @@ BackendTools.logger.setLevel(logging.CRITICAL)
 from . import BackendToolsTestData as Data
 from . import BackendToolsTestFunctions as Functions
 
+#Make unicode an alias for str in Python 3.
+if sys.version_info[0] == 3:
+    unicode = str
+
 #Set up resource path and determine OS.
 if "wxGTK" in wx.PlatformInfo:
     LINUX = True

@@ -54,6 +54,13 @@ import Tools.DDRescueTools.setup as DDRescueTools
 import getdevinfo
 from getdevinfo import getdevinfo as DevInfoTools
 
+#Make unicode an alias for str in Python 3.
+if sys.version_info[0] == 3:
+    unicode = str
+
+    #Plist hack for Python 3.
+    plistlib.readPlistFromString = plistlib.loads
+
 #Define global variables.
 VERSION = "1.8"
 RELEASE_DATE = "1/2/2018"
@@ -1215,7 +1222,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                                           "continue.\n\nOtherwise, you will lose data on this "
                                           "file or device.\n\nPlease be sure you selected the "
                                           "right file or device. Do you want to accept this as "
-                                         "your output file?", 'DDRescue-GUI -- Warning!',
+                                          "your output file?", 'DDRescue-GUI -- Warning!',
                                           wx.YES_NO | wx.ICON_EXCLAMATION)
 
                 if dialog.ShowModal() == wx.ID_YES:
@@ -2910,7 +2917,7 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
 
         #Determine what type of OutputFile we have (Partition or Device).
         self.output_file_type, retval, output = \
-        BackendTools.determine_output_file_type(settings, disk_info=DISKINFO)
+        BackendTools.determine_output_file_type(settings, disk_info=DISKINFO) #TODO pylint false positive?
 
         #If retval != 0 report to user.
         if retval != 0:

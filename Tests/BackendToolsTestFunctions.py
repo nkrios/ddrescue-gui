@@ -33,6 +33,10 @@ import time
 import os
 import wx
 
+#Make unicode an alias for str in Python 3.
+if sys.version_info[0] == 3:
+    unicode = str
+
 #Determine if running on LINUX or Mac.
 if "wxGTK" in wx.PlatformInfo:
     LINUX = True

@@ -26,6 +26,10 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+#Make unicode an alias for str in Python 3.
+if sys.version_info[0] == 3:
+    unicode = str
+
 def define_versions(function):
     """
     Reads the function docstring to find the

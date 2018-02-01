@@ -36,6 +36,10 @@ import sys
 import wx
 import wx.animate
 
+#Make unicode an alias for str in Python 3.
+if sys.version_info[0] == 3:
+    unicode = str
+
 #Determine if running on LINUX or Mac.
 if "wxGTK" in wx.PlatformInfo:
     #Set the resource path to /usr/share/ddrescue-gui/

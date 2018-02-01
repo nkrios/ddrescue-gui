@@ -41,6 +41,10 @@ from Tools import tools as BackendTools
 #Import test modules.
 from Tests import BackendToolsTests
 
+#Make unicode an alias for str in Python 3.
+if sys.version_info[0] == 3:
+    unicode = str
+
 #Global vars.
 VERSION = "1.8"
 

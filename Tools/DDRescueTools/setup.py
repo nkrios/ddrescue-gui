@@ -38,6 +38,10 @@ from . import one_point_twenty
 from . import one_point_twenty_one
 from . import one_point_twenty_two
 
+#Make unicode an alias for str in Python 3.
+if sys.version_info[0] == 3:
+    unicode = str
+
 #Get a list of FUNCTIONS in all of our ddrescue tools modules.
 FUNCTIONS = []
 

@@ -35,6 +35,13 @@ import plistlib
 import time
 import wx
 
+#Make unicode an alias for str in Python 3.
+if sys.version_info[0] == 3:
+    unicode = str
+
+    #Plist hack for Python 3.
+    plistlib.readPlistFromString = plistlib.loads
+
 #Determine if running on Linux or Mac.
 if "wxGTK" in wx.PlatformInfo:
     #Set the resource path to /usr/share/ddrescue-gui/

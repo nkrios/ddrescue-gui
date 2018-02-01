@@ -28,6 +28,10 @@ from __future__ import unicode_literals
 
 from . import decorators
 
+#Make unicode an alias for str in Python 3.
+if sys.version_info[0] == 3:
+    unicode = str
+
 @decorators.define_versions
 def get_outputpos_time_since_last_read(split_line):
     """
