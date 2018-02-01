@@ -801,7 +801,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
         #Add Menu Items.
         self.menu_exit = file_menu.Append(wx.ID_ANY, "&Quit", "Close DDRescue-GUI")
-        self.menu_settings = edit_menu.Append(wx.ID_ANY, "&settings", "Recovery Settings")
+        self.menu_settings = edit_menu.Append(wx.ID_ANY, "&Settings", "Recovery Settings")
         self.menu_disk_info = view_menu.Append(wx.ID_ANY, "&Disk Information",
                                                "Information about all detected Disks")
 
@@ -1215,7 +1215,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                                           "continue.\n\nOtherwise, you will lose data on this "
                                           "file or device.\n\nPlease be sure you selected the "
                                           "right file or device. Do you want to accept this as "
-                                          "your output file?", 'DDRescue-GUI -- Warning!',
+                                         "your output file?", 'DDRescue-GUI -- Warning!',
                                           wx.YES_NO | wx.ICON_EXCLAMATION)
 
                 if dialog.ShowModal() == wx.ID_YES:
@@ -2151,12 +2151,7 @@ class DiskInfoWindow(wx.Frame):
         disks = DISKINFO.keys()
         disks.sort()
 
-        #Make sure we display human-readable sizes on OS X.
-        if LINUX:
-            headings = ("Name", "Type", "Vendor", "Product", "Capacity", "Description")
-
-        else:
-            headings = ("Name", "Type", "Vendor", "Product", "HumanCapacity", "Description")
+        headings = ("Name", "Type", "Vendor", "Product", "Capacity", "Description")
 
         for disk in disks:
             number += 1
