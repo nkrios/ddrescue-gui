@@ -93,7 +93,7 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         self.body_text = wx.StaticText(self.panel, -1, "DDRescue-GUI requires privileges "
                                        + "to run.\nPlease enter your password to grant permission.")
 
-        self.password_text = wx.StaticText(self.panel, -1, "password:")
+        self.password_text = wx.StaticText(self.panel, -1, "Password:")
 
         bold_font = self.title_text.GetFont()
         bold_font.SetWeight(wx.BOLD)
@@ -188,6 +188,9 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         then either warn the user or call self.start_ddrescuegui().
         """
 
+        #Disable the auth button (stops you from trying twice in quick succession).
+        self.auth_button.Disable()
+
         #Remove any cached credentials, so we don't create a security problem,
         #or say the password is right when it isn't.
         subprocess.Popen("sudo -k", shell=True).wait()
@@ -213,9 +216,9 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         output = cmd.stdout.read()
 
         if "Authentication Succeeded" in output:
-            #Set the password field colour to green and disable the auth button.
+            #Set the password field colour to green and disable the cancel button.
             self.password_field.SetBackgroundColour((192, 255, 192))
-            self.auth_button.Disable()
+            self.cancel_button.Disable()
 
             #Play the green pulse for one second.
             self.throbber.SetAnimation(self.green_pulse)
@@ -224,6 +227,9 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
             wx.CallLater(1100, self.start_ddrescuegui, password)
 
         else:
+            #Re-enable auth button.
+            self.auth_button.Enable()
+
             #Shake the window
             x_pos, y_pos = self.GetPosition()
             count = 0

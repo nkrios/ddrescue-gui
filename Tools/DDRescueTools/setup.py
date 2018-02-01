@@ -29,6 +29,7 @@ from __future__ import unicode_literals
 
 #Import modules.
 import types
+import sys
 
 #Import tools modules.
 from . import allversions

@@ -31,6 +31,7 @@ from __future__ import unicode_literals
 import subprocess
 import time
 import os
+import sys
 import wx
 
 #Make unicode an alias for str in Python 3.

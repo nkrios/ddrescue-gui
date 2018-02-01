@@ -27,6 +27,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import sys
+
 from . import decorators
 
 #Make unicode an alias for str in Python 3.
