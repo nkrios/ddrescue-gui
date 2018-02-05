@@ -2496,7 +2496,7 @@ class SettingsWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         if LINUX is False:
             #If the input file is in DISKINFO, use the Capacity from that.
             if SETTINGS["InputFile"] in DISKINFO:
-                SETTINGS["DiskSize"] = "-s "+DISKINFO[SETTINGS["InputFile"]]["Capacity"]
+                SETTINGS["DiskSize"] = "-s "+DISKINFO[SETTINGS["InputFile"]]["RawCapacity"]
                 logger.info("SettingsWindow().save_options(): Using disk size: "
                             +SETTINGS["DiskSize"]+".")
 
@@ -3334,16 +3334,16 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
                 tidy_line = line.replace("\n", "").replace("\r", "").replace("\x1b[A", "")
 
                 if tidy_line != "":
-                    #try:
-                    self.process_line(tidy_line)
+                    try:
+                        self.process_line(tidy_line)
 
-                    #except Exception:
+                    except Exception:
                         #Handle unexpected errors. Can happen once in normal operation on
                         #ddrescue v1.22. TODO make smarter, don't fill log with these.
-                    #    logger.warning("MainBackendThread(): Unexpected error parsing ddrescue's "
-                    #                   "output! Can happen once on newer versions of ddrescue "
-                    #                   "(1.22+) in normal operation. Are you running a "
-                    #                   "newer/older version of ddrescue than we support?")
+                        logger.warning("MainBackendThread(): Unexpected error parsing ddrescue's "
+                                       "output! Can happen once on newer versions of ddrescue "
+                                       "(1.22+) in normal operation. Are you running a "
+                                       "newer/older version of ddrescue than we support?")
 
                 #The ¬ is being used to denote where the output box should go up
                 #one line before continuing to write. A bit like a carriage return
