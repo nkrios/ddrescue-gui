@@ -63,7 +63,7 @@ if sys.version_info[0] == 3:
 
 #Define global variables.
 VERSION = "1.8"
-RELEASE_DATE = "1/2/2018"
+RELEASE_DATE = "5/2/2018"
 
 session_ending = False
 DDRESCUE_VERSION = "1.22" #Default to latest version.
@@ -470,8 +470,8 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         logger.info("ddrescue version "+DDRESCUE_VERSION+"...")
 
         #Warn if not on a supported version.
-        if DDRESCUE_VERSION not in ("1.14", "1.15", "1.16", "1.17", "1.18", "1.19", "1.20",
-                                    "1.21", "1.22"):
+        if DDRESCUE_VERSION not in ("1.14", "1.15", "1.16", "1.17", "1.18", "1.18.1", "1.19", "1.20",
+                                    "1.21", "1.22", "1.23"):
             logger.warning("Unsupported ddrescue version "+DDRESCUE_VERSION+"! "
                            "Please upgrade DDRescue-GUI if possible.")
             dlg = wx.MessageDialog(self.panel, "You are using an unsupported version of ddrescue! "
@@ -3334,16 +3334,16 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
                 tidy_line = line.replace("\n", "").replace("\r", "").replace("\x1b[A", "")
 
                 if tidy_line != "":
-                    try:
-                        self.process_line(tidy_line)
+                    #try:
+                    self.process_line(tidy_line)
 
-                    except Exception:
-                        #Handle unexpected errors. Can happen once in normal operation on
-                        #ddrescue v1.22. TODO make smarter, don't fill log with these.
-                        logger.warning("MainBackendThread(): Unexpected error parsing ddrescue's "
-                                       "output! Can happen once on newer versions of ddrescue "
-                                       "(1.22+) in normal operation. Are you running a "
-                                       "newer/older version of ddrescue than we support?")
+                    #except Exception:
+                    #    #Handle unexpected errors. Can happen once in normal operation on
+                    #    #ddrescue v1.22. TODO make smarter, don't fill log with these.
+                    #    logger.warning("MainBackendThread(): Unexpected error parsing ddrescue's "
+                    #                   "output! Can happen once on newer versions of ddrescue "
+                    #                   "(1.22+) in normal operation. Are you running a "
+                    #                   "newer/older version of ddrescue than we support?")
 
                 #The ¬ is being used to denote where the output box should go up
                 #one line before continuing to write. A bit like a carriage return
@@ -3550,8 +3550,6 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
                 (self.current_read_rate, self.error_size, self.recovered_data,
                  self.recovered_data_unit) = \
                 self.get_current_rate_error_size_recovered_data(split_line) #pylint: disable=no-member,line-too-long
-
-                print(self.recovered_data_unit)
 
                 #Change the unit of measurement of the current amount of recovered data if needed.
                 (self.recovered_data, self.recovered_data_unit) = \

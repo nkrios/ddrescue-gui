@@ -58,16 +58,20 @@ def setup_for_ddrescue_version(ddrescue_version):
     Selects the correct tools for our version of ddrescue.
     """
 
-    #Select the best tools if we have an unsupported version of ddrescue.
+    #Select the best tools if we have an unsupported version of ddrescue. TODO Ignore minor updates eg 1.19.6 = 1.19.
     minor_version = int(ddrescue_version.split(".")[1])
 
     if minor_version < 14:
         #Too old.
         best_version = "1.14"
 
-    elif minor_version > 22:
+    elif minor_version > 23:
         #Too new.
-        best_version = "1.22"
+        best_version = "1.23"
+
+    elif minor_version == 18:
+        #Fix for v1.18.1.
+        best_version = "1.18"
 
     else:
         #Supported version.

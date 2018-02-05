@@ -41,6 +41,6 @@ def define_versions(function):
     function.SUPPORTEDVERSIONS = []
 
     for version in function.__doc__.split(": ")[1].split(","):
-        function.SUPPORTEDVERSIONS.append(version)
+        function.SUPPORTEDVERSIONS.append(version.replace(" ", "").replace("\n", ""))
 
     return function
