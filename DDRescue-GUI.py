@@ -1628,8 +1628,8 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
     def on_abort(self):
         """Abort the recovery"""
         #Ask ddrescue to exit.
-        logger.info("MainWindow().on_abort(): Attempting to kill ddrescue...")
-        BackendTools.start_process("killall ddrescue")
+        logger.info("MainWindow().on_abort(): Attempting to stop ddrescue...")
+        BackendTools.start_process("killall -s INT ddrescue")
         self.aborted_recovery = True
 
         #Disable control button.
@@ -1639,8 +1639,8 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             #Notify user with throbber.
             self.throbber.Play()
 
-            #Prompt user to try again in 5 seconds time.
-            wx.CallLater(5000, self.prompt_to_kill_ddrescue)
+            #Prompt user to try again in 10 seconds time.
+            wx.CallLater(10000, self.prompt_to_kill_ddrescue)
 
     def prompt_to_kill_ddrescue(self):
         """Prompts the user to try killing ddrescue again if it's not exiting"""
@@ -1648,7 +1648,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         if SETTINGS["RecoveringData"]:
             logger.warning("MainWindow().prompt_to_kill_ddrescue(): ddrescue is still running 5 "
                            "seconds after attempted abort! Asking user whether to wait or try "
-                           "killing it again...")
+                           "stop it again...")
 
             dlg = wx.MessageDialog(self.panel, "ddrescue is still running. Do you want to try to "
                                    "stop ddrescue again, or wait for five more seconds? Click yes "
@@ -1665,14 +1665,14 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                 pass
 
             if dlg.ShowModal() == wx.ID_YES:
-                logger.warning("MainWindow().prompt_to_kill_ddrescue(): Trying to kill "
+                logger.warning("MainWindow().prompt_to_kill_ddrescue(): Trying to stop "
                                "ddrescue again...")
 
                 self.on_abort()
 
             else:
                 #Prompt user to try again in 5 seconds time.
-                logger.info("MainWindow().prompt_to_kill_ddrescue(): Asking user again in 5 "
+                logger.info("MainWindow().prompt_to_kill_ddrescue(): Asking user again in 10 "
                             "seconds time if ddrescue hasn't stopped...")
 
                 wx.CallLater(10000, self.prompt_to_kill_ddrescue)
