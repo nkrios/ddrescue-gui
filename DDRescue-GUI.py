@@ -3008,6 +3008,26 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
                                                              * blocksize) // 1000000)
                                    +" MB") #TODO Round to best size using Unitlist etc?
 
+            #Check that this list isn't empty.
+            if len(choices) == 0:
+                logger.error("FinishedWindows().mount_disk(): Couldn't find any partitions "
+                             "to mount! This could indicate a bug in the GUI, or a problem "
+                             "with your recovered image. It's possible that the data you "
+                             "recovered is partially corrupted, and you need to use "
+                             "another tool to extract meaningful data from it.")
+
+                dlg = wx.MessageDialog(self.panel, "Couldn't find any partitions to mount! "
+                                       "This could indicate a bug in the GUI, or a problem "
+                                       "with your recovered image. It's possible that the data you "
+                                       "recovered is partially corrupted, and you need to use "
+                                       "another tool to extract meaningful data from it.",
+                                       "DDRescue-GUI - Error", style=wx.OK | wx.ICON_ERROR)
+                dlg.ShowModal()
+                dlg.Destroy()
+
+                return False
+
+
             #Ask the user which partition to mount.
             logger.debug("FinishedWindow().mount_disk(): Asking user which partition to mount...")
             dlg = wx.SingleChoiceDialog(self.panel, "Please select which partition you wish "
@@ -3309,7 +3329,7 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
 
                     except Exception:
                         #Handle unexpected errors. Can happen once in normal operation on
-                        #ddrescue v1.22. TODO make smarter, don't fill log with these.
+                        #ddrescue v1.22+. TODO make smarter, don't fill log with these.
                         logger.warning("MainBackendThread(): Unexpected error parsing ddrescue's "
                                        "output! Can happen once on newer versions of ddrescue "
                                        "(1.22+) in normal operation. Are you running a "

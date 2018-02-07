@@ -154,7 +154,7 @@ def determine_ddrescue_version():
                        "This may cause bugs/errors in the GUI, and may "
                        "result in an unsuccessful recovery.")
 
-        dlg = wx.MessageDialog(None, "You are using an prerelease version of ddrescue! "
+        dlg = wx.MessageDialog(None, "You are using a prerelease version of ddrescue! "
                                "You can contnue anyway, but you may find "
                                "there are formatting or other issues when "
                                "performing your recovery, or that your recovery "
