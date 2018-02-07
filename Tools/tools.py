@@ -98,6 +98,74 @@ def start_process(cmd, return_output=False):
         #Return the return code, as well as the output.
         return retval, ''.join(output)
 
+def determine_ddrescue_version():
+    """
+    Used to determine the version of ddrescue installed on the system,
+    or (for macOS) bundled with the GUI.
+
+    Handles -pre and -rc versions too, by stripping that information
+    from the version string and warning the user.
+    """
+
+    #Use correct command.
+    if LINUX:
+        cmd = "ddrescue --version"
+
+    else:
+        cmd = RESOURCEPATH+"/ddrescue --version"
+
+    ddrescue_version = \
+    start_process(cmd=cmd, return_output=True)[1].split("\n")[0].split(" ")[-1]
+
+    logger.info("ddrescue version "+ddrescue_version+"...")
+
+    #Remove the -rc and -pre flags if they exist.
+    #But note if we are running a prerelease version so we can warn the user.
+    prerelease = False
+
+    if "-rc" in ddrescue_version:
+        prerelease = True
+        ddrescue_version = ddrescue_version.split("-rc")[0]
+
+    elif "-pre" in ddrescue_version:
+        prerelease = True
+        ddrescue_version = ddrescue_version.split("-pre")[0]
+
+    #Warn if not on a supported version.
+    if ddrescue_version not in ("1.14", "1.15", "1.16", "1.17", "1.18", "1.18.1", "1.19", "1.20",
+                                "1.21", "1.22", "1.23"):
+        logger.warning("Unsupported ddrescue version "+ddrescue_version+"! "
+                       "Please upgrade DDRescue-GUI if possible.")
+
+        dlg = wx.MessageDialog(None, "You are using an unsupported version of ddrescue! "
+                               "You are strongly advised to upgrade "
+                               "DDRescue-GUI if there is an update available. "
+                               "You can use this GUI anyway, but you may find "
+                               "there are formatting or other issues when "
+                               "performing your recovery.",
+                               'DDRescue-GUI - Unsupported ddrescue version!',
+                               wx.OK | wx.ICON_ERROR)
+        dlg.ShowModal()
+        dlg.Destroy()
+
+    #Warn if on a prerelease version.
+    if prerelease:
+        logger.warning("Running on a prerelease version of ddrescue! "
+                       "This may cause bugs/errors in the GUI, and may "
+                       "result in an unsuccessful recovery.")
+
+        dlg = wx.MessageDialog(None, "You are using an prerelease version of ddrescue! "
+                               "You can contnue anyway, but you may find "
+                               "there are formatting or other issues when "
+                               "performing your recovery, or that your recovery "
+                               "is unsuccessful.",
+                               'DDRescue-GUI - Prerelease ddrescue version!',
+                               wx.OK | wx.ICON_ERROR)
+        dlg.ShowModal()
+        dlg.Destroy()
+
+    return ddrescue_version
+
 def create_unique_key(dictionary, data, length):
     """
     Create a unqiue dictionary key of length for dictionary dictionary for the item data.

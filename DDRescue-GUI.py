@@ -63,10 +63,10 @@ if sys.version_info[0] == 3:
 
 #Define global variables.
 VERSION = "1.8"
-RELEASE_DATE = "5/2/2018"
+RELEASE_DATE = "7/2/2018"
 
 session_ending = False
-DDRESCUE_VERSION = "1.22" #Default to latest version.
+DDRESCUE_VERSION = "1.23" #Default to latest version.
 APPICON = None
 SETTINGS = {}
 DISKINFO = {}
@@ -453,37 +453,9 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             dlg.Destroy()
             sys.exit("\nCouldn't find ddrescue!")
 
-        #TODO put in function in tools or something.
         logger.info("Determining ddrescue version...")
-
-        #Use correct command.
-        if LINUX:
-            cmd = "ddrescue --version"
-
-        else:
-            cmd = RESOURCEPATH+"/ddrescue --version"
-
         global DDRESCUE_VERSION
-        DDRESCUE_VERSION = \
-        BackendTools.start_process(cmd=cmd, return_output=True)[1].split("\n")[0].split(" ")[-1]
-
-        logger.info("ddrescue version "+DDRESCUE_VERSION+"...")
-
-        #Warn if not on a supported version.
-        if DDRESCUE_VERSION not in ("1.14", "1.15", "1.16", "1.17", "1.18", "1.18.1", "1.19", "1.20",
-                                    "1.21", "1.22", "1.23"):
-            logger.warning("Unsupported ddrescue version "+DDRESCUE_VERSION+"! "
-                           "Please upgrade DDRescue-GUI if possible.")
-            dlg = wx.MessageDialog(self.panel, "You are using an unsupported version of ddrescue! "
-                                   "You are strongly advised to upgrade "
-                                   "DDRescue-GUI if there is an update available. "
-                                   "You can use this GUI anyway, but you may find "
-                                   "there are formatting or other issues when "
-                                   "performing your recovery.",
-                                   'DDRescue-GUI - Unsupported ddrescue version!',
-                                   wx.OK | wx.ICON_ERROR)
-            dlg.ShowModal()
-            dlg.Destroy()
+        DDRESCUE_VERSION = BackendTools.determine_ddrescue_version()
 
         #Set the frame's icon.
         global APPICON
