@@ -1645,11 +1645,9 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
     def prompt_to_kill_ddrescue(self):
         """Prompts the user to try killing ddrescue again if it's not exiting"""
         #If we're still recovering data, prompt the user to try killing ddrescue again.
-        #TODO be more patient.
-        #FIXME sometimes I don't work. Why?
         if SETTINGS["RecoveringData"]:
             logger.warning("MainWindow().prompt_to_kill_ddrescue(): ddrescue is still running 5 "
-                           "seconds after attempted abort! Asking user whether to wait or trying "
+                           "seconds after attempted abort! Asking user whether to wait or try "
                            "killing it again...")
 
             dlg = wx.MessageDialog(self.panel, "ddrescue is still running. Do you want to try to "
@@ -1661,7 +1659,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             try:
                 if dlg.SetYesNoLabels("Stop DDRescue", "Wait"):
                     dlg.SetMessage("ddrescue is still running. Do you want to try to stop "
-                                   "ddrescue again, or wait for five more seconds?")
+                                   "ddrescue again, or wait for a few more seconds?")
 
             except AttributeError:
                 pass
@@ -1677,7 +1675,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                 logger.info("MainWindow().prompt_to_kill_ddrescue(): Asking user again in 5 "
                             "seconds time if ddrescue hasn't stopped...")
 
-                wx.CallLater(5000, self.prompt_to_kill_ddrescue)
+                wx.CallLater(10000, self.prompt_to_kill_ddrescue)
 
             dlg.Destroy()
 
@@ -3334,16 +3332,16 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
                 tidy_line = line.replace("\n", "").replace("\r", "").replace("\x1b[A", "")
 
                 if tidy_line != "":
-                    #try:
-                    self.process_line(tidy_line)
+                    try:
+                        self.process_line(tidy_line)
 
-                    #except Exception:
-                    #    #Handle unexpected errors. Can happen once in normal operation on
-                    #    #ddrescue v1.22. TODO make smarter, don't fill log with these.
-                    #    logger.warning("MainBackendThread(): Unexpected error parsing ddrescue's "
-                    #                   "output! Can happen once on newer versions of ddrescue "
-                    #                   "(1.22+) in normal operation. Are you running a "
-                    #                   "newer/older version of ddrescue than we support?")
+                    except Exception:
+                        #Handle unexpected errors. Can happen once in normal operation on
+                        #ddrescue v1.22. TODO make smarter, don't fill log with these.
+                        logger.warning("MainBackendThread(): Unexpected error parsing ddrescue's "
+                                       "output! Can happen once on newer versions of ddrescue "
+                                       "(1.22+) in normal operation. Are you running a "
+                                       "newer/older version of ddrescue than we support?")
 
                 #The ¬ is being used to denote where the output box should go up
                 #one line before continuing to write. A bit like a carriage return
