@@ -25,7 +25,7 @@
 This is the main script that you use to start DDRescue-GUI.
 """
 
-#Do future imports to prepare to support python 3.
+#Do future imports to support python 3.
 #Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
 from __future__ import division
@@ -44,7 +44,24 @@ import plistlib
 import traceback
 
 import wx
-import wx.animate
+
+#Compatibility with wxPython 4.
+if int(wx.version()[0]) >= 4:
+    import wx.adv
+    from wx.adv import SplashScreen as wxSplashScreen
+    from wx.adv import Animation as wxAnimation
+    from wx.adv import AnimationCtrl as wxAnimationCtrl
+    from wx.adv import AboutDialogInfo as wxAboutDialogInfo
+    from wx.adv import AboutBox as wxAboutBox
+
+else:
+    import wx.animate
+    from wx import SplashScreen as wxSplashScreen
+    from wx.animate import Animation as wxAnimation
+    from wx.animate import AnimationCtrl as wxAnimationCtrl
+    from wx import AboutDialogInfo as wxAboutDialogInfo
+    from wx import AboutBox as wxAboutBox
+
 import wx.lib.stattext
 import wx.lib.statbmp
 
@@ -63,10 +80,11 @@ if sys.version_info[0] == 3:
 
 #Define global variables.
 VERSION = "1.8"
-RELEASE_DATE = "7/2/2018"
+RELEASE_DATE = "23/2/2018"
 
 session_ending = False
 DDRESCUE_VERSION = "1.23" #Default to latest version.
+CLASSIC_WXPYTHON = not (int(wx.version()[0]) >= 4)
 APPICON = None
 SETTINGS = {}
 DISKINFO = {}
@@ -228,7 +246,7 @@ class MyApp(wx.App):
 
 #End Starter Class
 #Begin splash screen
-class ShowSplash(wx.SplashScreen): #pylint: disable=too-few-public-methods
+class ShowSplash(wxSplashScreen): #pylint: disable=too-few-public-methods
     """
     A simple class used to display the splash screen on startup.
     After that, it starts the rest of the application.
@@ -243,8 +261,13 @@ class ShowSplash(wx.SplashScreen): #pylint: disable=too-few-public-methods
         self.already_exited = False
 
         #Display the splash screen.
-        wx.SplashScreen.__init__(self, splash, wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_TIMEOUT,
-                                 1500, parent)
+        if CLASSIC_WXPYTHON:
+            wxSplashScreen.__init__(self, splash, wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_TIMEOUT,
+                                     1500, parent)
+
+        else:
+            wxSplashScreen.__init__(self, splash, wx.adv.SPLASH_CENTRE_ON_SCREEN | wx.adv.SPLASH_TIMEOUT,
+                                     1500, parent)
 
         self.Bind(wx.EVT_CLOSE, self.on_exit)
 
@@ -625,9 +648,9 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
     def create_other_widgets(self):
         """Create all other widgets for MainWindow"""
         #Create the animation for the throbber.
-        throb = wx.animate.Animation(RESOURCEPATH+"/images/Throbber.gif")
-        self.throbber = wx.animate.AnimationCtrl(self.panel, -1, throb)
-        self.throbber.SetUseWindowBackgroundColour(True)
+        throb = wxAnimation(RESOURCEPATH+"/images/Throbber.gif")
+        self.throbber = wxAnimationCtrl(self.panel, -1, throb)
+        #self.throbber.SetUseWindowBackgroundColour(True) #Not present in wx4 FIXME
         self.throbber.SetInactiveBitmap(wx.Bitmap(RESOURCEPATH+"/images/ThrobberRest.png",
                                                   wx.BITMAP_TYPE_PNG))
 
@@ -637,10 +660,10 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.list_ctrl = wx.ListCtrl(self.panel, -1,
                                      style=wx.LC_REPORT|wx.BORDER_SUNKEN|wx.LC_VRULES)
 
-        self.list_ctrl.InsertColumn(col=0, heading="Category", format=wx.LIST_FORMAT_CENTRE,
+        self.list_ctrl.InsertColumn(0, heading="Category", format=wx.LIST_FORMAT_CENTRE,
                                     width=150)
 
-        self.list_ctrl.InsertColumn(col=1, heading="Value", format=wx.LIST_FORMAT_CENTRE,
+        self.list_ctrl.InsertColumn(1, heading="Value", format=wx.LIST_FORMAT_CENTRE,
                                     width=-1)
 
         self.list_ctrl.SetMinSize(wx.Size(50, 240))
@@ -859,7 +882,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         #Force the width and height of the list_ctrl to be the right size,
         #as the sizer won't shrink it on wxpython > 2.8.12.1.
         #Get the width and height of the frame.
-        width = self.GetClientSizeTuple()[0]
+        width = self.GetClientSize()[0]
 
         #Calculate the correct width for the list_ctrl.
         if self.output_box.IsShown():
@@ -878,7 +901,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
     def on_detailed_info(self, event=None): #pylint: disable=unused-argument
         """Show/Hide the detailed info, and rotate the arrow"""
         #Get the width and height of the frame.
-        width = self.GetClientSizeTuple()[0]
+        width = self.GetClientSize()[0]
 
         if self.list_ctrl.IsShown() or self.starting_up:
             self.arrow1.SetBitmap(self.right_arrow_image)
@@ -916,7 +939,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
     def on_terminal_output(self, event=None): #pylint: disable=unused-argument
         """Show/Hide the terminal output, and rotate the arrow"""
         #Get the width and height of the frame.
-        width = self.GetClientSizeTuple()[0]
+        width = self.GetClientSize()[0]
 
         if self.output_box.IsShown() or self.starting_up:
             self.arrow2.SetBitmap(self.right_arrow_image)
@@ -1006,11 +1029,11 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
         #Set all the items.
         self.input_choice_box.SetItems(['-- Please Select --', 'Specify Path/File']
-                                       + sorted(DISKINFO.keys() + self.custom_input_paths.keys()))
+                                       + sorted(list(DISKINFO) + list(self.custom_input_paths)))
 
         self.output_choice_box.SetItems(['-- Please Select --', 'Specify Path/File']
-                                        + sorted(DISKINFO.keys()
-                                                 + self.custom_output_paths.keys()))
+                                        + sorted(list(DISKINFO)
+                                                 + list(self.custom_output_paths)))
 
         #Set the current selections again, if we can
         #(if the selection is a Disk, it may have been removed).
@@ -1146,7 +1169,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                 choice_box.SetStringSelection(BackendTools.create_unique_key(paths, user_selection,
                                                                              30))
 
-            elif user_selection in DISKINFO.keys():
+            elif user_selection in list(DISKINFO):
                 #No need to add it to the choice box.
                 choice_box.SetStringSelection(user_selection)
 
@@ -1246,7 +1269,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.file_choice_handler(_type="Input",
                                  user_selection=self.input_choice_box.GetStringSelection(),
                                  default_dir=default_dir, wildcard=self.input_wildcard,
-                                 style=wx.OPEN)
+                                 style=wx.FD_OPEN)
 
     def set_output_file(self, event=None): #pylint: disable=unused-argument
         """Get the output file/Disk and set a variable to the selected value"""
@@ -1254,7 +1277,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.file_choice_handler(_type="Output",
                                  user_selection=self.output_choice_box.GetStringSelection(),
                                  default_dir=self.user_homedir, wildcard=self.output_wildcard,
-                                 style=wx.SAVE)
+                                 style=wx.FD_SAVE)
 
     def set_log_file(self, event=None): #pylint: disable=unused-argument
         """Get the log file position/name and set a variable to the selected value"""
@@ -1262,12 +1285,12 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.file_choice_handler(_type="Log",
                                  user_selection=self.log_choice_box.GetStringSelection(),
                                  default_dir=self.user_homedir, wildcard="Log Files (*.log)|*.log",
-                                 style=wx.SAVE)
+                                 style=wx.FD_SAVE)
 
     def on_about(self, event=None): #pylint: disable=unused-argument, no-self-use
         """Show the about box"""
         logger.debug("MainWindow().on_about(): Showing about box...")
-        aboutbox = wx.AboutDialogInfo()
+        aboutbox = wxAboutDialogInfo()
         aboutbox.SetIcon(APPICON)
         aboutbox.Name = "DDRescue-GUI"
         aboutbox.Version = VERSION
@@ -1298,7 +1321,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                            "http://mstratman.github.io/cocoadialog/#"
 
         #Show the about box
-        wx.AboutBox(aboutbox)
+        wxAboutBox(aboutbox)
 
     def show_settings(self, event=None): #pylint: disable=unused-argument
         """
@@ -1421,28 +1444,36 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                     logger.info("MainWindow().on_start(): "+disk+" is not mounted...")
 
             #Create the items for self.list_ctrl.
-            width = self.list_ctrl.GetClientSizeTuple()[0]
+            width = self.list_ctrl.GetClientSize()[0]
 
             #First column.
-            self.list_ctrl.InsertStringItem(index=0, label="Recovered Data")
-            self.list_ctrl.InsertStringItem(index=1, label="Unreadable Data")
-            self.list_ctrl.InsertStringItem(index=2, label="Current Read Rate")
-            self.list_ctrl.InsertStringItem(index=3, label="Average Read Rate")
-            self.list_ctrl.InsertStringItem(index=4, label="Bad Sectors")
-            self.list_ctrl.InsertStringItem(index=5, label="Input position")
-            self.list_ctrl.InsertStringItem(index=6, label="Output position")
-            self.list_ctrl.InsertStringItem(index=7, label="Time Since Last Read")
+            #Compatibility with wxpython < 4.
+            if CLASSIC_WXPYTHON:
+                self.list_ctrl.InsertItem = self.list_ctrl.InsertStringItem
+
+            self.list_ctrl.InsertItem(0, label="Recovered Data")
+            self.list_ctrl.InsertItem(1, label="Unreadable Data")
+            self.list_ctrl.InsertItem(2, label="Current Read Rate")
+            self.list_ctrl.InsertItem(3, label="Average Read Rate")
+            self.list_ctrl.InsertItem(4, label="Bad Sectors")
+            self.list_ctrl.InsertItem(5, label="Input position")
+            self.list_ctrl.InsertItem(6, label="Output position")
+            self.list_ctrl.InsertItem(7, label="Time Since Last Read")
             self.list_ctrl.SetColumnWidth(0, 150)
 
             #Second column.
-            self.list_ctrl.SetStringItem(index=0, col=1, label="Unknown")
-            self.list_ctrl.SetStringItem(index=1, col=1, label="Unknown")
-            self.list_ctrl.SetStringItem(index=2, col=1, label="Unknown")
-            self.list_ctrl.SetStringItem(index=3, col=1, label="Unknown")
-            self.list_ctrl.SetStringItem(index=4, col=1, label="Unknown")
-            self.list_ctrl.SetStringItem(index=5, col=1, label="Unknown")
-            self.list_ctrl.SetStringItem(index=6, col=1, label="Unknown")
-            self.list_ctrl.SetStringItem(index=7, col=1, label="Unknown")
+            #Compatibility with wxpython < 4.
+            if CLASSIC_WXPYTHON:
+                self.list_ctrl.SetItem = self.list_ctrl.SetStringItem
+
+            self.list_ctrl.SetItem(0, 1, label="Unknown")
+            self.list_ctrl.SetItem(1, 1, label="Unknown")
+            self.list_ctrl.SetItem(2, 1, label="Unknown")
+            self.list_ctrl.SetItem(3, 1, label="Unknown")
+            self.list_ctrl.SetItem(4, 1, label="Unknown")
+            self.list_ctrl.SetItem(5, 1, label="Unknown")
+            self.list_ctrl.SetItem(6, 1, label="Unknown")
+            self.list_ctrl.SetItem(7, 1, label="Unknown")
             self.list_ctrl.SetColumnWidth(1, width - 150)
 
             logger.info("MainWindow().on_start(): Settings check complete. Starting up "
@@ -1507,35 +1538,67 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
     def update_recovered_data(self, recovered_data):
         """Update the recovered data info"""
-        self.list_ctrl.SetStringItem(index=0, col=1, label=recovered_data)
+        #Compatibility with wxpython < 4.
+        if CLASSIC_WXPYTHON:
+            self.list_ctrl.SetItem = self.list_ctrl.SetStringItem
+
+        self.list_ctrl.SetItem(0, 1, label=recovered_data)
 
     def update_error_size(self, error_size):
         """Update the error size info"""
-        self.list_ctrl.SetStringItem(index=1, col=1, label=error_size)
+        #Compatibility with wxpython < 4.
+        if CLASSIC_WXPYTHON:
+            self.list_ctrl.SetItem = self.list_ctrl.SetStringItem
+
+        self.list_ctrl.SetItem(1, 1, label=error_size)
 
     def update_current_read_rate(self, current_read_rate):
         """Update the current read rate info"""
-        self.list_ctrl.SetStringItem(index=2, col=1, label=current_read_rate)
+        #Compatibility with wxpython < 4.
+        if CLASSIC_WXPYTHON:
+            self.list_ctrl.SetItem = self.list_ctrl.SetStringItem
+
+        self.list_ctrl.SetItem(2, 1, label=current_read_rate)
 
     def update_average_read_rate(self, average_read_rate):
         """Update the average read rate info"""
-        self.list_ctrl.SetStringItem(index=3, col=1, label=average_read_rate)
+        #Compatibility with wxpython < 4.
+        if CLASSIC_WXPYTHON:
+            self.list_ctrl.SetItem = self.list_ctrl.SetStringItem
+
+        self.list_ctrl.SetItem(3, 1, label=average_read_rate)
 
     def update_num_errors(self, num_errors):
         """Update the num errors info"""
-        self.list_ctrl.SetStringItem(index=4, col=1, label=num_errors)
+        #Compatibility with wxpython < 4.
+        if CLASSIC_WXPYTHON:
+            self.list_ctrl.SetItem = self.list_ctrl.SetStringItem
+
+        self.list_ctrl.SetItem(4, 1, label=num_errors)
 
     def update_input_pos(self, input_pos):
         """Update the input position info"""
-        self.list_ctrl.SetStringItem(index=5, col=1, label=input_pos)
+        #Compatibility with wxpython < 4.
+        if CLASSIC_WXPYTHON:
+            self.list_ctrl.SetItem = self.list_ctrl.SetStringItem
+
+        self.list_ctrl.SetItem(5, 1, label=input_pos)
 
     def update_output_pos(self, output_pos):
         """Update the output position info"""
-        self.list_ctrl.SetStringItem(index=6, col=1, label=output_pos)
+        #Compatibility with wxpython < 4.
+        if CLASSIC_WXPYTHON:
+            self.list_ctrl.SetItem = self.list_ctrl.SetStringItem
+
+        self.list_ctrl.SetItem(6, 1, label=output_pos)
 
     def update_time_since_last_read(self, last_read):
         """Update the time since last successful read info"""
-        self.list_ctrl.SetStringItem(index=7, col=1, label=last_read)
+        #Compatibility with wxpython < 4.
+        if CLASSIC_WXPYTHON:
+            self.list_ctrl.SetItem = self.list_ctrl.SetStringItem
+
+        self.list_ctrl.SetItem(7, 1, label=last_read)
 
     def update_output_box(self, line):
         """Update the output box"""
@@ -1781,10 +1844,10 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         #Reset recovery information.
         self.output_box.Clear()
         self.list_ctrl.ClearAll()
-        self.list_ctrl.InsertColumn(col=0, heading="Category", format=wx.LIST_FORMAT_CENTRE,
+        self.list_ctrl.InsertColumn(0, heading="Category", format=wx.LIST_FORMAT_CENTRE,
                                     width=-1)
 
-        self.list_ctrl.InsertColumn(col=1, heading="Value", format=wx.LIST_FORMAT_CENTRE, width=-1)
+        self.list_ctrl.InsertColumn(1, heading="Value", format=wx.LIST_FORMAT_CENTRE, width=-1)
         self.control_button.SetLabel("Start")
         self.time_remaining_text.SetLabel("Time Remaining:")
         self.time_elapsed_text.SetLabel("Time Elapsed:")
@@ -1891,7 +1954,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                     dlg = wx.FileDialog(self.panel, "Save log file to...",
                                         defaultDir=self.user_homedir,
                                         wildcard="Log Files (*.log)|*.log",
-                                        style=wx.SAVE)
+                                        style=wx.FD_SAVE)
 
                     answer = dlg.ShowModal()
                     file = dlg.GetPath()
@@ -2020,9 +2083,9 @@ class DiskInfoWindow(wx.Frame):
             self.refresh_button.Disable()
 
         #Create the animation for the throbber.
-        throb = wx.animate.Animation(RESOURCEPATH+"/images/Throbber.gif")
-        self.throbber = wx.animate.AnimationCtrl(self.panel, -1, throb)
-        self.throbber.SetUseWindowBackgroundColour(True)
+        throb = wxAnimation(RESOURCEPATH+"/images/Throbber.gif")
+        self.throbber = wxAnimationCtrl(self.panel, -1, throb)
+        #self.throbber.SetUseWindowBackgroundColour(True) FIXME
         self.throbber.SetInactiveBitmap(wx.Bitmap(RESOURCEPATH+"/images/ThrobberRest.png",
                                                   wx.BITMAP_TYPE_PNG))
 
@@ -2062,7 +2125,7 @@ class DiskInfoWindow(wx.Frame):
 
     def on_size(self, event=None):
         """Auto resize the list_ctrl columns"""
-        width = self.list_ctrl.GetClientSizeTuple()[0]
+        width = self.list_ctrl.GetClientSize()[0]
 
         self.list_ctrl.SetColumnWidth(0, int(width * 0.15))
         self.list_ctrl.SetColumnWidth(1, int(width * 0.1))
@@ -2111,19 +2174,19 @@ class DiskInfoWindow(wx.Frame):
 
         #Create the columns.
         logger.debug("DiskInfoWindow().update_list_ctrl(): Inserting columns into list ctrl...")
-        self.list_ctrl.InsertColumn(col=0, heading="Name", format=wx.LIST_FORMAT_CENTRE)
-        self.list_ctrl.InsertColumn(col=1, heading="Type", format=wx.LIST_FORMAT_CENTRE)
-        self.list_ctrl.InsertColumn(col=2, heading="Vendor", format=wx.LIST_FORMAT_CENTRE)
-        self.list_ctrl.InsertColumn(col=3, heading="Product", format=wx.LIST_FORMAT_CENTRE)
-        self.list_ctrl.InsertColumn(col=4, heading="Size", format=wx.LIST_FORMAT_CENTRE)
-        self.list_ctrl.InsertColumn(col=5, heading="Description", format=wx.LIST_FORMAT_CENTRE)
+        self.list_ctrl.InsertColumn(0, heading="Name", format=wx.LIST_FORMAT_CENTRE)
+        self.list_ctrl.InsertColumn(1, heading="Type", format=wx.LIST_FORMAT_CENTRE)
+        self.list_ctrl.InsertColumn(2, heading="Vendor", format=wx.LIST_FORMAT_CENTRE)
+        self.list_ctrl.InsertColumn(3, heading="Product", format=wx.LIST_FORMAT_CENTRE)
+        self.list_ctrl.InsertColumn(4, heading="Size", format=wx.LIST_FORMAT_CENTRE)
+        self.list_ctrl.InsertColumn(5, heading="Description", format=wx.LIST_FORMAT_CENTRE)
 
         #Add info from the custom module.
         logger.debug("DiskInfoWindow().update_list_ctrl(): Adding Disk info to list ctrl...")
 
         #Do all of the data at the same time.
         number = -1
-        disks = DISKINFO.keys()
+        disks = list(DISKINFO)
         disks.sort()
 
         headings = ("Name", "Type", "Vendor", "Product", "Capacity", "Description")
@@ -2134,10 +2197,18 @@ class DiskInfoWindow(wx.Frame):
 
             for heading in headings:
                 if column == 0:
-                    self.list_ctrl.InsertStringItem(index=number, label=DISKINFO[disk][heading])
+                    #Compatibility with wxpython < 4.
+                    if CLASSIC_WXPYTHON:
+                        self.list_ctrl.InsertItem = self.list_ctrl.InsertStringItem
+
+                    self.list_ctrl.InsertItem(number, label=DISKINFO[disk][heading])
 
                 else:
-                    self.list_ctrl.SetStringItem(index=number, col=column,
+                    #Compatibility with wxpython < 4.
+                    if CLASSIC_WXPYTHON:
+                        self.list_ctrl.SetItem = self.list_ctrl.SetStringItem
+
+                    self.list_ctrl.SetItem(number, column,
                                                  label=DISKINFO[disk][heading])
 
                 column += 1
@@ -3316,7 +3387,7 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
         #Grab information from ddrescue. (After ddrescue exits, attempt to keep reading chars until
         #the last attempt gave an empty string)
         while cmd.poll() is None or char != "":
-            char = cmd.stdout.read(1)
+            char = cmd.stdout.read(1).decode("utf-8")
             line += char
 
             #If this is the end of the line, process it, and send the results to the GUI thread.
