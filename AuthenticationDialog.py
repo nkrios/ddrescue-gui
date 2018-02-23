@@ -34,7 +34,23 @@ import subprocess
 import os
 import sys
 import wx
-import wx.animate
+
+#Compatibility with wxPython 4.
+if int(wx.version()[0]) >= 4:
+    import wx.adv
+    from wx.adv import SplashScreen as wxSplashScreen
+    from wx.adv import Animation as wxAnimation
+    from wx.adv import AnimationCtrl as wxAnimationCtrl
+    from wx.adv import AboutDialogInfo as wxAboutDialogInfo
+    from wx.adv import AboutBox as wxAboutBox
+
+else:
+    import wx.animate
+    from wx import SplashScreen as wxSplashScreen
+    from wx.animate import Animation as wxAnimation
+    from wx.animate import AnimationCtrl as wxAnimationCtrl
+    from wx import AboutDialogInfo as wxAboutDialogInfo
+    from wx import AboutBox as wxAboutBox
 
 #Make unicode an alias for str in Python 3.
 if sys.version_info[0] == 3:
@@ -118,12 +134,12 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         self.password_field.SetBackgroundColour((255, 255, 255))
 
         #Create the throbber.
-        self.busy = wx.animate.Animation(RESOURCEPATH+"/images/throbber.gif")
-        self.green_pulse = wx.animate.Animation(RESOURCEPATH+"/images/GreenPulse.gif")
-        self.red_pulse = wx.animate.Animation(RESOURCEPATH+"/images/RedPulse.gif")
+        self.busy = wxAnimation(RESOURCEPATH+"/images/Throbber.gif")
+        self.green_pulse = wxAnimation(RESOURCEPATH+"/images/GreenPulse.gif")
+        self.red_pulse = wxAnimation(RESOURCEPATH+"/images/RedPulse.gif")
 
-        self.throbber = wx.animate.AnimationCtrl(self.panel, -1, self.green_pulse)
-        self.throbber.SetUseWindowBackgroundColour(True)
+        self.throbber = wxAnimationCtrl(self.panel, -1, self.green_pulse)
+        #self.throbber.SetUseWindowBackgroundColour(True) FIXME
         self.throbber.SetInactiveBitmap(wx.Bitmap(RESOURCEPATH+"/images/ThrobberRest.png",
                                                   wx.BITMAP_TYPE_PNG))
 
@@ -203,7 +219,7 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
 
         #Send the password to sudo through stdin,
         #to avoid showing the user's password in the system/activity monitor.
-        cmd.stdin.write(password+"\n")
+        cmd.stdin.write(password.encode()+b"\n")
         cmd.stdin.close()
 
         self.throbber.SetAnimation(self.busy)
@@ -213,7 +229,7 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
             wx.Yield()
             time.sleep(0.04)
 
-        output = cmd.stdout.read()
+        output = cmd.stdout.read().decode("utf-8")
 
         if "Authentication Succeeded" in output:
             #Set the password field colour to green and disable the cancel button.
@@ -278,7 +294,7 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
 
         #Send the password to sudo through stdin,
         #to avoid showing the user's password in the system/activity monitor.
-        cmd.stdin.write(password+"\n")
+        cmd.stdin.write(password.encode()+b"\n")
         cmd.stdin.close()
 
         #Remove any cached credentials, so we don't create a security problem.
