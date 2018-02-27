@@ -25,12 +25,15 @@
 This is the main script that you use to start DDRescue-GUI.
 """
 
-#Do future imports to support python 3.
+#Do future imports to support python 2.
 #Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+
+#open fix for python 2.
+from io import open
 
 #Import other modules
 import threading

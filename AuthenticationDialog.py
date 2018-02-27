@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+# Disabled coding declaration to maintain py2 compatibility for now.
 # Authentication Dialog for DDRescue-GUI Version 1.8
 # This file is part of DDRescue-GUI.
 # Copyright (C) 2013-2018 Hamish McIntyre-Bhatty
