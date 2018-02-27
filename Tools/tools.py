@@ -256,7 +256,7 @@ def determine_output_file_type(SETTINGS, disk_info):
 
     if not LINUX and output != "":
         #Parse the plist (Property List).
-        output = plistlib.readPlistFromString(output.decode("utf-8"))
+        output = plistlib.readPlistFromString(output)
 
     return output_file_type, retval, output
 
@@ -268,7 +268,7 @@ def mac_get_device_name_mount_point(output):
 
     #Parse the plist (Property List).
     try:
-        hdiutil_output = plistlib.readPlistFromString(output.decode("utf-8"))
+        hdiutil_output = plistlib.readPlistFromString(output)
 
     except UnicodeDecodeError:
         return None, None, "UnicodeError"
@@ -306,7 +306,7 @@ def mac_run_hdiutil(options):
         #Try again.
         retval, output = start_process(cmd="hdiutil "+options, return_output=True)
 
-    return retval, output
+    return retval, output.decode("utf-8")
 
 def is_mounted(partition, mount_point=None):
     """
