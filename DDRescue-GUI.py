@@ -688,8 +688,14 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         #Create the arrows.
         img1 = wx.Image(RESOURCEPATH+"/images/ArrowDown.png", wx.BITMAP_TYPE_PNG)
         img2 = wx.Image(RESOURCEPATH+"/images/ArrowRight.png", wx.BITMAP_TYPE_PNG)
-        self.down_arrow_image = wx.BitmapFromImage(img1)
-        self.right_arrow_image = wx.BitmapFromImage(img2)
+
+        if CLASSIC_WXPYTHON:
+            self.down_arrow_image = wx.BitmapFromImage(img1)
+            self.right_arrow_image = wx.BitmapFromImage(img2)
+
+        else:
+            self.down_arrow_image = wx.Bitmap(img1)
+            self.right_arrow_image = wx.Bitmap(img2)
 
         self.arrow1 = wx.lib.statbmp.GenStaticBitmap(self.panel, -1, self.down_arrow_image)
         self.arrow2 = wx.lib.statbmp.GenStaticBitmap(self.panel, -1, self.down_arrow_image)
@@ -1675,7 +1681,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         """Abort the recovery"""
         #Ask ddrescue to exit.
         logger.info("MainWindow().on_abort(): Attempting to stop ddrescue...")
-        BackendTools.start_process("killall -s INT ddrescue")
+        BackendTools.start_process("killall -INT ddrescue")
         self.aborted_recovery = True
 
         #Disable control button.
