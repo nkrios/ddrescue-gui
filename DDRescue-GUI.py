@@ -182,6 +182,7 @@ for o, a in opts:
 if os.geteuid() != 0:
     #Relaunch as root.
     with open(RESOURCEPATH+"/AuthenticationDialog.py") as File:
+        File.read()
         code = compile(File.read(), RESOURCEPATH+"/AuthenticationDialog.py", "exec")
         exec(code)
 
