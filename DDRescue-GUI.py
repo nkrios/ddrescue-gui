@@ -182,6 +182,7 @@ for o, a in opts:
 if os.geteuid() != 0:
     #Relaunch as root.
     with open(RESOURCEPATH+"/AuthenticationDialog.py", encoding="utf-8") as File:
+        import locale
         print(locale.getpreferredencoding(False))
         code = compile(File.read(), RESOURCEPATH+"/AuthenticationDialog.py", "exec")
         exec(code)
