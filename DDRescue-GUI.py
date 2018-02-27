@@ -263,11 +263,11 @@ class ShowSplash(wxSplashScreen): #pylint: disable=too-few-public-methods
         #Display the splash screen.
         if CLASSIC_WXPYTHON:
             wxSplashScreen.__init__(self, splash, wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_TIMEOUT,
-                                     1500, parent)
+                                     2500, parent)
 
         else:
             wxSplashScreen.__init__(self, splash, wx.adv.SPLASH_CENTRE_ON_SCREEN | wx.adv.SPLASH_TIMEOUT,
-                                     1500, parent)
+                                     2500, parent)
 
         self.Bind(wx.EVT_CLOSE, self.on_exit)
 
@@ -1295,12 +1295,14 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         aboutbox.Name = "DDRescue-GUI"
         aboutbox.Version = VERSION
         aboutbox.Copyright = "(C) 2013-2018 Hamish McIntyre-Bhatty"
-        aboutbox.Description = "GUI frontend for GNU ddrescue\nRunning on ddrescue version " \
-                                + SETTINGS["DDRescueVersion"]
+        aboutbox.Description = "GUI frontend for GNU ddrescue\n\nPython version " \
+                               + sys.version.split()[0] \
+                               + "\nwxPython version " + wx.version() \
+                               + "\nGNU ddrescue version " + SETTINGS["DDRescueVersion"]
 
         aboutbox.WebSite = ("http://hamishmb.altervista.org", "My Website")
         aboutbox.Developers = ["Hamish McIntyre-Bhatty", "Minnie McIntyre-Bhatty (GUI Design)"]
-        aboutbox.Artists = ["Holly McIntyre-Bhatty", "Hamish McIntyre-Bhatty (Throbber designs)"]
+        aboutbox.Artists = ["Bhuna (https://www.instagram.com/bhuna42/)", "Holly McIntyre-Bhatty (Old Artwork)", "Hamish McIntyre-Bhatty (Throbber designs)"]
 
         aboutbox.License = "DDRescue-GUI is free software: you can redistribute it and/or " \
                            "modify it\nunder the terms of the GNU General Public License " \
