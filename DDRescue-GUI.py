@@ -825,13 +825,14 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         #Creating the menubar.
         self.menu_bar = wx.MenuBar()
 
-        #Adding menus to the menu_bar
+        #Adding menus to the menu_bar. Hide File, Help on macos, because they're empty.
+        if LINUX:
+            self.menu_bar.Append(file_menu, "&File")
+
         self.menu_bar.Append(edit_menu, "&Edit")
         self.menu_bar.Append(view_menu, "&View")
 
-        #Hide these on macos, because they're empty.
         if LINUX:
-            self.menu_bar.Append(file_menu, "&File")
             self.menu_bar.Append(help_menu, "&Help")
 
         #Adding the menu_bar to the Frame content.
@@ -1314,7 +1315,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
         aboutbox.WebSite = ("http://hamishmb.altervista.org", "My Website")
         aboutbox.Developers = ["Hamish McIntyre-Bhatty", "Minnie McIntyre-Bhatty (GUI Design)"]
-        aboutbox.Artists = ["Bhuna (https://www.instagram.com/bhuna42/)", "Holly McIntyre-Bhatty (Old Artwork)", "Hamish McIntyre-Bhatty (Throbber designs)"]
+        aboutbox.Artists = ["Bhuna https://www.instagram.com/bhuna42/", "Holly McIntyre-Bhatty (Old Artwork)", "Hamish McIntyre-Bhatty (Throbber designs)"]
 
         aboutbox.License = "DDRescue-GUI is free software: you can redistribute it and/or " \
                            "modify it\nunder the terms of the GNU General Public License " \
