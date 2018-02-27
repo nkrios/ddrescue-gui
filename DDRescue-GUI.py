@@ -2868,29 +2868,29 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         logger.debug("FinishedWindow().mount_output_file(): Preparing to mount the output file...")
 
         #Handle any unexpected errors.
-        try:
-            return self.mount_disk()
+        #try:
+        return self.mount_disk()
 
-        except Exception as error:
-            #An error has occurred!
-            logger.error("Unexpected error: \n\n"+unicode(traceback.format_exc())
-                         + "\n\n While mounting output file. Warning user...\n")
+        #except Exception as error:
+        #    #An error has occurred!
+        #    logger.error("Unexpected error: \n\n"+unicode(traceback.format_exc())
+        #                 + "\n\n While mounting output file. Warning user...\n")
 
-            dlg = wx.MessageDialog(self.panel, "Your output file could not be mounted!\n\nThe "
-                                   "most likely reason for this is that the disk image is "
-                                   "incomplete. If the disk image is complete, it may use an "
-                                   "unsupported filesystem.\n\nIf you were asked which "
-                                   "partition to mount, try again and choose a different one.\n\n"
-                                   "The error was:\n\n"+unicode(error), "DDRescue-GUI - Error!",
-                                   style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
+        #    dlg = wx.MessageDialog(self.panel, "Your output file could not be mounted!\n\nThe "
+        #                           "most likely reason for this is that the disk image is "
+        #                           "incomplete. If the disk image is complete, it may use an "
+        #                           "unsupported filesystem.\n\nIf you were asked which "
+        #                           "partition to mount, try again and choose a different one.\n\n"
+        #                           "The error was:\n\n"+unicode(error), "DDRescue-GUI - Error!",
+        #                           style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
 
-            dlg.ShowModal()
-            dlg.Destroy()
+        #    dlg.ShowModal()
+        #    dlg.Destroy()
 
-            #Clean up. TODO Do more clean up here
-            self.output_file_mount_point = SETTINGS["OutputFile"] #TODO ???
+        #    #Clean up. TODO Do more clean up here
+        #    self.output_file_mount_point = SETTINGS["OutputFile"] #TODO ???
 
-            return False
+        #    return False
 
     def unmount_output_file(self, event=None): #pylint: disable=unused-argument
         """Unmount the output file"""
@@ -3151,7 +3151,7 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
                 (retval, mount_output) = \
                 BackendTools.mac_run_hdiutil("mount "+SETTINGS["OutputFile"]+" -plist")
 
-                mount_output = plistlib.readPlistFromString(mount_output)
+                mount_output = plistlib.readPlistFromString(mount_output.decode())
 
             #Handle it if the mount attempt failed.
             if retval != 0:
