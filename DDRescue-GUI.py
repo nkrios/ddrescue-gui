@@ -811,7 +811,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         help_menu = wx.Menu()
 
         #Add Menu Items.
-        self.menu_exit = file_menu.Append(wx.ID_ANY, "&Quit", "Close DDRescue-GUI")
+        self.menu_exit = file_menu.Append(wx.ID_QUIT, "&Quit", "Close DDRescue-GUI")
         self.menu_settings = edit_menu.Append(wx.ID_ANY, "&Settings", "Recovery Settings")
         self.menu_disk_info = view_menu.Append(wx.ID_ANY, "&Disk Information",
                                                "Information about all detected Disks")
@@ -819,7 +819,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.menu_privacy_policy = view_menu.Append(wx.ID_ANY, "&Privacy Policy",
                                                     "View DDRescue-GUI's privacy policy")
 
-        self.menu_about = help_menu.Append(wx.ID_ANY, "&About DDRescue-GUI",
+        self.menu_about = help_menu.Append(wx.ID_ABOUT, "&About DDRescue-GUI",
                                            "Information about DDRescue-GUI")
 
         #Creating the menubar.
