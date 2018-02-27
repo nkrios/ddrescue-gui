@@ -825,15 +825,11 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         #Creating the menubar.
         self.menu_bar = wx.MenuBar()
 
-        #Adding menus to the menu_bar. Hide File, Help on macos, because they're empty.
-        if LINUX:
-            self.menu_bar.Append(file_menu, "&File")
-
+        #Adding menus to the menu_bar.
+        self.menu_bar.Append(file_menu, "&File")
         self.menu_bar.Append(edit_menu, "&Edit")
         self.menu_bar.Append(view_menu, "&View")
-
-        if LINUX:
-            self.menu_bar.Append(help_menu, "&Help")
+        self.menu_bar.Append(help_menu, "&Help")
 
         #Adding the menu_bar to the Frame content.
         self.SetMenuBar(self.menu_bar)
