@@ -3151,7 +3151,7 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
                 (retval, mount_output) = \
                 BackendTools.mac_run_hdiutil("mount "+SETTINGS["OutputFile"]+" -plist")
 
-                mount_output = plistlib.readPlistFromString(mount_output.decode("utf-8"))
+                mount_output = plistlib.readPlistFromString(mount_output)
 
             #Handle it if the mount attempt failed.
             if retval != 0:
