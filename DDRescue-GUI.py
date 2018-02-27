@@ -166,7 +166,7 @@ for o, a in opts:
         LOGGER_LEVEL = logging.DEBUG
     elif o in ["-t", "--tests"]:
         #Run unit tests.
-        with open(RESOURCEPATH+"/Tests.py") as File:
+        with open(RESOURCEPATH+"/Tests.py", encoding="utf-8") as File:
             code = compile(File.read(), RESOURCEPATH+"/Tests.py", "exec")
             exec(code)
 
@@ -182,8 +182,6 @@ for o, a in opts:
 if os.geteuid() != 0:
     #Relaunch as root.
     with open(RESOURCEPATH+"/AuthenticationDialog.py", encoding="utf-8") as File:
-        import locale
-        print(locale.getpreferredencoding(False))
         code = compile(File.read(), RESOURCEPATH+"/AuthenticationDialog.py", "exec")
         exec(code)
 
