@@ -80,7 +80,7 @@ if sys.version_info[0] == 3:
 
 #Define global variables.
 VERSION = "1.8"
-RELEASE_DATE = "23/2/2018"
+RELEASE_DATE = "27/2/2018"
 
 session_ending = False
 DDRESCUE_VERSION = "1.23" #Default to latest version.
@@ -166,7 +166,10 @@ for o, a in opts:
         LOGGER_LEVEL = logging.DEBUG
     elif o in ["-t", "--tests"]:
         #Run unit tests.
-        execfile(RESOURCEPATH+"/Tests.py")
+        with open(RESOURCEPATH+"/Tests.py") as File:
+            code = compile(File.read(), RESOURCEPATH+"/Tests.py", "exec")
+            exec(code)
+
         sys.exit()
 
     elif o in ["-h", "--help"]:
@@ -178,7 +181,10 @@ for o, a in opts:
 #If we aren't running as root, relaunch immediately.
 if os.geteuid() != 0:
     #Relaunch as root.
-    execfile(RESOURCEPATH+"/AuthenticationDialog.py")
+    with open(RESOURCEPATH+"/AuthenticationDialog.py") as File:
+        code = compile(File.read(), RESOURCEPATH+"/AuthenticationDialog.py", "exec")
+        exec(code)
+
     print("\nSorry, DDRescue-GUI must be run with root (superuser) privileges.")
     print("Restarting as root...")
     sys.exit()
