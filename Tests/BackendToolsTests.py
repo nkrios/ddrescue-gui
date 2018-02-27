@@ -149,6 +149,7 @@ class TestMacRunHdiutil(unittest.TestCase):
         #*** Create image to test against? ***
         #*** Test against a device too. ***
         #Get a device path from the user to test against.
+        global POTENTIAL_DEVICE_PATH
         dlg = wx.TextEntryDialog(None, "DDRescue-GUI needs a device name to test against.\n"
                                  +"No data on your device will be modified. Suggested: insert "
                                  +"a USB disk and leave it mounted.\nNote: Do not use your device "
@@ -159,7 +160,6 @@ class TestMacRunHdiutil(unittest.TestCase):
         dlg.Destroy()
 
         #Save it for autocomplete with other dialogs.
-        global POTENTIAL_DEVICE_PATH
         POTENTIAL_DEVICE_PATH = device_path
 
         self.assertEqual(BackendTools.mac_run_hdiutil("info")[0], 0)
