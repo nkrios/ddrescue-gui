@@ -811,7 +811,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         help_menu = wx.Menu()
 
         #Add Menu Items.
-        self.menu_exit = file_menu.Append(wx.ID_QUIT, "&Quit", "Close DDRescue-GUI")
+        self.menu_exit = file_menu.Append(wx.ID_EXIT, "&Quit", "Close DDRescue-GUI")
         self.menu_settings = edit_menu.Append(wx.ID_ANY, "&Settings", "Recovery Settings")
         self.menu_disk_info = view_menu.Append(wx.ID_ANY, "&Disk Information",
                                                "Information about all detected Disks")
