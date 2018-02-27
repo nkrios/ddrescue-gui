@@ -256,7 +256,7 @@ def determine_output_file_type(SETTINGS, disk_info):
 
     if not LINUX and output != "":
         #Parse the plist (Property List).
-        output = plistlib.readPlistFromString(output)
+        output = plistlib.readPlistFromString(output.decode("utf-8"))
 
     return output_file_type, retval, output
 
@@ -268,7 +268,7 @@ def mac_get_device_name_mount_point(output):
 
     #Parse the plist (Property List).
     try:
-        hdiutil_output = plistlib.readPlistFromString(output)
+        hdiutil_output = plistlib.readPlistFromString(output.decode("utf-8"))
 
     except UnicodeDecodeError:
         return None, None, "UnicodeError"
