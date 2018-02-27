@@ -306,7 +306,7 @@ def mac_run_hdiutil(options):
         #Try again.
         retval, output = start_process(cmd="hdiutil "+options, return_output=True)
 
-    return retval, output.decode("utf-8")
+    return retval, output
 
 def is_mounted(partition, mount_point=None):
     """
