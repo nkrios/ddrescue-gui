@@ -171,6 +171,8 @@ class TestIsMounted(unittest.TestCase):
         self.app = wx.App()
 
         #Get a device path from the user to test against.
+        global POTENTIAL_PARTITION_PATH
+
         dlg = wx.TextEntryDialog(None, "DDRescue-GUI needs a device name to test against.\n"
                                  +"No data on your device will be modified. Suggested: insert "
                                  +"a USB disk and leave it mounted.\nNote: Do not use your device "
@@ -181,7 +183,6 @@ class TestIsMounted(unittest.TestCase):
         dlg.Destroy()
 
         #Save it for autocomplete with other dialogs.
-        global POTENTIAL_PARTITION_PATH
         POTENTIAL_PARTITION_PATH = self.path
 
     def tearDown(self):
@@ -222,6 +223,8 @@ class TestGetMountPoint(unittest.TestCase):
         self.app = wx.App()
 
         #Get a device path from the user to test against.
+        global POTENTIAL_PARTITION_PATH
+
         dlg = wx.TextEntryDialog(None, "DDRescue-GUI needs a device name to test against.\n"
                                  +"No data on your device will be modified. Suggested: insert "
                                  +"a USB disk and leave it mounted.\nNote: Do not use your device "
@@ -233,7 +236,6 @@ class TestGetMountPoint(unittest.TestCase):
         dlg.Destroy()
 
         #Save it for autocomplete with other dialogs.
-        global POTENTIAL_PARTITION_PATH
         POTENTIAL_PARTITION_PATH = self.path
 
     def tearDown(self):
@@ -265,6 +267,8 @@ class TestMountDisk(unittest.TestCase):
         self.app = wx.App()
 
         #Get a device path from the user to test against.
+        global POTENTIAL_PARTITION_PATH
+
         dlg = wx.TextEntryDialog(None, "DDRescue-GUI needs a device name to test against.\n"
                                  +"No data on your device will be modified. Suggested: insert "
                                  +"a USB disk and leave it mounted.\nNote: Do not use your device "
@@ -280,7 +284,6 @@ class TestMountDisk(unittest.TestCase):
             os.mkdir(self.mount_point)
 
         #Save it for autocomplete with other dialogs.
-        global POTENTIAL_PARTITION_PATH
         POTENTIAL_PARTITION_PATH = self.path
 
     def tearDown(self):
@@ -319,6 +322,8 @@ class TestMountDisk(unittest.TestCase):
     def test_mount_partition3(self):
         """Test #3: Mounting a disk where there is another disk in the way."""
         #Get another device path from the user to test against.
+        global POTENTIAL_PARTITION_PATH
+
         dlg = wx.TextEntryDialog(None, "DDRescue-GUI needs a second (different) device name to "
                                  +"test against.\nNo data on your device will be modified. "
                                  +"Suggested: insert a USB disk and leave it mounted.\nNote: "
