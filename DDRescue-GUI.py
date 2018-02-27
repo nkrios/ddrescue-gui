@@ -181,9 +181,8 @@ for o, a in opts:
 #If we aren't running as root, relaunch immediately.
 if os.geteuid() != 0:
     #Relaunch as root.
-    with open(RESOURCEPATH+"/AuthenticationDialog.py") as File:
-        File.read()
-        code = compile(File.read(), "AuthenticationDialog.py", "exec")
+    with open(RESOURCEPATH+"/AuthenticationDialog.py", encoding="utf-8") as File:
+        code = compile(File.read(), RESOURCEPATH+"/AuthenticationDialog.py", "exec")
         exec(code)
 
     print("\nSorry, DDRescue-GUI must be run with root (superuser) privileges.")
