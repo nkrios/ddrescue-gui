@@ -256,7 +256,7 @@ class ShowSplash(wxSplashScreen): #pylint: disable=too-few-public-methods
         """Prepare and display a splash screen"""
 
         #Convert the image to a bitmap.
-        splash = wx.Image(name=RESOURCEPATH+"/images/ddgoestotherescue.jpg").ConvertToBitmap()
+        splash = wx.Image(name=RESOURCEPATH+"/images/splash.png").ConvertToBitmap()
 
         self.already_exited = False
 
