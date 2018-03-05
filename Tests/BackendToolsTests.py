@@ -150,17 +150,21 @@ class TestMacRunHdiutil(unittest.TestCase):
         #*** Test against a device too. ***
         #Get a device path from the user to test against.
         global POTENTIAL_DEVICE_PATH
-        dlg = wx.TextEntryDialog(None, "DDRescue-GUI needs a device name to test against.\n"
-                                 +"No data on your device will be modified. Suggested: insert "
-                                 +"a USB disk and leave it mounted.\nNote: Do not use your device "
-                                 +"while these test are running, or it may interfere with the "
-                                 +"tests.", "DDRescue-GUI Tests", POTENTIAL_DEVICE_PATH, style=wx.OK)
-        dlg.ShowModal()
-        device_path = dlg.GetValue()
-        dlg.Destroy()
 
-        #Save it for autocomplete with other dialogs.
-        POTENTIAL_DEVICE_PATH = device_path
+        self.path = POTENTIAL_DEVICE_PATH
+
+        if POTENTIAL_DEVICE_PATH == "":
+            dlg = wx.TextEntryDialog(None, "DDRescue-GUI needs a device name to test against.\n"
+                                     +"No data on your device will be modified. Suggested: "
+                                     +"insert a USB disk and leave it mounted.\nNote: Do not use "
+                                     +"your device while these test are running, or it may "
+                                     +"interfere with the tests.", "DDRescue-GUI Tests",
+                                     POTENTIAL_DEVICE_PATH, style=wx.OK)
+
+            dlg.ShowModal()
+            self.path = dlg.GetValue()
+            dlg.Destroy()
+            POTENTIAL_DEVICE_PATH = self.path
 
         self.assertEqual(BackendTools.mac_run_hdiutil("info")[0], 0)
 
@@ -173,14 +177,20 @@ class TestIsMounted(unittest.TestCase):
         #Get a device path from the user to test against.
         global POTENTIAL_PARTITION_PATH
 
-        dlg = wx.TextEntryDialog(None, "DDRescue-GUI needs a device name to test against.\n"
-                                 +"No data on your device will be modified. Suggested: insert "
-                                 +"a USB disk and leave it mounted.\nNote: Do not use your device "
-                                 +"while these test are running, or it may interfere with the "
-                                 +"tests.", "DDRescue-GUI Tests", POTENTIAL_PARTITION_PATH, style=wx.OK)
-        dlg.ShowModal()
-        self.path = dlg.GetValue()
-        dlg.Destroy()
+        self.path = POTENTIAL_PARTITION_PATH
+
+        if POTENTIAL_PARTITION_PATH == "":
+            dlg = wx.TextEntryDialog(None, "DDRescue-GUI needs a partition name to test against.\n"
+                                     +"No data on your device will be modified. Suggested: "
+                                     +"insert a USB disk and leave it mounted.\nNote: Do not use "
+                                     +"your device while these test are running, or it may "
+                                     +"interfere with the tests.", "DDRescue-GUI Tests",
+                                     POTENTIAL_PARTITION_PATH, style=wx.OK)
+
+            dlg.ShowModal()
+            self.path = dlg.GetValue()
+            dlg.Destroy()
+            POTENTIAL_PARTITION_PATH = self.path
 
         #Save it for autocomplete with other dialogs.
         POTENTIAL_PARTITION_PATH = self.path
@@ -225,15 +235,22 @@ class TestGetMountPoint(unittest.TestCase):
         #Get a device path from the user to test against.
         global POTENTIAL_PARTITION_PATH
 
-        dlg = wx.TextEntryDialog(None, "DDRescue-GUI needs a device name to test against.\n"
-                                 +"No data on your device will be modified. Suggested: insert "
-                                 +"a USB disk and leave it mounted.\nNote: Do not use your device "
-                                 +"while these test are running, or it may interfere with the "
-                                 +"tests.", "DDRescue-GUI Tests", POTENTIAL_PARTITION_PATH, style=wx.OK)
-        dlg.ShowModal()
-        self.path = dlg.GetValue()
+        self.path = POTENTIAL_PARTITION_PATH
+
+        if POTENTIAL_PARTITION_PATH == "":
+            dlg = wx.TextEntryDialog(None, "DDRescue-GUI needs a partition name to test against.\n"
+                                     +"No data on your device will be modified. Suggested: "
+                                     +"insert a USB disk and leave it mounted.\nNote: Do not use "
+                                     +"your device while these test are running, or it may "
+                                     +"interfere with the tests.", "DDRescue-GUI Tests",
+                                     POTENTIAL_PARTITION_PATH, style=wx.OK)
+
+            dlg.ShowModal()
+            self.path = dlg.GetValue()
+            dlg.Destroy()
+            POTENTIAL_PARTITION_PATH = self.path
+
         self.mount_point = Functions.get_mount_point(self.path)
-        dlg.Destroy()
 
         #Save it for autocomplete with other dialogs.
         POTENTIAL_PARTITION_PATH = self.path
@@ -269,22 +286,26 @@ class TestMountDisk(unittest.TestCase):
         #Get a device path from the user to test against.
         global POTENTIAL_PARTITION_PATH
 
-        dlg = wx.TextEntryDialog(None, "DDRescue-GUI needs a device name to test against.\n"
-                                 +"No data on your device will be modified. Suggested: insert "
-                                 +"a USB disk and leave it mounted.\nNote: Do not use your device "
-                                 +"while these test are running, or it may interfere with the "
-                                 +"tests.", "DDRescue-GUI Tests", POTENTIAL_PARTITION_PATH, style=wx.OK)
-        dlg.ShowModal()
-        self.path = dlg.GetValue()
+        self.path = POTENTIAL_PARTITION_PATH
+
+        if POTENTIAL_PARTITION_PATH == "":
+            dlg = wx.TextEntryDialog(None, "DDRescue-GUI needs a partition name to test against.\n"
+                                     +"No data on your device will be modified. Suggested: "
+                                     +"insert a USB disk and leave it mounted.\nNote: Do not use "
+                                     +"your device while these test are running, or it may "
+                                     +"interfere with the tests.", "DDRescue-GUI Tests",
+                                     POTENTIAL_PARTITION_PATH, style=wx.OK)
+
+            dlg.ShowModal()
+            self.path = dlg.GetValue()
+            dlg.Destroy()
+            POTENTIAL_PARTITION_PATH = self.path
+
         self.mount_point = Functions.get_mount_point(self.path)
-        dlg.Destroy()
 
         if self.mount_point is None:
             self.mount_point = "/tmp/ddrescueguimtpt"
             os.mkdir(self.mount_point)
-
-        #Save it for autocomplete with other dialogs.
-        POTENTIAL_PARTITION_PATH = self.path
 
     def tearDown(self):
         self.app.Destroy()
@@ -329,7 +350,7 @@ class TestMountDisk(unittest.TestCase):
                                  +"Suggested: insert a USB disk and leave it mounted.\nNote: "
                                  +"Do not use your device while these test are running, or it "
                                  +"may interfere with the tests.", "DDRescue-GUI Tests",
-                                 POTENTIAL_PARTITION_PATH, style=wx.OK)
+                                 "", style=wx.OK)
         dlg.ShowModal()
         self.path2 = dlg.GetValue()
         dlg.Destroy()
