@@ -217,11 +217,11 @@ def send_notification(msg):
 
     else:
         #Use Terminal-notifier. (use subprocess to avoid blocking GUI thread.)
-        start_process(cmd=RESOURCEPATH
+        subprocess.Popen(RESOURCEPATH
                       +"""/other/terminal-notifier.app/Contents/MacOS/terminal-notifier """ \
                       +"""-title "DDRescue-GUI" -message \""""+msg+"""\" """ \
                       +"""-sender org.pythonmac.unspecified.DDRescue-GUI""",
-                      return_output=False)
+                      shell=True)
 
 def determine_output_file_type(SETTINGS, disk_info):
     """Determines output File Type (partition or Device)"""
