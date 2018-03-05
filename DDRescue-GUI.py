@@ -2293,6 +2293,7 @@ class SettingsWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         self.best_button = wx.Button(self.panel, -1, "Set to best recovery")
         self.default_button = wx.Button(self.panel, -1, "Balanced (default)")
         self.exit_button = wx.Button(self.panel, -1, "Save settings and close")
+        self.exit_button.SetFocus()
 
     def create_text(self):
         """Create all text for SettingsWindow"""
@@ -2503,6 +2504,8 @@ class SettingsWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         self.max_errors_choice.SetSelection(0)
         self.cluster_size_choice.SetSelection(1)
 
+        self.default_button.SetFocus()
+
     def set_fast_recovery_settings(self, event=None): #pylint: disable=unused-argument
         """Set selections for the Choiceboxes to fast recovery settings"""
         logger.debug("SettingsWindow().set_fast_recovery_settings(): Setting up SettingsWindow "
@@ -2514,6 +2517,8 @@ class SettingsWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         self.max_errors_choice.SetSelection(0)
         self.cluster_size_choice.SetSelection(0)
 
+        self.fast_button.SetFocus()
+
     def set_best_recovery_settings(self, event=None): #pylint: disable=unused-argument
         """Set selections for the Choiceboxes to best recovery settings"""
         logger.debug("SettingsWindow().set_best_recovery_settings(): Setting up SettingsWindow "
@@ -2524,6 +2529,8 @@ class SettingsWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
 
         self.max_errors_choice.SetSelection(0)
         self.cluster_size_choice.SetSelection(3)
+
+        self.best_button.SetFocus()
 
     def save_options(self, event=None): #pylint: disable=unused-argument
         """Save all options, and exit SettingsWindow"""
