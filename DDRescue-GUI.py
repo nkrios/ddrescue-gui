@@ -1334,7 +1334,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                            "Terminal-notifier is released under the MIT license (compatible " \
                            "with the GPL), may be redistributed with GPL software, and is also " \
                            "bundled with the macOS version of DDRescue-GUI.\n\n" \
-                           "Please note: I am NOT\nthe author of GNU ddrescue, or of "
+                           "Please note: I am NOT\nthe author of GNU ddrescue, or of " \
                            "terminal-notifier.\n\nFor more " \
                            "information on GNU ddrescue, and\nfor the source code, visit\n" \
                            "http://www.gnu.org/software/ddrescue/ddrescue.html\n\nFor more " \
