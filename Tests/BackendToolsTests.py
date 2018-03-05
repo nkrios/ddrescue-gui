@@ -345,7 +345,7 @@ class TestMountDisk(unittest.TestCase):
         #Get another device path from the user to test against.
         global POTENTIAL_PARTITION_PATH
 
-        dlg = wx.TextEntryDialog(None, "DDRescue-GUI needs a second (different) device name to "
+        dlg = wx.TextEntryDialog(None, "DDRescue-GUI needs a second (different) partition name to "
                                  +"test against.\nNo data on your device will be modified. "
                                  +"Suggested: insert a USB disk and leave it mounted.\nNote: "
                                  +"Do not use your device while these test are running, or it "
