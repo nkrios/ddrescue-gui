@@ -1328,14 +1328,18 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                            "See the\nGNU General Public License for more details. \n\nYou " \
                            "should have received a copy of the GNU General Public License\n" \
                            "along with DDRescue-GUI.  If not, see <http://www.gnu.org/licenses/>" \
-                           ".\n\nGNU ddrescue and cocoaDialog are released under the GPLv2,\n" \
-                           "may be redistributed in accordance with the terms of the GPLv2 or " \
-                           "newer, and are \nbundled with the macOS version of DDRescue-GUI, but " \
-                           "I am NOT\nthe author of GNU ddrescue or of cocoaDialog.\n\nFor more " \
+                           ".\n\nGNU ddrescue is released under the GPLv2, may be\n" \
+                           "redistributed in accordance with the terms of the GPLv2 or newer," \
+                           "and is \nbundled with the macOS version of DDRescue-GUI.\n\n" \
+                           "Terminal-notifier is released under the MIT license (compatible " \
+                           "with the GPL), may be redistributed with GPL software, and is also " \
+                           "bundled with the macOS version of DDRescue-GUI.\n\n" \
+                           "Please note: I am NOT\nthe author of GNU ddrescue, or of "
+                           "terminal-notifier.\n\nFor more " \
                            "information on GNU ddrescue, and\nfor the source code, visit\n" \
                            "http://www.gnu.org/software/ddrescue/ddrescue.html\n\nFor more " \
-                           "information on cocoaDialog, and\nfor the source code, visit\n" \
-                           "http://mstratman.github.io/cocoadialog/#"
+                           "information on terminal-notifier, and\nfor the source code, visit\n" \
+                           "https://github.com/julienXX/terminal-notifier"
 
         #Show the about box
         wxAboutBox(aboutbox)
