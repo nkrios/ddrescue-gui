@@ -216,12 +216,12 @@ def send_notification(msg):
                       +"' -i /usr/share/pixmaps/ddrescue-gui.png", return_output=False)
 
     else:
-        #Use Terminal-notifier. (use subprocess to avoid blocking GUI thread.)
-        subprocess.Popen(RESOURCEPATH
+        #Use Terminal-notifier.
+        start_process(cmd=RESOURCEPATH
                       +"""/other/terminal-notifier.app/Contents/MacOS/terminal-notifier """ \
                       +"""-title "DDRescue-GUI" -message \""""+msg+"""\" """ \
                       +"""-sender org.pythonmac.unspecified.DDRescue-GUI""",
-                      shell=True)
+                      return_output=False)
 
 def determine_output_file_type(SETTINGS, disk_info):
     """Determines output File Type (partition or Device)"""
