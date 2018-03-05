@@ -2285,6 +2285,8 @@ class SettingsWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         #Call Layout() on self.panel() to ensure it displays properly.
         self.panel.Layout()
 
+        self.exit_button.SetFocus()
+
         logger.info("SettingsWindow().__init__(): Ready. Waiting for events...")
 
     def create_buttons(self):
@@ -2293,7 +2295,6 @@ class SettingsWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         self.best_button = wx.Button(self.panel, -1, "Set to best recovery")
         self.default_button = wx.Button(self.panel, -1, "Balanced (default)")
         self.exit_button = wx.Button(self.panel, -1, "Save settings and close")
-        self.exit_button.SetFocus()
 
     def create_text(self):
         """Create all text for SettingsWindow"""
