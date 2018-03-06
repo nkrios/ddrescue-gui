@@ -124,9 +124,11 @@ class TestSendNotification(unittest.TestCase):
 
         #Ask the user if they got it.
         dlg = wx.MessageDialog(None, "Did you see the notification? Note that on some "
-                               +"systems (Macs especially) they can take up to 10 seconds "
-                               +"to come through.", "DDRescue-GUI - Tests",
+                               +"systems they can take up to 10 seconds "
+                               +"to come through. Mac users: check your "
+                               +"notification centre.", "DDRescue-GUI - Tests",
                                wx.YES_NO | wx.ICON_QUESTION)
+
         result = dlg.ShowModal()
         dlg.Destroy()
 
