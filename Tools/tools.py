@@ -220,7 +220,8 @@ def send_notification(msg):
         start_process(cmd=RESOURCEPATH
                       +"""/other/terminal-notifier.app/Contents/MacOS/terminal-notifier """ \
                       +"""-title "DDRescue-GUI" -message \""""+msg+"""\" """ \
-                      +"""-sender org.pythonmac.unspecified.DDRescue-GUI""",
+                      +"""-sender org.pythonmac.unspecified.DDRescue-GUI """ \
+                      +"""-group "DDRescue-GUI"""",
                       return_output=False)
 
 def determine_output_file_type(SETTINGS, disk_info):
