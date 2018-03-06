@@ -303,10 +303,14 @@ def mac_run_hdiutil(options):
         #10.10, we have to just detach all possible disks and ignore failures. No need for
         #try-except cos start_process doesn't throw errors.
         for line in start_process(cmd="diskutil list", return_output=True)[1].split("\n"):
-            if line.split()[0].split("/")[1] == "dev":
-                #This is a line with a device name on it.
-                logger.warning("mac_run_hdiutil(): Attempting to detach "+line.split()[0]+"...")
-                start_process(cmd="hdiutil detach "+line.split()[0])
+            try:
+                if line.split()[0].split("/")[1] == "dev":
+                    #This is a line with a device name on it.
+                    logger.warning("mac_run_hdiutil(): Attempting to detach "+line.split()[0]+"...")
+                    start_process(cmd="hdiutil detach "+line.split()[0])
+
+            except IndexError:
+                pass
 
         #Try again.
         retval, output = start_process(cmd="hdiutil "+options, return_output=True)
