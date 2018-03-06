@@ -295,18 +295,18 @@ def mac_run_hdiutil(options):
 
     retval, output = start_process(cmd="hdiutil "+options, return_output=True)
 
-    #Handle this common error.
+    #Handle this common error - image in use.
     if "Resource temporarily unavailable" in output or retval != 0:
-        #Fix by detaching any disk images.
-        #Try to find any disk images that are attached, and detach them (if there are any).
-        #*** Doesn't work on older versions of OS X but fix in next release. ***
+        logger.warning("mac_run_hdiutil(): Attempting to fix hdiutil resource error...")
+        #Fix by detaching all disks - certain disks eg system disk will fail, but it should fix
+        #our problem. On OS X >= 10.11 can check for "(disk image)", but cos we support 10.9 &
+        #10.10, we have to just detach all possible disks and ignore failures. No need for
+        #try-except cos start_process doesn't throw errors.
         for line in start_process(cmd="diskutil list", return_output=True)[1].split("\n"):
-            try:
-                if ' '.join(line.split()[1:3]) == "(disk image):":
-                    start_process(cmd="hdiutil detach "+line.split()[0])
-
-            except:
-                pass
+            if line.split()[0].split("/")[1] == "dev":
+                #This is a line with a device name on it.
+                logger.warning("mac_run_hdiutil(): Attempting to detach "+line.split()[0]+"...")
+                start_process(cmd="hdiutil detach "+line.split()[0])
 
         #Try again.
         retval, output = start_process(cmd="hdiutil "+options, return_output=True)
