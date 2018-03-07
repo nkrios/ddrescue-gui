@@ -659,7 +659,6 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         #Create the animation for the throbber.
         throb = wxAnimation(RESOURCEPATH+"/images/Throbber.gif")
         self.throbber = wxAnimationCtrl(self.panel, -1, throb)
-        #self.throbber.SetUseWindowBackgroundColour(True) #Not present in wx4 FIXME
         self.throbber.SetInactiveBitmap(wx.Bitmap(RESOURCEPATH+"/images/ThrobberRest.png",
                                                   wx.BITMAP_TYPE_PNG))
 
@@ -2109,7 +2108,6 @@ class DiskInfoWindow(wx.Frame):
         #Create the animation for the throbber.
         throb = wxAnimation(RESOURCEPATH+"/images/Throbber.gif")
         self.throbber = wxAnimationCtrl(self.panel, -1, throb)
-        #self.throbber.SetUseWindowBackgroundColour(True) FIXME
         self.throbber.SetInactiveBitmap(wx.Bitmap(RESOURCEPATH+"/images/ThrobberRest.png",
                                                   wx.BITMAP_TYPE_PNG))
 
@@ -2909,7 +2907,7 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         #    dlg.Destroy()
 
         #    #Clean up. TODO Do more clean up here
-        #    self.output_file_mount_point = SETTINGS["OutputFile"] #TODO ???
+        #    self.output_file_mount_point = SETTINGS["OutputFile"] #TODO what???
 
         #    return False
 
@@ -2978,7 +2976,7 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
 
         return True
 
-    def mount_disk(self): #TODO refector me.
+    def mount_disk(self): #TODO refactor me.
         """Mount the output file"""
         logger.info("FinishedWindow().mount_disk(): Mounting Disk: "+SETTINGS["OutputFile"]+"...")
         wx.CallAfter(self.parent.update_status_bar, "Preparing to mount output file. "
@@ -3221,7 +3219,10 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
                             success = True
                             break
 
-            except UnicodeDecodeError: #TODO Fix this error in a later release
+            except UnicodeDecodeError:
+                #NOTE: Fixed w/ Python 3 - all new macOS builds use it.
+                #However, there is very little I can do to fix this under Python 2, because of
+                #the poor unicode support. Oh well.
                 logger.error("FinishedWindow().mount_disk(): FIXME: Couldn't parse output of "
                              "hdiutil mount due to UnicodeDecodeError. Cleaning up and "
                              "warning user...")
@@ -3395,9 +3396,9 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
                     options_list.insert(10, "/dev/r" + SETTINGS["InputFile"].split("/dev/")[1])
 
                 else:
-                    #Make sure "-d" isn't added to the exec_list (continue to next iteration
-                    #of loop).
-                    #TODO got to be a more readable way of doing this.
+                    #Make sure "-d" isn't added to the exec_list if this is a file we're reading
+                    #from. It doesn't work on macOS.
+                    #(continue to next iteration of loop w/o adding).
                     continue
 
             elif option != "":
