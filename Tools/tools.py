@@ -131,6 +131,9 @@ def determine_ddrescue_version():
         prerelease = True
         ddrescue_version = ddrescue_version.split("-pre")[0]
 
+    #Ignore any monitor changes. eg: treat 1.19.5 as 1.19 - strip anything after that off.
+    ddrescue_version = '.'.join(ddrescue_version.split(".")[:2])
+
     #Warn if not on a supported version.
     if ddrescue_version not in ("1.14", "1.15", "1.16", "1.17", "1.18", "1.18.1", "1.19", "1.20",
                                 "1.21", "1.22", "1.23"):
