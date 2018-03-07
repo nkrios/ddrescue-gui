@@ -83,7 +83,7 @@ if sys.version_info[0] == 3:
 
 #Define global variables.
 VERSION = "1.8"
-RELEASE_DATE = "27/2/2018"
+RELEASE_DATE = "7/3/2018"
 
 session_ending = False
 DDRESCUE_VERSION = "1.23" #Default to latest version.
@@ -1028,6 +1028,9 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.output_choice_box.Enable()
         self.menu_disk_info.Enable()
         self.menu_settings.Enable()
+
+        #Fix a display on on Fedora/GNOME3 w/ py3.
+        self.panel.Layout()
 
     def update_file_choices(self):
         """Update the Disk entries in the choiceboxes"""
