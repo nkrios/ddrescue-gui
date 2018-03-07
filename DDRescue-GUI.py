@@ -3543,7 +3543,7 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
             #Start time elapsed thread.
             ElapsedTimeThread(self.parent)
 
-        elif split_line[0] == "ipos:" and SETTINGS["DDRescueVersion"] not in ("1.21", "1.22", "1.23"):
+        elif split_line[0] == "ipos:" and int(SETTINGS["DDRescueVersion"].split(".")[1]) < 21:
             #Versions 1.14 - 1.20.
 
             #pylint: disable=no-member
@@ -3558,7 +3558,7 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
         elif split_line[0] == "opos:":
             #Versions 1.14 - 1.20 & 1.21 - 1.23.
 
-            if SETTINGS["DDRescueVersion"] in ("1.21", "1.22", "1.23"):
+            if int(SETTINGS["DDRescueVersion"].split(".")[1]) >= 21:
                 #Get average read rate (ddrescue 1.21 - 1.23).
                 (self.output_pos, self.average_read_rate, self.average_read_rate_unit) = \
                 self.get_outputpos_average_read_rate(split_line) #pylint: disable=no-member
@@ -3589,7 +3589,7 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
 
             wx.CallAfter(self.parent.update_time_since_last_read, self.time_since_last_read)
 
-        elif split_line[0] == "rescued:" and SETTINGS["DDRescueVersion"] in ("1.21", "1.22", "1.23"):
+        elif split_line[0] == "rescued:" and int(SETTINGS["DDRescueVersion"].split(".")[1]) >= 21:
             #Recovered data and number of errors (ddrescue 1.21 - 1.23).
 
             #Don't crash if we're reading the initial status from the logfile.
@@ -3620,7 +3620,7 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
         elif ("rescued:" in line and split_line[0] not in ("rescued:", "pct")) or "ipos:" in line:
             #Versions 1.14 - 1.20 & 1.21 - 1.23
 
-            if SETTINGS["DDRescueVersion"] in ("1.21", "1.22", "1.23"):
+            if int(SETTINGS["DDRescueVersion"].split(".")[1]) >= 21:
                 status, info = line.split("ipos:")
 
             else:
@@ -3633,7 +3633,7 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
 
             split_line = info.split()
 
-            if SETTINGS["DDRescueVersion"] in ("1.21", "1.22", "1.23"):
+            if int(SETTINGS["DDRescueVersion"].split(".")[1]) >= 21:
                 #pylint: disable=no-member
                 self.current_read_rate, self.input_pos = self.get_current_rate_inputpos(split_line)
 
