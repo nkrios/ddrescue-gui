@@ -15,8 +15,20 @@
 # You should have received a copy of the GNU General Public License
 # along with DDRescue-GUI.  If not, see <http://www.gnu.org/licenses/>.
 
+#Do future imports to support python 2.
+#Use unicode strings rather than ASCII strings, as they fix potential problems.
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 #Must be run as root to work (at least on Linux)!
 import sys
 import getdevinfo
 
-sys.exit(getdevinfo.getdevinfo.get_info());
+#Make unicode an alias for str in Python 3.
+if sys.version_info[0] == 3:
+    unicode = str
+
+sys.stdout.write(unicode(getdevinfo.getdevinfo.get_info()))
+sys.exit(0)

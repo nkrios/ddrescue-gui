@@ -68,8 +68,12 @@ elif "wxMac" in wx.PlatformInfo:
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-def start_process(cmd, return_output=False):
+def start_process(cmd, return_output=False, privileged=False):
     """Start a given process, and return output and return value if needed"""
+    #If this is to be a privileged process, add the helper script to the cmdline.
+    if privileged:
+        cmd = RESOURCEPATH+"/Tools/runasroot.sh "+cmd
+
     logger.debug("start_process(): Starting process: "+cmd)
     runcmd = subprocess.Popen("LC_ALL=C "+cmd, stdout=subprocess.PIPE,
                               stderr=subprocess.STDOUT, shell=True)

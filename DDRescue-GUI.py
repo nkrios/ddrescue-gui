@@ -45,6 +45,7 @@ import os
 import sys
 import plistlib
 import traceback
+import ast
 
 import wx
 
@@ -181,17 +182,6 @@ for o, a in opts:
     else:
         assert False, "unhandled option"
 
-#If we aren't running as root, relaunch immediately.
-if os.geteuid() != 0:
-    #Relaunch as root.
-    with open(RESOURCEPATH+"/AuthenticationDialog.py", encoding="utf-8") as File:
-        code = compile(File.read(), RESOURCEPATH+"/AuthenticationDialog.py", "exec")
-        exec(code)
-
-    print("\nSorry, DDRescue-GUI must be run with root (superuser) privileges.")
-    print("Restarting as root...")
-    sys.exit()
-
 #Set up logging with default logging mode as debug.
 logger = logging.getLogger('DDRescue-GUI '+VERSION)
 logging.basicConfig(filename='/tmp/ddrescue-gui.log',
@@ -226,7 +216,30 @@ class GetDiskInformation(threading.Thread):
     def run(self):
         """Get Disk Information and return it as a list with embedded lists"""
         #Use a module I've written to collect data about connected Disks, and return it.
-        wx.CallAfter(self.parent.receive_diskinfo, DevInfoTools.get_info())
+        wx.CallAfter(self.parent.receive_diskinfo, self.get_info())
+
+    def get_info(self):
+        """Uses the runasroot.sh script to get disk information as a privileged user"""
+        #TODO Put this handling code in runasroot.sh
+        #Keep asking while the user cancels the request or gets the password wrong.
+        #(126 is the code for dismissal, 127 for auth failure).
+        retval = 126
+
+        while (retval == 126 or retval == 127):
+            cmd = subprocess.Popen(RESOURCEPATH+"/Tools/runasroot.sh "+RESOURCEPATH
+                                   +"/Tools/run_getdevinfo.py", stdout=subprocess.PIPE,
+                                   stderr=subprocess.STDOUT, shell=True)
+
+            while cmd.poll() is None:
+                time.sleep(0.25)
+
+            #Get the output and return code.
+            retval = cmd.returncode
+            output = cmd.stdout.read().decode("UTF-8", errors="ignore")
+
+        #Success! Now use ast to convert the returned string to a dictionary.
+        #TODO exception handling.
+        return ast.literal_eval(output)
 
 #End Disk Information Handler thread.
 #Begin Starter Class
@@ -1687,7 +1700,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         """Abort the recovery"""
         #Ask ddrescue to exit.
         logger.info("MainWindow().on_abort(): Attempting to stop ddrescue...")
-        BackendTools.start_process("killall -INT ddrescue")
+        BackendTools.start_process("killall -INT ddrescue", privileged=True)
         self.aborted_recovery = True
 
         #Disable control button.
@@ -2957,7 +2970,7 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
             logger.debug("FinishedWindow().unmount_output_file(): No further action required.")
             return True
 
-        if BackendTools.start_process(cmd=cmd, return_output=False) == 0:
+        if BackendTools.start_process(cmd=cmd, return_output=False, privileged=True) == 0:
             logger.info("FinishedWindow().unmount_output_file(): Successfully pulled down "
                         "loop device...")
 
@@ -3071,11 +3084,11 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
                 #Create loop devices for all contained partitions.
                 logger.info("FinishedWindow().mount_disk(): Creating loop device...")
                 BackendTools.start_process(cmd="kpartx -a "+SETTINGS["OutputFile"],
-                                           return_output=False)
+                                           return_output=False, privileged=True)
 
                 #Get some Disk information.
                 lsblk_output = BackendTools.start_process(cmd="lsblk -r -o NAME,FSTYPE,SIZE",
-                                                          return_output=True)[1].split('\n')
+                                                          return_output=True, privileged=True)[1].split('\n')
 
             else:
                 hdiutil_imageinfo_output = output
@@ -3380,10 +3393,10 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
                         SETTINGS["InputFile"], SETTINGS["OutputFile"], SETTINGS["LogFile"]]
 
         if LINUX:
-            exec_list = ["ddrescue", "-v"]
+            exec_list = [RESOURCEPATH+"/Tools/runasroot.sh", "ddrescue", "-v"]
 
         else:
-            exec_list = [RESOURCEPATH+"/ddrescue", "-v"]
+            exec_list = [RESOURCEPATH+"/Tools/runasroot.sh", RESOURCEPATH+"/ddrescue", "-v"]
 
         for option in options_list:
             #Handle direct disk access on OS X.
