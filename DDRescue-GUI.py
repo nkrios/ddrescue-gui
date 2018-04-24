@@ -220,13 +220,12 @@ class GetDiskInformation(threading.Thread):
 
     def get_info(self):
         """Uses the runasroot.sh script to get disk information as a privileged user"""
-        #TODO Put this handling code in runasroot.sh
         #Keep asking while the user cancels the request or gets the password wrong.
         #(126 is the code for dismissal, 127 for auth failure).
         retval = 126
 
         while (retval == 126 or retval == 127):
-            cmd = subprocess.Popen(RESOURCEPATH+"/Tools/runasroot.sh "+RESOURCEPATH
+            cmd = subprocess.Popen("pkexec "+RESOURCEPATH+"/Tools/runasroot.sh "+RESOURCEPATH
                                    +"/Tools/run_getdevinfo.py", stdout=subprocess.PIPE,
                                    stderr=subprocess.STDOUT, shell=True)
 
@@ -3393,7 +3392,7 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
                         SETTINGS["InputFile"], SETTINGS["OutputFile"], SETTINGS["LogFile"]]
 
         if LINUX:
-            exec_list = [RESOURCEPATH+"/Tools/runasroot.sh", "ddrescue", "-v"]
+            exec_list = ["pkexec", RESOURCEPATH+"/Tools/runasroot.sh", "ddrescue", "-v"]
 
         else:
             exec_list = [RESOURCEPATH+"/Tools/runasroot.sh", RESOURCEPATH+"/ddrescue", "-v"]
