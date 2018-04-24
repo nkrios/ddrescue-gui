@@ -220,21 +220,16 @@ class GetDiskInformation(threading.Thread):
 
     def get_info(self):
         """Uses the runasroot.sh script to get disk information as a privileged user"""
-        #Keep asking while the user cancels the request or gets the password wrong.
-        #(126 is the code for dismissal, 127 for auth failure).
-        retval = 126
+        cmd = subprocess.Popen(RESOURCEPATH+"/Tools/runasroot.sh "+RESOURCEPATH
+                               +"/Tools/run_getdevinfo.py", stdout=subprocess.PIPE,
+                               stderr=subprocess.STDOUT, shell=True)
 
-        while (retval == 126 or retval == 127):
-            cmd = subprocess.Popen("pkexec "+RESOURCEPATH+"/Tools/runasroot.sh "+RESOURCEPATH
-                                   +"/Tools/run_getdevinfo.py", stdout=subprocess.PIPE,
-                                   stderr=subprocess.STDOUT, shell=True)
+        while cmd.poll() is None:
+            time.sleep(0.25)
 
-            while cmd.poll() is None:
-                time.sleep(0.25)
-
-            #Get the output and return code.
-            retval = cmd.returncode
-            output = cmd.stdout.read().decode("UTF-8", errors="ignore")
+        #Get the output and return code.
+        retval = cmd.returncode
+        output = cmd.stdout.read().decode("UTF-8", errors="ignore")
 
         #Success! Now use ast to convert the returned string to a dictionary.
         #TODO exception handling.
@@ -3392,7 +3387,7 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
                         SETTINGS["InputFile"], SETTINGS["OutputFile"], SETTINGS["LogFile"]]
 
         if LINUX:
-            exec_list = ["pkexec", RESOURCEPATH+"/Tools/runasroot.sh", "ddrescue", "-v"]
+            exec_list = [RESOURCEPATH+"/Tools/runasroot.sh", "ddrescue", "-v"]
 
         else:
             exec_list = [RESOURCEPATH+"/Tools/runasroot.sh", RESOURCEPATH+"/ddrescue", "-v"]

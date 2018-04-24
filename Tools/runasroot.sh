@@ -18,8 +18,21 @@
 #Only do anything if DDRescue-GUI is running.
 case $(ps aux | grep DDRescue-GUI.py) in
     *python*DDRescue-GUI.py*)
-        $@
-        exit $?
+
+        #Keep trying to authorise if it fails / is dismissed.
+        retval=126
+
+        #126 - Dismissed.
+        #127 - Authentication failure.
+        while [[ $retval -eq 126 || $retval -eq 127 ]]
+        do
+            #Send stderr to /dev/null, because otherwise if authentication fails the
+            #first time it may mess up output parsing.
+            pkexec /usr/share/ddrescue-gui/Tools/runasroot_linux.sh $@ 2> /dev/null
+            retval=$?
+        done
+
+        exit $retval
         ;;
 esac
 

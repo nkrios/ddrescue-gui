@@ -4,6 +4,9 @@
  "http://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd">
 
 <policyconfig>
+  <vendor>Hamish McIntyre-Bhatty</vendor>
+  <vendor_url>https://hamishmb.altervista.org/</vendor_url>
+  <icon_name>ddrescue-gui</icon_name>
 
   <action id="org.freedesktop.policykit.pkexec.run-DDRescue-GUI">
     <description>Run DDRescue-GUI</description>
@@ -13,7 +16,7 @@
       <allow_inactive>no</allow_inactive>
       <allow_active>auth_admin</allow_active>
     </defaults>
-    <annotate key="org.freedesktop.policykit.exec.path">/usr/share/ddrescue-gui/Tools/runasroot.sh</annotate>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/share/ddrescue-gui/Tools/runasroot_linux.sh</annotate>
   </action>
 
 </policyconfig>
