@@ -1,6 +1,6 @@
 #!/bin/bash
 # -*- coding: utf-8 -*-
-# Executes privileged processes with pkexec when requested for DDRescue-GUI Version 1.8.
+# Executes privileged processes when requested for DDRescue-GUI Version 1.8.
 # This file is part of DDRescue-GUI.
 # Copyright (C) 2013-2018 Hamish McIntyre-Bhatty
 # DDRescue-GUI is free software: you can redistribute it and/or modify it
@@ -15,5 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with DDRescue-GUI.  If not, see <http://www.gnu.org/licenses/>.
 
-$@
-exit $?
+#Only do anything if DDRescue-GUI is running.
+case $(ps aux | grep DDRescue-GUI.py) in
+    *python*DDRescue-GUI.py*)
+        $@
+        exit $?
+        ;;
+esac
+
+exit 1
