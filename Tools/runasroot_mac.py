@@ -240,7 +240,7 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         """Start DDRescue-GUI and exit"""
         cmd = subprocess.Popen("sudo -SH sh -c '"+' '.join(sys.argv[1:])+" 2>&1'",
                                stdin=subprocess.PIPE, stdout=sys.stdout,
-                               stderr=subprocess.PIPE, shell=True).wait()
+                               stderr=subprocess.PIPE, shell=True)
 
         #Send the password to sudo through stdin,
         #to avoid showing the user's password in the system/activity monitor.
@@ -255,10 +255,8 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         password = "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789!£$%^&*()_+"
         del password
 
-        cmd.communicate()
-
         global returncode
-        returncode = cmd.returncode
+        returncode = cmd.wait()
 
         self.on_exit()
 
