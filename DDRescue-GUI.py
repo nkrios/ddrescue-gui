@@ -2039,16 +2039,6 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             #because this is run as root. FIXME not smart.
             os.remove('/tmp/ddrescue-gui.log')
 
-            #If we're running on linux and using wayland, remove the workaround
-            #we have to use to make this work.
-            #XXX Fix for running on Wayland until we get policy kit stuff done.
-            if LINUX:
-                try:
-                    subprocess.check_call("xhost -si:localuser:root", shell=True)
-
-                except subprocess.CalledProcessError:
-                    pass
-
             self.Destroy()
 
         else:

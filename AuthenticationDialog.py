@@ -275,14 +275,6 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
     def start_ddrescuegui(self, password):
         """Start DDRescue-GUI and exit"""
         if LINUX:
-            #XXX Fix for running on Wayland until we get policy kit stuff done.
-            try:
-                if os.environ['XDG_SESSION_TYPE'] == "wayland":
-                    subprocess.Popen("xhost +si:localuser:root", shell=True).wait()
-
-            except KeyError:
-                pass
-
             cmd = subprocess.Popen("sudo -SH "+RESOURCEPATH+"/DDRescue-GUI.py",
                                    stdin=subprocess.PIPE, stdout=sys.stdout,
                                    stderr=subprocess.PIPE, shell=True)
