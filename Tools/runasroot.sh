@@ -47,6 +47,7 @@ case "$(ps aux | grep -i DDRescue-GUI.py)" in
             fi
 
             python3 $RESOURCEPATH/Tools/runasroot_mac.py $@
+            exit $?
             ;;
 
         esac

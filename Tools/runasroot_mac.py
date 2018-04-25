@@ -255,6 +255,10 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         password = "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789!£$%^&*()_+"
         del password
 
+        #Hide the window.
+        self.Hide()
+
+        #Get return code.
         global returncode
         returncode = cmd.wait()
 
