@@ -44,7 +44,7 @@ case "$(ps aux | grep -i DDRescue-GUI.py)" in
             #Start the authentication dialog I wrote.
             resources=./
 
-            if [[ ! $RESOURCEPATH -eq "" ]]
+            if [[ ! $RESOURCEPATH -eq "" ]]; then
                 resources=$RESOURCEPATH
             fi
 
