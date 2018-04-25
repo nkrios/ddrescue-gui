@@ -42,13 +42,13 @@ case "$(ps aux | grep -i DDRescue-GUI.py)" in
 
         Darwin)
             #Start the authentication dialog I wrote.
-            resources=./
+            resources="."
 
             if [[ ! $RESOURCEPATH -eq "" ]]; then
                 resources=$RESOURCEPATH
             fi
 
-            python3 $recources+/runasroot_mac.py $@
+            python3 $recources/runasroot_mac.py $@
             ;;
 
         esac
