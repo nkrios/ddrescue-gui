@@ -56,7 +56,7 @@ case "$(ps aux | grep -i DDRescue-GUI)" in
         ;;
 
     *DDRescue-GUI.app*)
-        #For macos in production.
+        #For macos in production. FIXME
         #Start the authentication dialog I wrote.
         if [[ -z $RESOURCEPATH ]]; then
             RESOURCEPATH=.
