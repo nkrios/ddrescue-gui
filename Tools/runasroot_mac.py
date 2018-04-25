@@ -1,5 +1,5 @@
-#!/usr/bin/env python
-# Disabled coding declaration to maintain py2 compatibility for now.
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 # Authentication Dialog for DDRescue-GUI Version 1.8
 # This file is part of DDRescue-GUI.
 # Copyright (C) 2013-2018 Hamish McIntyre-Bhatty
@@ -21,58 +21,23 @@ Until version 1.8, this was used to start the GUI, but since that release, privi
 are only escalated when required to improve security.
 """
 
-#Do future imports to prepare to support python 3.
-#Use unicode strings rather than ASCII strings, as they fix potential problems.
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
+#This script is python 3 only - the mac version of this program only runs on python 3.
 #Import other modules
 import time
 import subprocess
 import os
 import sys
 import wx
+import wx.adv
 
-#Compatibility with wxPython 4.
-if int(wx.version()[0]) >= 4:
-    import wx.adv
-    from wx.adv import SplashScreen as wxSplashScreen
-    from wx.adv import Animation as wxAnimation
-    from wx.adv import AnimationCtrl as wxAnimationCtrl
-    from wx.adv import AboutDialogInfo as wxAboutDialogInfo
-    from wx.adv import AboutBox as wxAboutBox
+try:
+    #Set the resource path from an environment variable,
+    #as mac .apps can be found in various places.
+    RESOURCEPATH = os.environ['RESOURCEPATH']
 
-else:
-    import wx.animate
-    from wx import SplashScreen as wxSplashScreen
-    from wx.animate import Animation as wxAnimation
-    from wx.animate import AnimationCtrl as wxAnimationCtrl
-    from wx import AboutDialogInfo as wxAboutDialogInfo
-    from wx import AboutBox as wxAboutBox
-
-#Make unicode an alias for str in Python 3.
-if sys.version_info[0] == 3:
-    unicode = str
-
-#Determine if running on LINUX or Mac.
-if "wxGTK" in wx.PlatformInfo:
-    #Set the resource path to /usr/share/ddrescue-gui/
-    RESOURCEPATH = '/usr/share/ddrescue-gui'
-    LINUX = True
-
-elif "wxMac" in wx.PlatformInfo:
-    try:
-        #Set the resource path from an environment variable,
-        #as mac .apps can be found in various places.
-        RESOURCEPATH = os.environ['RESOURCEPATH']
-
-    except KeyError:
-        #Use '.' as the resource path instead as a fallback.
-        RESOURCEPATH = "."
-
-    LINUX = False
+except KeyError:
+    #Use '.' as the resource path instead as a fallback.
+    RESOURCEPATH = "."
 
 #Begin Authentication Window.
 class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
@@ -134,12 +99,11 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         self.password_field.SetBackgroundColour((255, 255, 255))
 
         #Create the throbber.
-        self.busy = wxAnimation(RESOURCEPATH+"/images/Throbber.gif")
-        self.green_pulse = wxAnimation(RESOURCEPATH+"/images/GreenPulse.gif")
-        self.red_pulse = wxAnimation(RESOURCEPATH+"/images/RedPulse.gif")
+        self.busy = wx.adv.Animation(RESOURCEPATH+"/images/Throbber.gif")
+        self.green_pulse = wx.adv.Animation(RESOURCEPATH+"/images/GreenPulse.gif")
+        self.red_pulse = wx.adv.Animation(RESOURCEPATH+"/images/RedPulse.gif")
 
-        self.throbber = wxAnimationCtrl(self.panel, -1, self.green_pulse)
-        #self.throbber.SetUseWindowBackgroundColour(True) FIXME
+        self.throbber = wx.adv.AnimationCtrl(self.panel, -1, self.green_pulse)
         self.throbber.SetInactiveBitmap(wx.Bitmap(RESOURCEPATH+"/images/ThrobberRest.png",
                                                   wx.BITMAP_TYPE_PNG))
 
@@ -274,15 +238,9 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
 
     def start_ddrescuegui(self, password):
         """Start DDRescue-GUI and exit"""
-        if LINUX:
-            cmd = subprocess.Popen("sudo -SH "+RESOURCEPATH+"/DDRescue-GUI.py",
-                                   stdin=subprocess.PIPE, stdout=sys.stdout,
-                                   stderr=subprocess.PIPE, shell=True)
-
-        else:
-            cmd = subprocess.Popen("sudo -SH "+RESOURCEPATH+"/../MacOS/DDRescue-GUI",
-                                   stdin=subprocess.PIPE, stdout=sys.stdout,
-                                   stderr=subprocess.PIPE, shell=True)
+        cmd = subprocess.Popen("sudo -SH "+' '.join(sys.argv[1:]),
+                               stdin=subprocess.PIPE, stdout=sys.stdout,
+                               stderr=subprocess.STDOUT, shell=True)
 
         #Send the password to sudo through stdin,
         #to avoid showing the user's password in the system/activity monitor.

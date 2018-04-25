@@ -41,8 +41,8 @@ case "$(ps aux | grep DDRescue-GUI.py)" in
             ;;
 
         Darwin)
-            #NYI.
-            echo "Not yet implemented!"
+            #Start the authentication dialog I wrote.
+            python3 runasroot_mac.py $@
             ;;
 
         esac
