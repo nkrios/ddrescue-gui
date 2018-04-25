@@ -1694,7 +1694,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         """Abort the recovery"""
         #Ask ddrescue to exit.
         logger.info("MainWindow().on_abort(): Attempting to stop ddrescue...")
-        BackendTools.start_process("killall -INT ddrescue", privileged=True)
+        BackendTools.start_process(RESOURCEPATH+"/Tools/runasroot.sh killall -INT ddrescue", privileged=True)
         self.aborted_recovery = True
 
         #Disable control button.
@@ -2940,14 +2940,14 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         if self.output_file_type == "Device" and LINUX:
             #This won't error on LINUX even if the loop device wasn't set up.
             logger.debug("FinishedWindow().unmount_output_file(): Pulling down loop device...")
-            cmd = "kpartx -d "+SETTINGS["OutputFile"]
+            cmd = RESOURCEPATH+"/Tools/runasroot.sh kpartx -d "+SETTINGS["OutputFile"]
 
         elif LINUX is False and self.output_file_mount_point != None:
             #This will error on macOS if the file hasn't been attached, so skip it in that case.
             logger.debug("FinishedWindow().unmount_output_file(): Detaching the device that "
                          "represents the image...")
 
-            cmd = "hdiutil detach "+self.output_file_device_name
+            cmd = RESOURCEPATH+"/Tools/runasroot.sh hdiutil detach "+self.output_file_device_name
 
         else:
             #LINUX and partition, or no command needed. Return True.
@@ -3067,11 +3067,11 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
             if LINUX:
                 #Create loop devices for all contained partitions.
                 logger.info("FinishedWindow().mount_disk(): Creating loop device...")
-                BackendTools.start_process(cmd="kpartx -a "+SETTINGS["OutputFile"],
+                BackendTools.start_process(cmd=RESOURCEPATH+"/Tools/runasroot.sh kpartx -a "+SETTINGS["OutputFile"],
                                            return_output=False, privileged=True)
 
                 #Get some Disk information.
-                lsblk_output = BackendTools.start_process(cmd="lsblk -r -o NAME,FSTYPE,SIZE",
+                lsblk_output = BackendTools.start_process(cmd=RESOURCEPATH+"/Tools/runasroot.sh lsblk -r -o NAME,FSTYPE,SIZE",
                                                           return_output=True, privileged=True)[1].split('\n')
 
             else:

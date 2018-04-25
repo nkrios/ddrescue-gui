@@ -241,7 +241,7 @@ def determine_output_file_type(SETTINGS, disk_info):
 
         if output_file_type == "Device":
             if LINUX:
-                retval, output = start_process(cmd="kpartx -l "+SETTINGS["OutputFile"],
+                retval, output = start_process(cmd=RESOURCEPATH+"/Tools/runasroot.sh kpartx -l "+SETTINGS["OutputFile"],
                                                return_output=True)
                 output = output.split("\n")
 
@@ -252,7 +252,7 @@ def determine_output_file_type(SETTINGS, disk_info):
     else:
         if LINUX:
             #If list of partitions is empty (or 1 partition), we have a partition.
-            retval, output = start_process(cmd="kpartx -l "+SETTINGS["OutputFile"],
+            retval, output = start_process(cmd=RESOURCEPATH+"/Tools/runasroot.sh kpartx -l "+SETTINGS["OutputFile"],
                                            return_output=True)
             output = output.split("\n")
 
@@ -300,7 +300,7 @@ def mac_run_hdiutil(options):
     Tries to handle and fix hdiutil errors if they occur.
     """
 
-    retval, output = start_process(cmd="hdiutil "+options, return_output=True)
+    retval, output = start_process(cmd=RESOURCEPATH+"/Tools/runasroot.sh hdiutil "+options, return_output=True)
 
     #Handle this common error - image in use.
     if "Resource temporarily unavailable" in output or retval != 0:
@@ -314,13 +314,13 @@ def mac_run_hdiutil(options):
                 if line.split()[0].split("/")[1] == "dev":
                     #This is a line with a device name on it.
                     logger.warning("mac_run_hdiutil(): Attempting to detach "+line.split()[0]+"...")
-                    start_process(cmd="hdiutil detach "+line.split()[0])
+                    start_process(cmd=RESOURCEPATH+"/Tools/runasroot.sh hdiutil detach "+line.split()[0])
 
             except IndexError:
                 pass
 
         #Try again.
-        retval, output = start_process(cmd="hdiutil "+options, return_output=True)
+        retval, output = start_process(cmd=RESOURCEPATH+"/Tools/runasroot.sh hdiutil "+options, return_output=True)
 
     return retval, output
 
@@ -429,15 +429,15 @@ def mount_disk(partition, mount_point, options=""):
 
     #Create the dir if needed.
     if os.path.isdir(mount_point) is False:
-        os.makedirs(mount_point)
+        start_process(RESOURCEPATH+"/Tools/runasroot.sh mkdir -p "+mount_point)
 
     #Mount the device to the mount point.
     #Use diskutil on OS X.
     if LINUX:
-        retval = start_process("mount "+options+" "+partition+" "+mount_point)
+        retval = start_process(RESOURCEPATH+"/Tools/runasroot.sh mount "+options+" "+partition+" "+mount_point)
 
     else:
-        retval = start_process("diskutil mount "+options+" "+" -mountPoint "
+        retval = start_process(RESOURCEPATH+"/Tools/runasroot.sh diskutil mount "+options+" "+" -mountPoint "
                                +mount_point+" "+partition)
 
     if retval == 0:
@@ -465,10 +465,10 @@ def unmount_disk(disk):
 
         #Unmount it.
         if LINUX:
-            retval = start_process(cmd="umount "+disk, return_output=False)
+            retval = start_process(cmd=RESOURCEPATH+"/Tools/runasroot.sh umount "+disk, return_output=False)
 
         else:
-            retval = start_process(cmd="diskutil umount "+disk, return_output=False)
+            retval = start_process(cmd=RESOURCEPATH+"/Tools/runasroot.sh diskutil umount "+disk, return_output=False)
 
         #Check that this worked okay.
         if retval != 0:
