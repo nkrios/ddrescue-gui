@@ -41,19 +41,31 @@ case "$(ps aux | grep -i DDRescue-GUI.py)" in
             ;;
 
         Darwin)
+            #For development/debugging.
             #Start the authentication dialog I wrote.
             if [[ -z $RESOURCEPATH ]]; then
                 RESOURCEPATH=.
             fi
 
-            #python3 $RESOURCEPATH/Tools/runasroot_mac.py $@
-            echo "test"
+            python3 $RESOURCEPATH/Tools/runasroot_mac.py $@
             exit $?
             ;;
 
         esac
 
         ;;
+
+    *DDRescue-GUI.app*)
+        #For macos in production.
+        #Start the authentication dialog I wrote.
+        if [[ -z $RESOURCEPATH ]]; then
+            RESOURCEPATH=.
+        fi
+
+        python3 $RESOURCEPATH/Tools/runasroot_mac.py $@
+        exit $?
+        ;;
+
 esac
 
 exit 1
