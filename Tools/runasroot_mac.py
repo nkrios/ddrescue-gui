@@ -90,7 +90,7 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         """Create all other widgets for AuthenticationWindow"""
         #Create the image.
         img = wx.Image(RESOURCEPATH+"/images/Logo.png", wx.BITMAP_TYPE_PNG)
-        self.program_logo = wx.StaticBitmap(self.panel, -1, wx.BitmapFromImage(img))
+        self.program_logo = wx.StaticBitmap(self.panel, -1, wx.Bitmap(img))
 
         #Create the password field.
         self.password_field = wx.TextCtrl(self.panel, -1, "",
