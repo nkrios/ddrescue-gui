@@ -179,7 +179,7 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         password = self.password_field.GetLineText(0)
         cmd = subprocess.Popen("LC_ALL=C sudo -S echo 'Authentication Succeeded'",
                                stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                               stderr=subprocess.STDOUT, shell=True)
+                               stderr=subprocess.PIPE, shell=True)
 
         #Send the password to sudo through stdin,
         #to avoid showing the user's password in the system/activity monitor.
