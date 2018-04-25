@@ -238,7 +238,7 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
 
     def start_ddrescuegui(self, password):
         """Start DDRescue-GUI and exit"""
-        cmd = subprocess.Popen("sudo -SH "+' '.join(sys.argv[1:]),
+        cmd = subprocess.Popen("sudo -SH sh -c '"+' '.join(sys.argv[1:])+" 2>&1'",
                                stdin=subprocess.PIPE, stdout=sys.stdout,
                                stderr=subprocess.STDOUT, shell=True)
 
