@@ -589,8 +589,6 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                                   "ISO (CD/DVD) Disk Image (*.iso)|*.iso|(S)ATA HDDs/USB Drives|" \
                                   "sd*|Floppy Drives|fd*|All Files/Disks (*)|*"
 
-            self.user_homedir = "/home"
-
         else:
             self.input_wildcard = "Disk Drives|disk*|IMG Disk Image (*.img)|*.img|" \
                                  "DMG Disk Image (*.dmg)|*.dmg|ISO (CD/DVD) Disk Image (*.iso)|" \
@@ -599,7 +597,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             self.output_wildcard = "IMG Disk Image (*.img)|*.img|DMG Disk Image (*.dmg)|*.dmg|" \
                                   "ISO (CD/DVD) Disk Image (*.iso)|*.iso|All Files/Disks (*)|*"
 
-            self.user_homedir = "/Users"
+        self.user_homedir = os.environ['HOME']
 
     def define_vars(self):
         """Defines some variables used elsewhere in this class/instance"""
