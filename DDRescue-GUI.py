@@ -3023,7 +3023,8 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
             if LINUX:
                 self.output_file_mount_point = "/mnt"+SETTINGS["InputFile"]
                 retval = BackendTools.mount_disk(partition=SETTINGS["OutputFile"],
-                                                 mount_point=self.output_file_mount_point)
+                                                 mount_point=self.output_file_mount_point,
+                                                 options="-r")
 
             else:
                 retval, output = BackendTools.mac_run_hdiutil("mount "+SETTINGS["OutputFile"]
@@ -3174,7 +3175,8 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
                 self.output_file_mount_point = "/mnt"+partition_to_mount
 
                 #Attempt to mount the disk.
-                retval = BackendTools.mount_disk(partition_to_mount, self.output_file_mount_point)
+                retval = BackendTools.mount_disk(partition_to_mount, self.output_file_mount_point,
+                                                 options="-r")
 
             else:
                 #Attempt to mount the disk (this mounts all partitions inside),
