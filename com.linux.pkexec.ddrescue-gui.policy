@@ -9,7 +9,7 @@
   <icon_name>ddrescue-gui</icon_name>
 
   <action id="org.freedesktop.policykit.pkexec.run-DDRescue-GUI">
-    <description>Run DDRescue-GUI</description>
+    <description>DDRescue-GUI requires authentication</description>
     <message>DDRescue-GUI requires authentication to perform privileged actions.</message>
     <defaults>
       <allow_any>no</allow_any>

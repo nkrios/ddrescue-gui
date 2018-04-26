@@ -70,15 +70,14 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
     def create_text(self):
         """Create all text for AuthenticationWindow"""
         self.title_text = wx.StaticText(self.panel, -1,
-                                        "Authentication is required to run DDRescue-GUI.")
-        self.body_text = wx.StaticText(self.panel, -1, "DDRescue-GUI requires privileges "
-                                       + "to run.\nPlease enter your password to grant permission.")
+                                        "DDRescue-GUI requires authentication.")
+        self.body_text = wx.StaticText(self.panel, -1, "DDRescue-GUI requires authentication "
+                                       + "to\nperform privileged actions.")
 
         self.password_text = wx.StaticText(self.panel, -1, "Password:")
 
         bold_font = self.title_text.GetFont()
         bold_font.SetWeight(wx.BOLD)
-        #self.title_text.Setbold_font(bold_font) NB: Fix for display issues on macOS.
         self.password_text.SetFont(bold_font)
 
     def create_buttons(self):
