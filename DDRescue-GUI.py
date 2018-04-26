@@ -2322,8 +2322,11 @@ class SettingsWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         self.max_errors_text = wx.StaticText(self.panel, -1, "Maximum number of errors before "
                                              "exiting:")
 
-        self.cluster_size_text = wx.StaticText(self.panel, -1, "number of clusters to copy at "
+        self.cluster_size_text = wx.StaticText(self.panel, -1, "Number of clusters to copy at "
                                                "a time:")
+
+        self.presets_text = wx.StaticText(self.panel, -1, "Presets:")
+
 
     def create_check_boxes(self):
         """
@@ -2407,6 +2410,8 @@ class SettingsWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         main_sizer.Add(cluster_size_sizer, 4, wx.CENTER|wx.EXPAND|wx.ALL, 10)
 
         #Add the buttons, and the button sizer.
+        main_sizer.Add(wx.StaticLine(self.panel), 0, wx.ALL|wx.EXPAND, 10)
+        main_sizer.Add(self.presets_text, 4, wx.CENTER)
         main_sizer.Add(self.default_button, 4, wx.CENTER|wx.ALL, 10)
         main_sizer.Add(button_sizer, 4, wx.CENTER|wx.EXPAND|wx.ALL, 10)
         main_sizer.Add(self.exit_button, 4, wx.CENTER|wx.ALL, 10)
