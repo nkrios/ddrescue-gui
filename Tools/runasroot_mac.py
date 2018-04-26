@@ -256,6 +256,7 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
 
         #Hide the window.
         self.Hide()
+        wx.Yield()
 
         #Get return code.
         global returncode
