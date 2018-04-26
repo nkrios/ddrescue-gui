@@ -3027,8 +3027,8 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
                                                  options="-r")
 
             else:
-                retval, output = BackendTools.mac_run_hdiutil("mount "+SETTINGS["OutputFile"]
-                                                              +" -plist")
+                retval, output = BackendTools.mac_run_hdiutil("attach "+SETTINGS["OutputFile"]
+                                                              +" -readonly -plist")
 
             if retval != 0:
                 logger.error("FinishedWindow().mount_disk(): Error! Warning the user...")
@@ -3182,7 +3182,7 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
                 #Attempt to mount the disk (this mounts all partitions inside),
                 #and parse the resulting plist.
                 (retval, mount_output) = \
-                BackendTools.mac_run_hdiutil("mount "+SETTINGS["OutputFile"]+" -plist")
+                BackendTools.mac_run_hdiutil("attach "+SETTINGS["OutputFile"]+" -readonly -plist")
 
                 mount_output = plistlib.readPlistFromString(mount_output.encode())
 
