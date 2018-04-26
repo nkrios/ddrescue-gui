@@ -829,6 +829,9 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.menu_privacy_policy = view_menu.Append(wx.ID_ANY, "&Privacy Policy",
                                                     "View DDRescue-GUI's privacy policy")
 
+        self.menu_docs = help_menu.Append(wx.ID_ANY, "&User Guide",
+                                          "View DDRescue-GUI's User Guide")
+
         self.menu_about = help_menu.Append(wx.ID_ABOUT, "&About DDRescue-GUI",
                                            "Information about DDRescue-GUI")
 
@@ -848,6 +851,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         """Bind all events for MainWindow"""
         #Menus.
         self.Bind(wx.EVT_MENU, self.show_settings, self.menu_settings)
+        self.Bind(wx.EVT_MENU, self.show_userguide, self.menu_docs)
         self.Bind(wx.EVT_MENU, self.on_about, self.menu_about)
         self.Bind(wx.EVT_MENU, self.show_dev_info, self.menu_disk_info)
         self.Bind(wx.EVT_MENU, self.show_privacy_policy, self.menu_privacy_policy)
@@ -1308,6 +1312,19 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                                  user_selection=self.log_choice_box.GetStringSelection(),
                                  default_dir=self.user_homedir, wildcard="Log Files (*.log)|*.log",
                                  style=wx.FD_SAVE)
+
+    def show_userguide(self, Event=None):
+        """Open a web browser and show the user guide"""
+        logger.debug("MainWindow().show_userguide(): Opening browser...")
+
+        if LINUX:
+            cmd = "xdg-open"
+
+        else:
+            cmd = "open"
+
+        BackendTools.start_process(cmd=cmd
+                                   + " https://hamishmb.altervista.org/html/Docs/ddrescue-gui.php")
 
     def on_about(self, event=None): #pylint: disable=unused-argument, no-self-use
         """Show the about box"""
