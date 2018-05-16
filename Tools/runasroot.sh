@@ -79,13 +79,13 @@ case "$(ps aux | grep -i DDRescue-GUI)" in
         ;;
 
     *DDRescue-GUI.app*)
-        #For macos in production. FIXME
+        #For macos in production.
         #Start the authentication dialog I wrote.
         if [[ -z $RESOURCEPATH ]]; then
             RESOURCEPATH=.
         fi
 
-        python3 $RESOURCEPATH/Tools/runasroot_mac.py $@
+        $RESOURCEPATH/../MacOS/python $RESOURCEPATH/Tools/runasroot_mac.py $@
         exit $?
         ;;
 
