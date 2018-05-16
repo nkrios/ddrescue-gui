@@ -84,7 +84,7 @@ if sys.version_info[0] == 3:
 
 #Define global variables.
 VERSION = "1.8"
-RELEASE_DATE = "26/4/2018"
+RELEASE_DATE = "16/5/2018"
 
 session_ending = False
 DDRESCUE_VERSION = "1.23" #Default to latest version.
@@ -1323,8 +1323,9 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         else:
             cmd = "open"
 
-        BackendTools.start_process(cmd=cmd
-                                   + " https://hamishmb.altervista.org/html/Docs/ddrescue-gui.php")
+        subprocess.Popen(cmd
+                         + " https://hamishmb.altervista.org/html/Docs/ddrescue-gui.php",
+                         shell=True)
 
     def on_about(self, event=None): #pylint: disable=unused-argument, no-self-use
         """Show the about box"""
