@@ -1704,7 +1704,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
     def update_progress(self, recovered_data, disk_capacity):
         """Update the progressbar and the title"""
         self.progress_bar.SetValue(recovered_data)
-        self.SetTitle("DDRescue-GUI - "+unicode(int(recovered_data * 100 // disk_capacity))+"%")
+        self.SetTitle(unicode(int(recovered_data * 100 // disk_capacity))+"%" + " - DDRescue-GUI")
 
     def on_abort(self):
         """Abort the recovery"""

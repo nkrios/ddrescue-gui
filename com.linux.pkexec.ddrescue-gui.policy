@@ -5,7 +5,7 @@
 
 <policyconfig>
   <vendor>Hamish McIntyre-Bhatty</vendor>
-  <vendor_url>https://hamishmb.altervista.org/</vendor_url>
+  <vendor_url>https://www.hamishmb.com/</vendor_url>
   <icon_name>ddrescue-gui</icon_name>
 
   <action id="org.freedesktop.policykit.pkexec.run-DDRescue-GUI">
