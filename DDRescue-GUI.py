@@ -1324,7 +1324,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             cmd = "open"
 
         subprocess.Popen(cmd
-                         + " https://hamishmb.altervista.org/html/Docs/ddrescue-gui.php",
+                         + " https://www.hamishmb.com/html/Docs/ddrescue-gui.php",
                          shell=True)
 
     def on_about(self, event=None): #pylint: disable=unused-argument, no-self-use
@@ -1340,7 +1340,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                                + "\nwxPython version " + wx.version() \
                                + "\nGNU ddrescue version " + SETTINGS["DDRescueVersion"]
 
-        aboutbox.WebSite = ("http://hamishmb.altervista.org", "My Website")
+        aboutbox.WebSite = ("http://www.hamishmb.com", "My Website")
         aboutbox.Developers = ["Hamish McIntyre-Bhatty", "Minnie McIntyre-Bhatty (GUI Design)"]
         aboutbox.Artists = ["Bhuna https://www.instagram.com/bhuna42/", "Holly McIntyre-Bhatty (Old Artwork)", "Hamish McIntyre-Bhatty (Throbber designs)"]
 
