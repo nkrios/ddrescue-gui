@@ -16,9 +16,6 @@
 # along with DDRescue-GUI.  If not, see <http://www.gnu.org/licenses/>.
 
 #Only do anything if DDRescue-GUI is running.
-
-echo $(ps f) > temp
-
 case "$(ps aux | grep -i DDRescue-GUI)" in
 
     *ython*DDRescue-GUI.py*)
