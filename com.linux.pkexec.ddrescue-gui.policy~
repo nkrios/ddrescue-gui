@@ -5,11 +5,44 @@
 
 <policyconfig>
   <vendor>Hamish McIntyre-Bhatty</vendor>
-  <vendor_url>https://hamishmb.altervista.org/</vendor_url>
+  <vendor_url>https://www.hamishmb.com/</vendor_url>
   <icon_name>ddrescue-gui</icon_name>
 
-  <action id="org.freedesktop.policykit.pkexec.run-DDRescue-GUI">
-    <description>DDRescue-GUI requires authentication</description>
+  <action id="com.linux.pkexec.DDRescue-GUI.mount">
+    <description>DDRescue-GUI requires authentication to mount devices</description>
+    <message>DDRescue-GUI requires authentication to mount devices.</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/share/ddrescue-gui/Tools/runasroot_linux_mount.sh</annotate>
+  </action>
+
+  <action id="com.linux.pkexec.DDRescue-GUI.unmount">
+    <description>DDRescue-GUI requires authentication to unmount devices</description>
+    <message>DDRescue-GUI requires authentication to unmount devices.</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin_keep</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/share/ddrescue-gui/Tools/runasroot_linux_umount.sh</annotate>
+  </action>
+
+  <action id="com.linux.pkexec.DDRescue-GUI.ddrescue">
+    <description>DDRescue-GUI requires authentication to start GNU ddrescue</description>
+    <message>DDRescue-GUI requires authentication to start GNU ddrescue.</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/share/ddrescue-gui/Tools/runasroot_linux_ddrescue.sh</annotate>
+  </action>
+
+  <action id="com.linux.pkexec.DDRescue-GUI.generic">
+    <description>DDRescue-GUI requires authentication to perform privileged actions</description>
     <message>DDRescue-GUI requires authentication to perform privileged actions.</message>
     <defaults>
       <allow_any>no</allow_any>
@@ -18,5 +51,4 @@
     </defaults>
     <annotate key="org.freedesktop.policykit.exec.path">/usr/share/ddrescue-gui/Tools/runasroot_linux.sh</annotate>
   </action>
-
 </policyconfig>

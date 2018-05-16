@@ -30,6 +30,7 @@ from __future__ import unicode_literals
 import os
 import sys
 import subprocess
+import shlex
 import logging
 import plistlib
 import time
@@ -74,9 +75,12 @@ def start_process(cmd, return_output=False, privileged=False):
     if privileged:
         cmd = RESOURCEPATH+"/Tools/runasroot.sh "+cmd
 
-    logger.debug("start_process(): Starting process: "+cmd)
-    runcmd = subprocess.Popen("LC_ALL=C "+cmd, stdout=subprocess.PIPE,
-                              stderr=subprocess.STDOUT, shell=True)
+    cmd = shlex.split(cmd)
+
+    logger.debug("start_process(): Starting process: "+' '.join(cmd))
+    runcmd = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                              stderr=subprocess.STDOUT, env=dict(os.environ, LC_ALL="C"),
+                              shell=False)
 
     while runcmd.poll() is None:
         time.sleep(0.25)
@@ -91,7 +95,7 @@ def start_process(cmd, return_output=False, privileged=False):
     retval = int(runcmd.returncode)
 
     #Log this info in a debug message.
-    logger.debug("start_process(): Process: "+cmd+": Return Value: "
+    logger.debug("start_process(): Process: "+' '.join(cmd)+": Return Value: "
                  +unicode(retval)+", output: \"\n\n"+''.join(output)+"\"\n")
 
     if not return_output:

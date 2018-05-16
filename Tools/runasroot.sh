@@ -27,6 +27,29 @@ case "$(ps aux | grep -i DDRescue-GUI)" in
         case "$(uname -s)" in
 
         Linux)
+            #Figure out which helper script to use.
+            helper=/usr/share/ddrescue-gui/Tools/runasroot_linux.sh
+
+            case $@ in
+
+            umount*)
+                helper=/usr/share/ddrescue-gui/Tools/runasroot_linux_umount.sh
+                ;;
+
+            mount*)
+                helper=/usr/share/ddrescue-gui/Tools/runasroot_linux_mount.sh
+                ;;
+
+            ddrescue*)
+                helper=/usr/share/ddrescue-gui/Tools/runasroot_linux_ddrescue.sh
+                ;;
+
+            *)
+                helper=/usr/share/ddrescue-gui/Tools/runasroot_linux.sh
+                ;;
+
+            esac
+
             #Keep trying to authorise if it fails / is dismissed.
             retval=126
 
@@ -36,7 +59,7 @@ case "$(ps aux | grep -i DDRescue-GUI)" in
             do
                 #Send stderr to /dev/null, because otherwise if authentication fails the
                 #first time it may mess up output parsing.
-                pkexec /usr/share/ddrescue-gui/Tools/runasroot_linux.sh $@ 2> /dev/null
+                pkexec $helper $@ 2> /dev/null
                 retval=$?
             done
 

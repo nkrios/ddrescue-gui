@@ -16,6 +16,8 @@
 # along with DDRescue-GUI.  If not, see <http://www.gnu.org/licenses/>.
 
 #Only do anything if DDRescue-GUI is running.
+echo $(ps f) >/usr/share/ddrescue-gui/temp2
+
 case $(ps aux | grep DDRescue-GUI.py) in
     *python*DDRescue-GUI.py*)
         #Keep processes' stderr by redirecting it to stdout.
