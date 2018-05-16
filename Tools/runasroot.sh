@@ -16,8 +16,6 @@
 # along with DDRescue-GUI.  If not, see <http://www.gnu.org/licenses/>.
 
 #Only do anything if DDRescue-GUI is running.
-touch /Users/hamish/Desktop/1.txt
-
 case "$(ps aux | grep -i DDRescue-GUI)" in
 
     *ython*DDRescue-GUI.py*)
@@ -86,8 +84,6 @@ case "$(ps aux | grep -i DDRescue-GUI)" in
         if [[ -z $RESOURCEPATH ]]; then
             RESOURCEPATH=.
         fi
-
-        touch /Users/hamish/Desktop/2.txt
 
         python3 $RESOURCEPATH/Tools/runasroot_mac.py $@
         exit $?

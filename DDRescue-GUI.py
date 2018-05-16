@@ -49,6 +49,8 @@ import ast
 
 import wx
 
+print(sys.executable)
+
 #Compatibility with wxPython 4.
 if int(wx.version()[0]) >= 4:
     import wx.adv
