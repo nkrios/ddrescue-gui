@@ -327,6 +327,8 @@ def run(args):
 
     if __name__ == "__main__":
         APP = wx.App(False)
+ 
+    returncode, output = None, None
 
     AuthWindow(args).Show()
 
@@ -337,7 +339,11 @@ def run(args):
         sys.stdout.write(output)
         sys.exit(returncode)
 
-    return (returncode, output)
+    else:
+        while returncode is None:
+            time.sleep(0.04)
+
+        return (returncode, output)
 
 if __name__ == "__main__":
     run(' '.join(sys.argv[1:]))
