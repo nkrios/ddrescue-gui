@@ -325,9 +325,13 @@ def run(args):
 
         return (returncode, output)
 
-    APP = wx.App(False)
+    if __name__ == "__main__":
+        APP = wx.App(False)
+
     AuthWindow(args).Show()
-    APP.MainLoop()
+
+    if __name__ == "__main__":
+        APP.MainLoop()
 
     if __name__ == "__main__":
         sys.stdout.write(output)
