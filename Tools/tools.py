@@ -102,24 +102,29 @@ def start_process(cmd, return_output=False, privileged=False):
 
         cmd = helper+" "+cmd
 
-    cmd = shlex.split(cmd)
+    if LINUX:
+        cmd = shlex.split(cmd)
 
-    logger.debug("start_process(): Starting process: "+' '.join(cmd))
-    runcmd = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                              stderr=subprocess.STDOUT, env=dict(os.environ, LC_ALL="C"),
-                              shell=False)
+        logger.debug("start_process(): Starting process: "+' '.join(cmd))
+        runcmd = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                                  stderr=subprocess.STDOUT, env=dict(os.environ, LC_ALL="C"),
+                                  shell=False)
 
-    while runcmd.poll() is None:
-        time.sleep(0.25)
+        while runcmd.poll() is None:
+            time.sleep(0.25)
 
-    #Save runcmd.stdout.readlines, and runcmd.returncode,
-    #as they tend to reset fairly quickly. Handle unicode properly.
-    output = []
+        #Save runcmd.stdout.readlines, and runcmd.returncode,
+        #as they tend to reset fairly quickly. Handle unicode properly.
+        output = []
 
-    for line in runcmd.stdout.readlines():
-        output.append(line.decode("UTF-8", errors="ignore"))
+        for line in runcmd.stdout.readlines():
+            output.append(line.decode("UTF-8", errors="ignore"))
 
-    retval = int(runcmd.returncode)
+        retval = int(runcmd.returncode)
+
+    else:
+        logger.debug("start_process(): Starting process: "+cmd)
+        retval, output = runasroot_mac.run(cmd)
 
     #Log this info in a debug message.
     logger.debug("start_process(): Process: "+' '.join(cmd)+": Return Value: "

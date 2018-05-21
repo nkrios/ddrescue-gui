@@ -44,12 +44,13 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
     """
     The main authentication window
     """
-    def __init__(self):
+    def __init__(self, args):
         """Inititalize AuthWindow"""
         wx.Frame.__init__(self, None, title="DDRescue-GUI - Authenticate", size=(600, 400),
                           style=(wx.DEFAULT_FRAME_STYLE | wx.STAY_ON_TOP) ^ (wx.RESIZE_BORDER | wx.MINIMIZE_BOX))
 
         self.panel = wx.Panel(self)
+        self.args = args
 
         #Set the frame's icon.
         prog_icon = wx.Icon(RESOURCEPATH+"/images/Logo.png", wx.BITMAP_TYPE_PNG)
@@ -233,8 +234,8 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
 
     def start_ddrescuegui(self, password):
         """Start DDRescue-GUI and exit"""
-        cmd = subprocess.Popen("sudo -SH sh -c '"+' '.join(sys.argv[1:])+" 2>&1'",
-                               stdin=subprocess.PIPE, stdout=sys.stdout,
+        cmd = subprocess.Popen("sudo -SH sh -c '"+self.args+" 2>&1'",
+                               stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE, shell=True)
 
         #Send the password to sudo through stdin,
@@ -251,9 +252,16 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         self.Hide()
         wx.Yield()
 
+        while cmd.poll() is None:
+            time.sleep(0.04)
+
+        #Get output.
+        global output
+        output = cmd.stdout.read().decode("utf-8")
+
         #Get return code.
         global returncode
-        returncode = cmd.wait()
+        returncode = cmd.returncode
 
         self.on_exit()
 
@@ -263,7 +271,7 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
 
 #End Authentication Window.
 
-def test_auth():
+def test_auth(args):
     """
     Check the password is correct,
     then either warn the user or call self.start_ddrescuegui().
@@ -284,28 +292,48 @@ def test_auth():
     output = cmd.stdout.read().decode("utf-8")
 
     if "Authentication Succeeded" in output:
-        start_program()
+        return start_program(args)
 
-def start_program():
-    cmd = subprocess.Popen("sudo -SH sh -c '"+' '.join(sys.argv[1:])+" 2>&1'",
-                           stdin=subprocess.PIPE, stdout=sys.stdout,
+def start_program(args):
+    cmd = subprocess.Popen("sudo -SH sh -c '"+args+" 2>&1'",
+                           stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                            stderr=subprocess.PIPE, shell=True)
 
     #Send the password to sudo through stdin,
     #to avoid showing the user's password in the system/activity monitor.
     cmd.stdin.close()
 
+    while cmd.poll() is None:
+        time.sleep(0.04)
+
+    #Get output.
+    global output
+    output = cmd.stdout.read().decode("utf-8")
+
     #Get return code.
     global returncode
-    returncode = cmd.wait()
+    returncode = cmd.returncode
 
-    sys.exit()
+    return True
 
-if __name__ == "__main__":
+def run(args):
     #Use cached credentials rather than open the auth window if possible.
-    test_auth()
+    if test_auth(args):
+        if __name__ == "__main__":
+            sys.stdout.write(output)
+            sys.exit(returncode)
+
+        return (returncode, output)
 
     APP = wx.App(False)
-    AuthWindow().Show()
+    AuthWindow(args).Show()
     APP.MainLoop()
-    sys.exit(returncode)
+
+    if __name__ == "__main__":
+        sys.stdout.write(output)
+        sys.exit(returncode)
+
+    return (returncode, output)
+
+if __name__ == "__main__":
+    run(' '.join(sys.argv[1:]))

@@ -72,6 +72,7 @@ import wx.lib.statbmp
 
 import Tools.tools as BackendTools
 import Tools.DDRescueTools.setup as DDRescueTools
+import Tools.runasroot_mac as mac_auth_dialog
 
 import getdevinfo
 
