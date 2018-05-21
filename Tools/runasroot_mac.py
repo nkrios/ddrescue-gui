@@ -316,7 +316,7 @@ def start_program(args):
 
     return True
 
-def run(args):
+def run(args): #FIXME later
     #Use cached credentials rather than open the auth window if possible.
     if test_auth(args):
         if __name__ == "__main__":
@@ -327,8 +327,6 @@ def run(args):
 
     if __name__ == "__main__":
         APP = wx.App(False)
- 
-    returncode, output = None, None
 
     AuthWindow(args).Show()
 
@@ -339,11 +337,7 @@ def run(args):
         sys.stdout.write(output)
         sys.exit(returncode)
 
-    else:
-        while returncode is None:
-            time.sleep(0.04)
-
-        return (returncode, output)
+    return (returncode, output)
 
 if __name__ == "__main__":
     run(' '.join(sys.argv[1:]))
