@@ -1,6 +1,6 @@
-#!/usr/bin/pkexec /bin/bash
+#!/bin/bash
 # -*- coding: utf-8 -*-
-# Executes generic privileged processes for Linux when requested for DDRescue-GUI Version 1.8.
+# Executes priveledged processes with pkexec
 # This file is part of DDRescue-GUI.
 # Copyright (C) 2013-2018 Hamish McIntyre-Bhatty
 # DDRescue-GUI is free software: you can redistribute it and/or modify it
@@ -15,13 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with DDRescue-GUI.  If not, see <http://www.gnu.org/licenses/>.
 
-#Only do anything if DDRescue-GUI is running.
-case $(ps aux | grep DDRescue-GUI.py) in
-    *python*DDRescue-GUI.py*)
-        #Keep processes' stderr by redirecting it to stdout.
-        $@ 2>&1
-        exit $?
-        ;;
-esac
-
-exit 1
+# pylint: disable=too-many-lines,global-statement
+#
+# Reason (too-many-lines): Not a module
+# Reason (global-statement): Need to use global at times.
+#
+pkexec $@
+exit $?

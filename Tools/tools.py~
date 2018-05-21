@@ -272,7 +272,7 @@ def determine_output_file_type(SETTINGS, disk_info):
 
         if output_file_type == "Device":
             if LINUX:
-                retval, output = start_process(cmd="kpartx -l "+SETTINGS["OutputFile"],
+                retval, output = start_process(cmd=kpartx -l "+SETTINGS["OutputFile"],
                                                return_output=True, privileged=True)
                 output = output.split("\n")
 

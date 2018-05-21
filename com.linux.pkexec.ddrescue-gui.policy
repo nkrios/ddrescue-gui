@@ -8,7 +8,18 @@
   <vendor_url>https://www.hamishmb.com/</vendor_url>
   <icon_name>ddrescue-gui</icon_name>
 
-  <action id="com.linux.pkexec.DDRescue-GUI.mount">
+  <action id="org.hamishmb.DDRescue-GUI.getdevinfo">
+    <description>DDRescue-GUI requires authentication to collect device information</description>
+    <message>DDRescue-GUI requires authentication to collect device information.</message>
+    <defaults>
+      <allow_any>auth_admin_keep</allow_any>
+      <allow_inactive>auth_admin_keep</allow_inactive>
+      <allow_active>auth_admin_keep</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/share/ddrescue-gui/Tools/helpers/runasroot_linux_getdevinfo.sh</annotate>
+  </action>
+
+  <action id="org.hamishmb.DDRescue-GUI.mount">
     <description>DDRescue-GUI requires authentication to mount devices</description>
     <message>DDRescue-GUI requires authentication to mount devices.</message>
     <defaults>
@@ -16,21 +27,21 @@
       <allow_inactive>no</allow_inactive>
       <allow_active>auth_admin</allow_active>
     </defaults>
-    <annotate key="org.freedesktop.policykit.exec.path">/usr/share/ddrescue-gui/Tools/runasroot_linux_mount.sh</annotate>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/share/ddrescue-gui/Tools/helpers/runasroot_linux_mount.sh</annotate>
   </action>
 
-  <action id="com.linux.pkexec.DDRescue-GUI.unmount">
+  <action id="org.hamishmb.DDRescue-GUI.unmount">
     <description>DDRescue-GUI requires authentication to unmount devices</description>
     <message>DDRescue-GUI requires authentication to unmount devices.</message>
     <defaults>
       <allow_any>no</allow_any>
       <allow_inactive>no</allow_inactive>
-      <allow_active>auth_admin</allow_active>
+      <allow_active>auth_admin_keep</allow_active>
     </defaults>
-    <annotate key="org.freedesktop.policykit.exec.path">/usr/share/ddrescue-gui/Tools/runasroot_linux_umount.sh</annotate>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/share/ddrescue-gui/Tools/helpers/runasroot_linux_umount.sh</annotate>
   </action>
 
-  <action id="com.linux.pkexec.DDRescue-GUI.ddrescue">
+  <action id="org.hamishmb.DDRescue-GUI.ddrescue">
     <description>DDRescue-GUI requires authentication to start GNU ddrescue</description>
     <message>DDRescue-GUI requires authentication to start GNU ddrescue.</message>
     <defaults>
@@ -38,10 +49,10 @@
       <allow_inactive>no</allow_inactive>
       <allow_active>auth_admin</allow_active>
     </defaults>
-    <annotate key="org.freedesktop.policykit.exec.path">/usr/share/ddrescue-gui/Tools/runasroot_linux_ddrescue.sh</annotate>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/share/ddrescue-gui/Tools/helpers/runasroot_linux_ddrescue.sh</annotate>
   </action>
 
-  <action id="com.linux.pkexec.DDRescue-GUI.generic">
+  <action id="org.hamishmb..DDRescue-GUI.generic">
     <description>DDRescue-GUI requires authentication to perform privileged actions</description>
     <message>DDRescue-GUI requires authentication to perform privileged actions.</message>
     <defaults>
