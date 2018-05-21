@@ -72,7 +72,6 @@ import wx.lib.statbmp
 
 import Tools.tools as BackendTools
 import Tools.DDRescueTools.setup as DDRescueTools
-import Tools.runasroot_mac as mac_auth_dialog
 
 import getdevinfo
 
@@ -85,7 +84,7 @@ if sys.version_info[0] == 3:
 
 #Define global variables.
 VERSION = "1.8"
-RELEASE_DATE = "16/5/2018"
+RELEASE_DATE = "21/5/2018"
 
 session_ending = False
 DDRESCUE_VERSION = "1.23" #Default to latest version.

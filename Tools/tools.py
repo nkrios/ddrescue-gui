@@ -26,9 +26,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-#Import mac auth dialog.
-import runasroot_mac
-
 #Import other modules.
 import os
 import sys
@@ -67,6 +64,9 @@ elif "wxMac" in wx.PlatformInfo:
 
     LINUX = False
     PARTED_MAGIC = False
+
+    #Import mac auth dialog.
+    from . import runasroot_mac
 
 #Set up logging.
 logger = logging.getLogger(__name__)
