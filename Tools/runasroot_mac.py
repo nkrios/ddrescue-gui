@@ -246,9 +246,6 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         cmd.stdin.write(password.encode()+b"\n")
         cmd.stdin.close()
 
-        #Remove any cached credentials, so we don't create a security problem.
-        subprocess.Popen("sudo -k", shell=True).wait()
-
         #Overwrite the password with a string of nonsense characters before deleting it,
         #so the password cannot be read from memory when this script closes.
         password = "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789!£$%^&*()_+"
