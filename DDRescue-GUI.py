@@ -230,7 +230,7 @@ class GetDiskInformation(threading.Thread):
         else:
             cmd = subprocess.Popen(RESOURCEPATH+"/Tools/runasroot.sh "+sys.executable+" "+RESOURCEPATH
                                    +"/Tools/run_getdevinfo.py", stdout=subprocess.PIPE,
-                                   stderr=subprocess.STDOUT, shell=False)
+                                   stderr=subprocess.STDOUT, shell=True)
 
         while cmd.poll() is None:
             time.sleep(0.25)
