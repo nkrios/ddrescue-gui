@@ -172,10 +172,6 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         #Disable the auth button (stops you from trying twice in quick succession).
         self.auth_button.Disable()
 
-        #Remove any cached credentials, so we don't create a security problem,
-        #or say the password is right when it isn't.
-        subprocess.Popen("sudo -k", shell=True).wait()
-
         #Check the password is right.
         password = self.password_field.GetLineText(0)
         cmd = subprocess.Popen("LC_ALL=C sudo -S echo 'Authentication Succeeded'",
