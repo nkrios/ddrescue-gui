@@ -26,6 +26,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+#Import mac auth dialog.
+import runasroot_mac
+
 #Import other modules.
 import os
 import sys
