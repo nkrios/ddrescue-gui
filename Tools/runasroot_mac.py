@@ -66,8 +66,6 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
 
         #Give the password field focus, so the user can start typing immediately.
         self.password_field.SetFocus()
-        
-        self.on_auth_attempt()
 
     def create_text(self):
         """Create all text for AuthenticationWindow"""
