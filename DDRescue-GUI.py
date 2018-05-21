@@ -220,7 +220,7 @@ class GetDiskInformation(threading.Thread):
 
     def get_info(self):
         """Uses the runasroot.sh script to get disk information as a privileged user"""
-        cmd = subprocess.Popen(RESOURCEPATH+"/Tools/runasroot.sh "+RESOURCEPATH
+        cmd = subprocess.Popen(RESOURCEPATH+"/Tools/runasroot.sh "+sys.executable+" "+RESOURCEPATH
                                +"/Tools/run_getdevinfo.py", stdout=subprocess.PIPE,
                                stderr=subprocess.STDOUT, shell=True)
 
