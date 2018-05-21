@@ -51,8 +51,6 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
 
         self.panel = wx.Panel(self)
 
-        self.firstattempt = True
-
         #Set the frame's icon.
         prog_icon = wx.Icon(RESOURCEPATH+"/images/Logo.png", wx.BITMAP_TYPE_PNG)
         wx.Frame.SetIcon(self, prog_icon)
@@ -70,8 +68,6 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         self.password_field.SetFocus()
         
         self.on_auth_attempt()
-
-        self.firstattempt = False
 
     def create_text(self):
         """Create all text for AuthenticationWindow"""
@@ -211,9 +207,6 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
             #Re-enable auth button.
             self.auth_button.Enable()
 
-            if self.firstattempt:
-                return
-
             #Shake the window
             x_pos, y_pos = self.GetPosition()
             count = 0
@@ -272,7 +265,48 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
 
 #End Authentication Window.
 
+def test_auth():
+    """
+    Check the password is correct,
+    then either warn the user or call self.start_ddrescuegui().
+    """
+
+    #Check the password is right.
+    cmd = subprocess.Popen("LC_ALL=C sudo -S echo 'Authentication Succeeded'",
+                           stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                           stderr=subprocess.PIPE, shell=True)
+
+    #Send the password to sudo through stdin,
+    #to avoid showing the user's password in the system/activity monitor.
+    cmd.stdin.close()
+
+    while cmd.poll() is None:
+        time.sleep(0.04)
+
+    output = cmd.stdout.read().decode("utf-8")
+
+    if "Authentication Succeeded" in output:
+        start_program()
+
+def start_program():
+    cmd = subprocess.Popen("sudo -SH sh -c '"+' '.join(sys.argv[1:])+" 2>&1'",
+                           stdin=subprocess.PIPE, stdout=sys.stdout,
+                           stderr=subprocess.PIPE, shell=True)
+
+    #Send the password to sudo through stdin,
+    #to avoid showing the user's password in the system/activity monitor.
+    cmd.stdin.close()
+
+    #Get return code.
+    global returncode
+    returncode = cmd.wait()
+
+    sys.exit()
+
 if __name__ == "__main__":
+    #Use cached credentials rather than open the auth window if possible.
+    test_auth()
+
     APP = wx.App(False)
     AuthWindow().Show()
     APP.MainLoop()
