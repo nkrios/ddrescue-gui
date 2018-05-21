@@ -136,6 +136,8 @@ elif "wxMac" in wx.PlatformInfo:
         #Use '.' as the rescource path instead as a fallback.
         RESOURCEPATH = "."
 
+    from Tools import runasroot_mac
+
     LINUX = False
     PARTED_MAGIC = False
 
@@ -227,18 +229,16 @@ class GetDiskInformation(threading.Thread):
                                    +"/Tools/run_getdevinfo.py"), stdout=subprocess.PIPE,
                                    stderr=subprocess.STDOUT, shell=False)
 
+            while cmd.poll() is None:
+                time.sleep(0.25)
+
+            #Get the output and return code.
+            retval = cmd.returncode #TODO Check me.
+            output = cmd.stdout.read().decode("UTF-8", errors="ignore")
+
         else:
-            cmd = subprocess.Popen(shlex.split(RESOURCEPATH+"/Tools/runasroot.sh "
-                                   +sys.executable+" "+RESOURCEPATH
-                                   +"/Tools/run_getdevinfo.py"), stdout=subprocess.PIPE,
-                                   stderr=subprocess.STDOUT, shell=False)
-
-        while cmd.poll() is None:
-            time.sleep(0.25)
-
-        #Get the output and return code.
-        retval = cmd.returncode #TODO Check me.
-        output = cmd.stdout.read().decode("UTF-8", errors="ignore")
+            retval, output = runasroot_mac.run(sys.executable+" "+RESOURCEPATH
+                                               +"/Tools/run_getdevinfo.py")
 
         #Success! Now use ast to convert the returned string to a dictionary.
         #TODO exception handling.
