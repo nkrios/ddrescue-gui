@@ -51,6 +51,8 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
 
         self.panel = wx.Panel(self)
 
+        self.firstattempt = True
+
         #Set the frame's icon.
         prog_icon = wx.Icon(RESOURCEPATH+"/images/Logo.png", wx.BITMAP_TYPE_PNG)
         wx.Frame.SetIcon(self, prog_icon)
@@ -66,8 +68,10 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
 
         #Give the password field focus, so the user can start typing immediately.
         self.password_field.SetFocus()
-
+        
         self.on_auth_attempt()
+
+        self.firstattempt = False
 
     def create_text(self):
         """Create all text for AuthenticationWindow"""
@@ -206,6 +210,9 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         else:
             #Re-enable auth button.
             self.auth_button.Enable()
+
+            if self.firstattempt:
+                return
 
             #Shake the window
             x_pos, y_pos = self.GetPosition()
