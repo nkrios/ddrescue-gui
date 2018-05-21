@@ -73,7 +73,6 @@ import Tools.tools as BackendTools
 import Tools.DDRescueTools.setup as DDRescueTools
 
 import getdevinfo
-from getdevinfo import getdevinfo as DevInfoTools
 
 #Make unicode an alias for str in Python 3.
 if sys.version_info[0] == 3:
@@ -88,7 +87,7 @@ RELEASE_DATE = "16/5/2018"
 
 session_ending = False
 DDRESCUE_VERSION = "1.23" #Default to latest version.
-CLASSIC_WXPYTHON = not (int(wx.version()[0]) >= 4)
+CLASSIC_WXPYTHON = int(wx.version()[0]) < 4
 APPICON = None
 SETTINGS = {}
 DISKINFO = {}
@@ -228,7 +227,7 @@ class GetDiskInformation(threading.Thread):
             time.sleep(0.25)
 
         #Get the output and return code.
-        retval = cmd.returncode
+        retval = cmd.returncode #TODO Check me.
         output = cmd.stdout.read().decode("UTF-8", errors="ignore")
 
         #Success! Now use ast to convert the returned string to a dictionary.
@@ -279,11 +278,12 @@ class ShowSplash(wxSplashScreen): #pylint: disable=too-few-public-methods
         #Display the splash screen.
         if CLASSIC_WXPYTHON:
             wxSplashScreen.__init__(self, splash, wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_TIMEOUT,
-                                     2500, parent)
+                                    2500, parent)
 
         else:
-            wxSplashScreen.__init__(self, splash, wx.adv.SPLASH_CENTRE_ON_SCREEN | wx.adv.SPLASH_TIMEOUT,
-                                     2500, parent)
+            wxSplashScreen.__init__(self, splash,
+                                    wx.adv.SPLASH_CENTRE_ON_SCREEN | wx.adv.SPLASH_TIMEOUT,
+                                    2500, parent)
 
         self.Bind(wx.EVT_CLOSE, self.on_exit)
 
@@ -328,7 +328,7 @@ class CustomTextCtrl(wx.TextCtrl):
         A custom version of wx.TextCtrl.PositionToXY() that works on OS X
         (the built-in one isn't implemented on OS X).
         """
-
+        #TODO still needed?
         #Count the number and position of newline characters.
         text = self.GetRange(0, insertion_point)
 
@@ -374,7 +374,7 @@ class CustomTextCtrl(wx.TextCtrl):
         This is also helpful for LINUX because the built-in one has a quirk
         when you're at the end of the text and it always returns -1
         """
-
+        #TODO Still needed?
         #Count the number and position of newline characters.
         text = self.GetValue()
 
@@ -1313,7 +1313,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                                  default_dir=self.user_homedir, wildcard="Log Files (*.log)|*.log",
                                  style=wx.FD_SAVE)
 
-    def show_userguide(self, Event=None):
+    def show_userguide(self, event=None):
         """Open a web browser and show the user guide"""
         logger.debug("MainWindow().show_userguide(): Opening browser...")
 
@@ -1324,7 +1324,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             cmd = "open"
 
         subprocess.Popen(cmd
-                         + " https://hamishmb.altervista.org/html/Docs/ddrescue-gui.php",
+                         + " https://www.hamishmb.com/html/Docs/ddrescue-gui.php",
                          shell=True)
 
     def on_about(self, event=None): #pylint: disable=unused-argument, no-self-use
@@ -1340,9 +1340,11 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                                + "\nwxPython version " + wx.version() \
                                + "\nGNU ddrescue version " + SETTINGS["DDRescueVersion"]
 
-        aboutbox.WebSite = ("http://hamishmb.altervista.org", "My Website")
+        aboutbox.WebSite = ("http://www.hamishmb.com", "My Website")
         aboutbox.Developers = ["Hamish McIntyre-Bhatty", "Minnie McIntyre-Bhatty (GUI Design)"]
-        aboutbox.Artists = ["Bhuna https://www.instagram.com/bhuna42/", "Holly McIntyre-Bhatty (Old Artwork)", "Hamish McIntyre-Bhatty (Throbber designs)"]
+        aboutbox.Artists = ["Bhuna https://www.instagram.com/bhuna42/",
+                            "Holly McIntyre-Bhatty (Old Artwork)",
+                            "Hamish McIntyre-Bhatty (Throbber designs)"]
 
         aboutbox.License = "DDRescue-GUI is free software: you can redistribute it and/or " \
                            "modify it\nunder the terms of the GNU General Public License " \
@@ -1710,7 +1712,9 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         """Abort the recovery"""
         #Ask ddrescue to exit.
         logger.info("MainWindow().on_abort(): Attempting to stop ddrescue...")
-        BackendTools.start_process(RESOURCEPATH+"/Tools/runasroot.sh killall -INT ddrescue", privileged=True)
+        BackendTools.start_process(RESOURCEPATH+"/Tools/runasroot.sh killall -INT ddrescue",
+                                   privileged=True)
+
         self.aborted_recovery = True
 
         #Disable control button.
@@ -1761,7 +1765,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             dlg.Destroy()
 
     def on_recovery_ended(self, result, disk_capacity, recovered_data, return_code=None):
-        """Called to show FinishedWindow when a recovery is completed or aborted by the user"""
+        """Called to show MainWindow when a recovery is completed or aborted by the user"""
         #Return immediately if session is ending.
         if session_ending:
             return True
@@ -2003,11 +2007,11 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                                         style=wx.FD_SAVE)
 
                     answer = dlg.ShowModal()
-                    file = dlg.GetPath()
+                    _file = dlg.GetPath()
                     dlg.Destroy()
 
                     if answer == wx.ID_OK:
-                        if file == SETTINGS["LogFile"]:
+                        if _file == SETTINGS["LogFile"]:
                             dlg = wx.MessageDialog(self.panel, "Error! Your chosen file is the "
                                                    "same as the recovery log file! This log file "
                                                    "contains only debugging information for "
@@ -2022,7 +2026,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                         else:
                             #Copy it to the specified path, using a one-liner, and don't bother
                             #handling any errors, because this is run as root. FIXME not smart.
-                            BackendTools.start_process(cmd="cp /tmp/ddrescue-gui.log "+file,
+                            BackendTools.start_process(cmd="cp /tmp/ddrescue-gui.log "+_file,
                                                        return_output=False)
 
                             dlg = wx.MessageDialog(self.panel, "Done! DDRescue-GUI will now exit.",
@@ -2244,7 +2248,7 @@ class DiskInfoWindow(wx.Frame):
                         self.list_ctrl.SetItem = self.list_ctrl.SetStringItem
 
                     self.list_ctrl.SetItem(number, column,
-                                                 label=DISKINFO[disk][heading])
+                                           label=DISKINFO[disk][heading])
 
                 column += 1
 
@@ -3004,7 +3008,8 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
 
         #Determine what type of OutputFile we have (Partition or Device).
         (self.output_file_type, retval, output) = \
-        BackendTools.determine_output_file_type(SETTINGS, disk_info=DISKINFO) #TODO pylint false positive?
+        BackendTools.determine_output_file_type(SETTINGS, disk_info=DISKINFO)
+        #XXX pylint false positive?
 
         #If retval != 0 report to user.
         if retval != 0:
@@ -3089,12 +3094,15 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
             if LINUX:
                 #Create loop devices for all contained partitions.
                 logger.info("FinishedWindow().mount_disk(): Creating loop device...")
-                BackendTools.start_process(cmd=RESOURCEPATH+"/Tools/runasroot.sh kpartx -a "+SETTINGS["OutputFile"],
+                BackendTools.start_process(cmd=RESOURCEPATH+"/Tools/runasroot.sh kpartx -a "
+                                           + SETTINGS["OutputFile"],
                                            return_output=False, privileged=True)
 
                 #Get some Disk information.
-                lsblk_output = BackendTools.start_process(cmd=RESOURCEPATH+"/Tools/runasroot.sh lsblk -r -o NAME,FSTYPE,SIZE",
-                                                          return_output=True, privileged=True)[1].split('\n')
+                lsblk_output = BackendTools.start_process(cmd=RESOURCEPATH+"/Tools/runasroot.sh "
+                                                          + "lsblk -r -o NAME,FSTYPE,SIZE",
+                                                          return_output=True,
+                                                          privileged=True)[1].split('\n')
 
             else:
                 hdiutil_imageinfo_output = output
