@@ -577,7 +577,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         #Basic settings and info.
         SETTINGS["InputFile"] = None
         SETTINGS["OutputFile"] = None
-        SETTINGS["MapFIle"] = None
+        SETTINGS["MapFile"] = None
         SETTINGS["RecoveringData"] = False
         SETTINGS["CheckedSettings"] = False
 
@@ -1100,12 +1100,12 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         if _type == "Input":
             choice_box = self.input_choice_box
             paths = self.custom_input_paths
-            others = ["OutputFile", "MapFIle"]
+            others = ["OutputFile", "MapFile"]
 
         elif _type == "Output":
             choice_box = self.output_choice_box
             paths = self.custom_output_paths
-            others = ["InputFile", "MapFIle"]
+            others = ["InputFile", "MapFile"]
 
         else:
             choice_box = self.map_choice_box
@@ -1320,7 +1320,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
     def set_map_file(self, event=None): #pylint: disable=unused-argument
         """Get the map file position/name and set a variable to the selected value"""
-        logger.debug("MainWindow().SelectMapFIle(): Calling File Choice Handler...")
+        logger.debug("MainWindow().SelectMapFile(): Calling File Choice Handler...")
         self.file_choice_handler(_type="Log",
                                  user_selection=self.map_choice_box.GetStringSelection(),
                                  default_dir=self.user_homedir, wildcard="Map Files (*.log)|*.log",
@@ -1436,7 +1436,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             dlg.Destroy()
             self.update_status_bar("Ready.")
 
-        elif None not in [SETTINGS["InputFile"], SETTINGS["MapFIle"], SETTINGS["OutputFile"]]:
+        elif None not in [SETTINGS["InputFile"], SETTINGS["MapFile"], SETTINGS["OutputFile"]]:
             #Attempt to unmount input/output Disks now, if needed.
             logger.info("MainWindow().on_start(): Unmounting input and output files if needed...")
 
@@ -1571,7 +1571,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
         else:
             logger.error("MainWindow().on_start(): One or more of InputFile, OutputFile or "
-                         "MapFIle hasn't been set! Aborting Recovery...")
+                         "MapFile hasn't been set! Aborting Recovery...")
 
             dlg = wx.MessageDialog(self.panel, "Please set the Input file, map file and Output "
                                    "file correctly before starting!", "DDRescue-GUI - Error!",
@@ -2024,7 +2024,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                     dlg.Destroy()
 
                     if answer == wx.ID_OK:
-                        if _file == SETTINGS["MapFIle"]:
+                        if _file == SETTINGS["MapFile"]:
                             dlg = wx.MessageDialog(self.panel, "Error! Your chosen file is the "
                                                    "same as the recovery map file! This log file "
                                                    "contains only debugging information for "
@@ -3417,7 +3417,7 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
                         SETTINGS["DiskSize"], SETTINGS["Reverse"], SETTINGS["Preallocate"],
                         SETTINGS["NoSplit"], SETTINGS["BadSectorRetries"], SETTINGS["MaxErrors"],
                         SETTINGS["ClusterSize"], SETTINGS["InputFileBlockSize"],
-                        SETTINGS["InputFile"], SETTINGS["OutputFile"], SETTINGS["MapFIle"]]
+                        SETTINGS["InputFile"], SETTINGS["OutputFile"], SETTINGS["MapFile"]]
 
         if LINUX:
             exec_list = [RESOURCEPATH+"/Tools/runasroot.sh", "ddrescue", "-v"]
