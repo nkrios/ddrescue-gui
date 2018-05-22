@@ -234,9 +234,15 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
 
     def start_ddrescuegui(self, password):
         """Start DDRescue-GUI and exit"""
-        cmd = subprocess.Popen("sudo -SH sh -c '"+self.args+" 2>&1'",
-                               stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE, shell=True)
+        if __name__ == "__main__":
+            cmd = subprocess.Popen("sudo -SH sh -c '"+self.args+" 2>&1'",
+                                   stdin=subprocess.PIPE, stdout=sys.stdout,
+                                   stderr=subprocess.PIPE, shell=True)
+
+        else:
+            cmd = subprocess.Popen("sudo -SH sh -c '"+self.args+" 2>&1'",
+                                   stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE, shell=True)
 
         #Send the password to sudo through stdin,
         #to avoid showing the user's password in the system/activity monitor.
@@ -257,7 +263,12 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
 
         #Get output.
         global output
-        output = cmd.stdout.read().decode("utf-8")
+
+        if __name__ == "__main__":
+            output = ""
+
+        else:
+            output = cmd.stdout.read().decode("utf-8")
 
         #Get return code.
         global returncode
@@ -295,9 +306,15 @@ def test_auth(args):
         return start_program(args)
 
 def start_program(args):
-    cmd = subprocess.Popen("sudo -SH sh -c '"+args+" 2>&1'",
-                           stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                           stderr=subprocess.PIPE, shell=True)
+    if __name__ == "__main__":
+        cmd = subprocess.Popen("sudo -SH sh -c '"+args+" 2>&1'",
+                               stdin=subprocess.PIPE, stdout=sys.stdout,
+                               stderr=subprocess.PIPE, shell=True)
+
+    else:
+        cmd = subprocess.Popen("sudo -SH sh -c '"+args+" 2>&1'",
+                               stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE, shell=True)
 
     #Send the password to sudo through stdin,
     #to avoid showing the user's password in the system/activity monitor.
@@ -308,7 +325,12 @@ def start_program(args):
 
     #Get output.
     global output
-    output = cmd.stdout.read().decode("utf-8")
+
+    if __name__ == "__main__":
+        output = ""
+
+    else:
+        output = cmd.stdout.read().decode("utf-8")
 
     #Get return code.
     global returncode
@@ -334,7 +356,6 @@ def run(args): #FIXME later
         APP.MainLoop()
 
     if __name__ == "__main__":
-        sys.stdout.write(output)
         sys.exit(returncode)
 
     return (returncode, output)

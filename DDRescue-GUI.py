@@ -84,7 +84,7 @@ if sys.version_info[0] == 3:
 
 #Define global variables.
 VERSION = "1.8"
-RELEASE_DATE = "21/5/2018"
+RELEASE_DATE = "22/5/2018"
 
 session_ending = False
 DDRESCUE_VERSION = "1.23" #Default to latest version.
@@ -229,16 +229,19 @@ class GetDiskInformation(threading.Thread):
                                    +"/Tools/run_getdevinfo.py"), stdout=subprocess.PIPE,
                                    stderr=subprocess.STDOUT, shell=False)
 
-            while cmd.poll() is None:
-                time.sleep(0.25)
-
-            #Get the output and return code.
-            retval = cmd.returncode #TODO Check me.
-            output = cmd.stdout.read().decode("UTF-8", errors="ignore")
-
         else:
-            retval, output = runasroot_mac.run(sys.executable+" "+RESOURCEPATH
-                                               +"/Tools/run_getdevinfo.py")
+            cmd = subprocess.Popen(shlex.split(RESOURCEPATH
+                                   +"/Tools/helpers/runasroot_mac.py "
+                                   +sys.executable+" "+RESOURCEPATH
+                                   +"/Tools/run_getdevinfo.py"), stdout=subprocess.PIPE,
+                                   stderr=subprocess.STDOUT, shell=False)
+
+        while cmd.poll() is None:
+            time.sleep(0.25)
+
+        #Get the output and return code.
+        retval = cmd.returncode #TODO Check me.
+        output = cmd.stdout.read().decode("UTF-8", errors="ignore")
 
         #Success! Now use ast to convert the returned string to a dictionary.
         #TODO exception handling.
