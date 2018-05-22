@@ -577,7 +577,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         #Basic settings and info.
         SETTINGS["InputFile"] = None
         SETTINGS["OutputFile"] = None
-        SETTINGS["LogFile"] = None
+        SETTINGS["MapFIle"] = None
         SETTINGS["RecoveringData"] = False
         SETTINGS["CheckedSettings"] = False
 
@@ -617,7 +617,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         #Define these here to prevent adding checks to see if they're defined later.
         self.custom_input_paths = {}
         self.custom_output_paths = {}
-        self.custom_log_paths = {}
+        self.custom_map_paths = {}
 
         #Define these to make pylint happy and prevent possible errors later.
         self.recovered_data = None
@@ -637,7 +637,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         """Create all text for MainWindow"""
         self.title_text = wx.StaticText(self.panel, -1, "Welcome to DDRescue-GUI!")
         self.input_text = wx.StaticText(self.panel, -1, "Image Source:")
-        self.log_text = wx.StaticText(self.panel, -1, "Recovery Log File:")
+        self.map_text = wx.StaticText(self.panel, -1, "Recovery Map File (previously called logfile):")
         self.output_text = wx.StaticText(self.panel, -1, "Image Destination:")
 
         #Also create special text for showing and hiding recovery info and terminal output.
@@ -660,7 +660,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.input_choice_box = wx.Choice(self.panel, -1, choices=['-- Please Select --',
                                                                    'Specify Path/File'])
 
-        self.log_choice_box = wx.Choice(self.panel, -1, choices=['-- Please Select --',
+        self.map_choice_box = wx.Choice(self.panel, -1, choices=['-- Please Select --',
                                                                  'Specify Path/File',
                                                                  'None (not recommended)'])
 
@@ -669,7 +669,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
         #Set the default value.
         self.input_choice_box.SetStringSelection("-- Please Select --")
-        self.log_choice_box.SetStringSelection("-- Please Select --")
+        self.map_choice_box.SetStringSelection("-- Please Select --")
         self.output_choice_box.SetStringSelection("-- Please Select --")
 
     def create_other_widgets(self):
@@ -736,11 +736,11 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         input_sizer.Add(self.input_choice_box, 1, wx.BOTTOM|wx.ALIGN_CENTER, 10)
 
         #Make the log sizer.
-        log_sizer = wx.BoxSizer(wx.VERTICAL)
+        map_sizer = wx.BoxSizer(wx.VERTICAL)
 
         #Add items to the log sizer.
-        log_sizer.Add(self.log_text, 1, wx.TOP|wx.BOTTOM|wx.ALIGN_CENTER, 10)
-        log_sizer.Add(self.log_choice_box, 1, wx.BOTTOM|wx.ALIGN_CENTER, 10)
+        map_sizer.Add(self.map_text, 1, wx.TOP|wx.BOTTOM|wx.ALIGN_CENTER, 10)
+        map_sizer.Add(self.map_choice_box, 1, wx.BOTTOM|wx.ALIGN_CENTER, 10)
 
         #Make the output sizer.
         output_sizer = wx.BoxSizer(wx.VERTICAL)
@@ -751,7 +751,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
         #Add items to the file choices sizer.
         file_choices_sizer.Add(input_sizer, 1, wx.ALIGN_CENTER)
-        file_choices_sizer.Add(log_sizer, 1, wx.ALIGN_CENTER)
+        file_choices_sizer.Add(map_sizer, 1, wx.ALIGN_CENTER)
         file_choices_sizer.Add(output_sizer, 1, wx.ALIGN_CENTER)
 
         #Make the button sizer.
@@ -872,7 +872,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         #Choiceboxes.
         self.Bind(wx.EVT_CHOICE, self.set_input_file, self.input_choice_box)
         self.Bind(wx.EVT_CHOICE, self.set_output_file, self.output_choice_box)
-        self.Bind(wx.EVT_CHOICE, self.set_log_file, self.log_choice_box)
+        self.Bind(wx.EVT_CHOICE, self.set_map_file, self.map_choice_box)
 
         #Buttons.
         self.Bind(wx.EVT_BUTTON, self.on_control_button, self.control_button)
@@ -1092,7 +1092,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.update_status_bar("Ready.")
 
     def file_choice_handler(self, _type, user_selection, default_dir, wildcard, style):
-        """Handle file dialogs for set_input_file, set_output_file, and set_log_file"""
+        """Handle file dialogs for set_input_file, set_output_file, and set_map_file"""
         #pylint: disable=too-many-arguments
         #Setup.
         key = _type+"File"
@@ -1100,16 +1100,16 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         if _type == "Input":
             choice_box = self.input_choice_box
             paths = self.custom_input_paths
-            others = ["OutputFile", "LogFile"]
+            others = ["OutputFile", "MapFIle"]
 
         elif _type == "Output":
             choice_box = self.output_choice_box
             paths = self.custom_output_paths
-            others = ["InputFile", "LogFile"]
+            others = ["InputFile", "MapFIle"]
 
         else:
-            choice_box = self.log_choice_box
-            paths = self.custom_log_paths
+            choice_box = self.map_choice_box
+            paths = self.custom_map_paths
             others = ["InputFile", "OutputFile"]
 
         SETTINGS[key] = user_selection
@@ -1121,25 +1121,25 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             #Return to prevent TypeErrors later.
             return True
 
-        #Handle having no log file.
+        #Handle having no map file.
         elif user_selection == "None (not recommended)":
-            dialog = wx.MessageDialog(self.panel, "You have not chosen to use a log file. "
+            dialog = wx.MessageDialog(self.panel, "You have not chosen to use a map file. "
                                       "If you do not use one, you will have to start from "
                                       "scratch in the event of a power outage, or if "
                                       "DDRescue-GUI is interrupted. Additionally, you "
-                                      "can't do a multi-stage recovery without a log file.\n\n"
-                                      "Are you really sure you do not want to use a logfile?",
+                                      "can't do a multi-stage recovery without a map file.\n\n"
+                                      "Are you really sure you do not want to use a mapfile?",
                                       "DDRescue-GUI - Warning", wx.YES_NO | wx.ICON_EXCLAMATION)
 
             if dialog.ShowModal() == wx.ID_YES:
-                logger.warning("MainWindow().file_choice_handler(): User isn't using a log file, "
+                logger.warning("MainWindow().file_choice_handler(): User isn't using a map file, "
                                "despite our warning!")
 
                 SETTINGS[key] = ""
 
             else:
                 logger.info("MainWindow().file_choice_handler(): User decided against not using "
-                            "a log file. Good!")
+                            "a map file. Good!")
 
                 SETTINGS[key] = None
                 choice_box.SetStringSelection("-- Please Select --")
@@ -1171,12 +1171,12 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                         user_selection += ".img"
 
                 else:
-                    #Automatically add a file extension of .log for log files if extension is wrong
+                    #Automatically add a file extension of .log for map files if extension is wrong
                     #or missing.
                     if user_selection[-4:] != ".log":
                         user_selection += ".log"
 
-                #Don't allow user to save output or log files in root's home dir on Pmagic.
+                #Don't allow user to save output or map files in root's home dir on Pmagic.
                 if PARTED_MAGIC and "/root" in user_selection:
                     logger.warning("MainWindow().file_choice_handler(): "+_type+" File is in "
                                    "root's home directory on Parted Magic! There is no space "
@@ -1251,7 +1251,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
                 dialog = wx.MessageDialog(self.panel, "The file you selected already exists!\n\n"
                                           "If you're doing a multi-stage recovery, *and you've "
-                                          "selected a logfile*, DDRescue-GUI will resume where "
+                                          "selected a mapfile*, DDRescue-GUI will resume where "
                                           "it left off on the previous run, and it is safe to "
                                           "continue.\n\nOtherwise, you will lose data on this "
                                           "file or device.\n\nPlease be sure you selected the "
@@ -1318,12 +1318,12 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                                  default_dir=self.user_homedir, wildcard=self.output_wildcard,
                                  style=wx.FD_SAVE)
 
-    def set_log_file(self, event=None): #pylint: disable=unused-argument
-        """Get the log file position/name and set a variable to the selected value"""
-        logger.debug("MainWindow().SelectLogFile(): Calling File Choice Handler...")
+    def set_map_file(self, event=None): #pylint: disable=unused-argument
+        """Get the map file position/name and set a variable to the selected value"""
+        logger.debug("MainWindow().SelectMapFIle(): Calling File Choice Handler...")
         self.file_choice_handler(_type="Log",
-                                 user_selection=self.log_choice_box.GetStringSelection(),
-                                 default_dir=self.user_homedir, wildcard="Log Files (*.log)|*.log",
+                                 user_selection=self.map_choice_box.GetStringSelection(),
+                                 default_dir=self.user_homedir, wildcard="Map Files (*.log)|*.log",
                                  style=wx.FD_SAVE)
 
     def show_userguide(self, event=None):
@@ -1436,7 +1436,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             dlg.Destroy()
             self.update_status_bar("Ready.")
 
-        elif None not in [SETTINGS["InputFile"], SETTINGS["LogFile"], SETTINGS["OutputFile"]]:
+        elif None not in [SETTINGS["InputFile"], SETTINGS["MapFIle"], SETTINGS["OutputFile"]]:
             #Attempt to unmount input/output Disks now, if needed.
             logger.info("MainWindow().on_start(): Unmounting input and output files if needed...")
 
@@ -1551,7 +1551,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             self.update_disk_info_button.Disable()
             self.input_choice_box.Disable()
             self.output_choice_box.Disable()
-            self.log_choice_box.Disable()
+            self.map_choice_box.Disable()
             self.menu_exit.Enable(False)
             self.menu_settings.Enable(False)
             self.control_button.SetLabel("Abort")
@@ -1571,9 +1571,9 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
         else:
             logger.error("MainWindow().on_start(): One or more of InputFile, OutputFile or "
-                         "LogFile hasn't been set! Aborting Recovery...")
+                         "MapFIle hasn't been set! Aborting Recovery...")
 
-            dlg = wx.MessageDialog(self.panel, "Please set the Input file, Log file and Output "
+            dlg = wx.MessageDialog(self.panel, "Please set the Input file, map file and Output "
                                    "file correctly before starting!", "DDRescue-GUI - Error!",
                                    wx.OK | wx.ICON_ERROR)
 
@@ -1898,7 +1898,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.settings_button.Enable()
         self.input_choice_box.Enable()
         self.output_choice_box.Enable()
-        self.log_choice_box.Enable()
+        self.map_choice_box.Enable()
         self.menu_about.Enable(True)
         self.menu_exit.Enable(True)
         self.menu_disk_info.Enable(True)
@@ -1927,7 +1927,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         #Reset the choice dialogs.
         self.input_choice_box.SetStringSelection("-- Please Select --")
         self.output_choice_box.SetStringSelection("-- Please Select --")
-        self.log_choice_box.SetStringSelection("-- Please Select --")
+        self.map_choice_box.SetStringSelection("-- Please Select --")
 
         #Get new Disk info.
         self.get_diskinfo()
@@ -2010,7 +2010,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             dlg.Destroy()
 
             if answer == wx.ID_YES:
-                #Trap pogram in loop in case same log file as Recovery log file is picked
+                #Trap pogram in loop in case same log file as Recovery map file is picked
                 #for destination.
                 while True:
                     #Ask the user where to save it.
@@ -2024,12 +2024,12 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                     dlg.Destroy()
 
                     if answer == wx.ID_OK:
-                        if _file == SETTINGS["LogFile"]:
+                        if _file == SETTINGS["MapFIle"]:
                             dlg = wx.MessageDialog(self.panel, "Error! Your chosen file is the "
-                                                   "same as the recovery log file! This log file "
+                                                   "same as the recovery map file! This log file "
                                                    "contains only debugging information for "
                                                    "DDRescue-GUI, and you must not overwrite "
-                                                   "the recovery log file with this one. Please "
+                                                   "the recovery map file with this file. Please "
                                                    "select a new destination file.",
                                                    "DDRescue-GUI - Error", wx.OK | wx.ICON_ERROR)
 
@@ -3417,7 +3417,7 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
                         SETTINGS["DiskSize"], SETTINGS["Reverse"], SETTINGS["Preallocate"],
                         SETTINGS["NoSplit"], SETTINGS["BadSectorRetries"], SETTINGS["MaxErrors"],
                         SETTINGS["ClusterSize"], SETTINGS["InputFileBlockSize"],
-                        SETTINGS["InputFile"], SETTINGS["OutputFile"], SETTINGS["LogFile"]]
+                        SETTINGS["InputFile"], SETTINGS["OutputFile"], SETTINGS["MapFIle"]]
 
         if LINUX:
             exec_list = [RESOURCEPATH+"/Tools/runasroot.sh", "ddrescue", "-v"]
