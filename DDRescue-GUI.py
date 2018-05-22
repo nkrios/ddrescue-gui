@@ -230,13 +230,8 @@ class GetDiskInformation(threading.Thread):
                                    stderr=subprocess.STDOUT, shell=False)
 
         else:
-            print(shlex.split(RESOURCEPATH
-                                   +"/Tools/helpers/runasroot_mac.py "
-                                   +sys.executable+" "+RESOURCEPATH
-                                   +"/Tools/run_getdevinfo.py"))
-
             cmd = subprocess.Popen(shlex.split(RESOURCEPATH
-                                   +"/Tools/helpers/runasroot_mac.py "
+                                   +"/Tools/runasroot_mac.py "
                                    +sys.executable+" "+RESOURCEPATH
                                    +"/Tools/run_getdevinfo.py"), stdout=subprocess.PIPE,
                                    stderr=subprocess.STDOUT, shell=False)
