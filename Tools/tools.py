@@ -95,7 +95,7 @@ def get_helper(cmd):
         return "pkexec "+helper
 
     else:
-        return RESOURCEPATH+"/Tools/runasroot.sh"
+        return ""
 
 def start_process(cmd, return_output=False, privileged=False):
     """Start a given process, and return output and return value if needed"""
@@ -105,7 +105,7 @@ def start_process(cmd, return_output=False, privileged=False):
 
         cmd = helper+" "+cmd
 
-    if LINUX:
+    if LINUX or not privileged:
         cmd = shlex.split(cmd)
 
         logger.debug("start_process(): Starting process: "+' '.join(cmd))
