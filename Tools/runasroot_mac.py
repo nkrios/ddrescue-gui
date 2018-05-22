@@ -278,6 +278,9 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
 
     def on_exit(self, event=None): #pylint: disable=unused-argument
         """Close AuthWindow() and exit"""
+        global dialog_open
+        dialog_open = False
+
         self.Destroy()
 
 #End Authentication Window.
@@ -350,10 +353,16 @@ def run(args): #FIXME later
     if __name__ == "__main__":
         APP = wx.App(False)
 
+    global dialog_open
+    dialog_open = True
+
     AuthWindow(args).Show()
 
     if __name__ == "__main__":
         APP.MainLoop()
+
+    while dialog_open:
+        time.sleep(0.04)
 
     if __name__ == "__main__":
         sys.exit(returncode)
