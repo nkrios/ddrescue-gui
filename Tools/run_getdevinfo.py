@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# Uses getdevinfo to gather device information when requested for DDRescue-GUI Version 1.8.
+# Uses getdevinfo to gather device information when requested for DDRescue-GUI Version 2.0.0.
 # This file is part of DDRescue-GUI.
 # Copyright (C) 2013-2018 Hamish McIntyre-Bhatty
 # DDRescue-GUI is free software: you can redistribute it and/or modify it

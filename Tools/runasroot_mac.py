@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# Authentication Dialog for DDRescue-GUI Version 1.8
+# Authentication Dialog for DDRescue-GUI Version 2.0.0
 # This file is part of DDRescue-GUI.
 # Copyright (C) 2013-2018 Hamish McIntyre-Bhatty
 # DDRescue-GUI is free software: you can redistribute it and/or modify it
@@ -17,7 +17,7 @@
 
 """
 A simple authentication dialog that is used when elevated privileges are required.
-Until version 1.8, this was used to start the GUI, but since that release, privileges
+Until version 2.0.0, this was used to start the GUI, but since that release, privileges
 are only escalated when required to improve security.
 """
 
@@ -361,6 +361,7 @@ def run(args): #FIXME later
     if __name__ == "__main__":
         APP.MainLoop()
 
+    #FIXME Stops dialog from opening - blocks thread.
     while dialog_open:
         time.sleep(0.04)
 

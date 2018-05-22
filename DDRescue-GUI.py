@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# DDRescue-GUI Main Script Version 1.8
+# DDRescue-GUI Main Script Version 2.0.0
 # This file is part of DDRescue-GUI.
 # Copyright (C) 2013-2018 Hamish McIntyre-Bhatty
 # DDRescue-GUI is free software: you can redistribute it and/or modify it
@@ -83,7 +83,7 @@ if sys.version_info[0] == 3:
     plistlib.readPlistFromString = plistlib.loads
 
 #Define global variables.
-VERSION = "1.8"
+VERSION = "2.0.0"
 RELEASE_DATE = "22/5/2018"
 
 session_ending = False
