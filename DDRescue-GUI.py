@@ -1300,11 +1300,8 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         """Get the input file/Disk and set a variable to the selected value"""
         logger.debug("MainWindow().SelectInputFile(): Calling File Choice Handler...")
 
-        #if LINUX: TODO Does this help?
+        #TODO Workaround for macOS?
         default_dir = "/dev"
-
-        #else:
-        #    default_dir = "/Users"
 
         self.file_choice_handler(_type="Input",
                                  user_selection=self.input_choice_box.GetStringSelection(),
@@ -2885,7 +2882,7 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         """Triggered when mount button is pressed"""
         if self.mount_button.GetLabel() == "Mount Image/Disk":
             #Change some stuff if it worked.
-            if self.mount_output_file():
+            if self.mount_disk():
                 self.top_text.SetLabel("Your recovered data is now mounted at:")
                 self.path_text.SetLabel(self.output_file_mount_point)
                 self.mount_button.SetLabel("Unmount Image/Disk")
@@ -2913,39 +2910,6 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         self.panel.Layout()
 
         wx.CallAfter(self.parent.update_status_bar, "Finished")
-
-    def mount_output_file(self, event=None): #pylint: disable=unused-argument
-        #TODO Do we need this function any more?
-        """
-        Handle errors and call the platform-dependent mounter function to mount the output file.
-        """
-
-        logger.debug("FinishedWindow().mount_output_file(): Preparing to mount the output file...")
-
-        #Handle any unexpected errors.
-        #try:
-        return self.mount_disk()
-
-        #except Exception as error:
-        #    #An error has occurred!
-        #    logger.error("Unexpected error: \n\n"+unicode(traceback.format_exc())
-        #                 + "\n\n While mounting output file. Warning user...\n")
-
-        #    dlg = wx.MessageDialog(self.panel, "Your output file could not be mounted!\n\nThe "
-        #                           "most likely reason for this is that the disk image is "
-        #                           "incomplete. If the disk image is complete, it may use an "
-        #                           "unsupported filesystem.\n\nIf you were asked which "
-        #                           "partition to mount, try again and choose a different one.\n\n"
-        #                           "The error was:\n\n"+unicode(error), "DDRescue-GUI - Error!",
-        #                           style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
-
-        #    dlg.ShowModal()
-        #    dlg.Destroy()
-
-        #    #Clean up. TODO Do more clean up here
-        #    self.output_file_mount_point = SETTINGS["OutputFile"] #TODO what???
-
-        #    return False
 
     def unmount_output_file(self, event=None): #pylint: disable=unused-argument
         """Unmount the output file"""
