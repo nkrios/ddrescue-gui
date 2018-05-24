@@ -259,7 +259,7 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
 
                 time.sleep(0.02)
                 self.SetPosition((x_pos, y_pos))
-                wx.Yield()
+                #wx.Yield()
                 count += 1
 
             #Set the password field colour to pink, and select its text.
@@ -355,7 +355,7 @@ def start_process(cmd, return_output=False, privileged=False):
             while auth_dialog_open:
                 print("bob")
                 wx.Yield()
-                time.sleep(1)
+                time.sleep(0.5)
 
             cmd = "sudo -SH "+cmd
 
