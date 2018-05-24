@@ -65,6 +65,9 @@ elif "wxMac" in wx.PlatformInfo:
     LINUX = False
     PARTED_MAGIC = False
 
+global auth_dialog_open
+auth_dialog_open = False
+
 #Set up logging.
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -306,17 +309,10 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
 
         auth_window = AuthWindow().Show()
 
-        #FIXME Stops dialog from opening - blocks thread.
-        while auth_window:
-            wx.Yield()
-            time.sleep(0.04)
-
-        return
-
     def on_exit(self, event=None): #pylint: disable=unused-argument
         """Close AuthWindow() and exit"""
-        global dialog_open
-        dialog_open = False
+        global auth_dialog_open
+        auth_dialog_open = False
 
         self.Destroy()
 
@@ -354,7 +350,14 @@ def start_process(cmd, return_output=False, privileged=False):
 
         else:
             #Pre-authenticate with the auth dialog.
+            global auth_dialog_open
+            auth_dialog_open = True
+
             AuthWindow.run()
+
+            while auth_dialog_open:
+                print("bob")
+                time.sleep(1)
 
             cmd = "sudo -SH "+cmd
 
