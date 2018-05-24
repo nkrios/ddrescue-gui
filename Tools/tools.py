@@ -222,7 +222,7 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         self.throbber.Play()
 
         while cmd.poll() is None:
-            wx.Yield()
+            #wx.Yield()
             time.sleep(0.04)
 
         output = cmd.stdout.read().decode("utf-8")
