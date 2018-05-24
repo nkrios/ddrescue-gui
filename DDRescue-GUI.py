@@ -84,7 +84,7 @@ if sys.version_info[0] == 3:
 
 #Define global variables.
 VERSION = "2.0.0"
-RELEASE_DATE = "22/5/2018"
+RELEASE_DATE = "24/5/2018"
 
 session_ending = False
 DDRESCUE_VERSION = "1.23" #Default to latest version.
@@ -3201,50 +3201,27 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
             #On macOS, we aren't finished yet.
             #We need to ge the device name for the partition we wanted to mount, and check it
             #was actually mounted by the command earlier.
-            try:
                 #Get the list of disks mounted.
-                disks = mount_output["system-entities"]
+            disks = mount_output["system-entities"]
 
-                #Get the device name given to the output file.
-                #Set this so if we don't find our partition, we can still unmount the image
-                #when we report failure.
-                self.output_file_device_name = disks[0]["dev-entry"]
+            #Get the device name given to the output file.
+            #Set this so if we don't find our partition, we can still unmount the image
+            #when we report failure.
+            self.output_file_device_name = disks[0]["dev-entry"]
 
-                success = False
+            success = False
 
-                #Check that the filesystem the user wanted is among those that have been mounted.
-                for partition in disks:
-                    disk = partition["dev-entry"]
+            #Check that the filesystem the user wanted is among those that have been mounted.
+            for partition in disks:
+                disk = partition["dev-entry"]
 
-                    if disk.split("s")[-1] == selected_partition_number:
-                        #Check if the partition we want was mounted (hdiutil mounts all mountable
-                        #partitions in the image automatically).
-                        if "mount-point" in partition:
-                            self.output_file_mount_point = partition["mount-point"]
-                            success = True
-                            break
-
-            except UnicodeDecodeError:
-                #NOTE: Fixed w/ Python 3 - all new macOS builds use it.
-                #However, there is very little I can do to fix this under Python 2, because of
-                #the poor unicode support. Oh well.
-                logger.error("FinishedWindow().mount_disk(): FIXME: Couldn't parse output of "
-                             "hdiutil mount due to UnicodeDecodeError. Cleaning up and "
-                             "warning user...")
-
-                self.unmount_output_file()
-                dlg = wx.MessageDialog(self.panel, "You have encountered a known bug in "
-                                       "DDRescue-GUI that prevents mounting the output file "
-                                       "under curtain circumstances. I'm aware of this issue "
-                                       "and will fix it as soon as possible. In the mean time, "
-                                       "please feel free to contact me at hamishmb@live.co.uk "
-                                       "if you want help mounting your output file manually.",
-                                       "DDRescue-GUI - Information",
-                                       style=wx.OK | wx.ICON_INFORMATION)
-
-                dlg.ShowModal()
-                dlg.Destroy()
-                return False
+                if disk.split("s")[-1] == selected_partition_number:
+                    #Check if the partition we want was mounted (hdiutil mounts all mountable
+                    #partitions in the image automatically).
+                    if "mount-point" in partition:
+                        self.output_file_mount_point = partition["mount-point"]
+                        success = True
+                        break
 
             if not success:
                 logger.info("FinishedWindow().mount_disk(): Unsupported or damaged filesystem. "
@@ -3439,6 +3416,7 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
                     except Exception:
                         #Handle unexpected errors. Can happen once in normal operation on
                         #ddrescue v1.22+. TODO make smarter, don't fill log with these.
+                        #TODO suppress 1st error if on new versions.
                         logger.warning("MainBackendThread(): Unexpected error parsing ddrescue's "
                                        "output! Can happen once on newer versions of ddrescue "
                                        "(1.22+) in normal operation. Are you running a "
