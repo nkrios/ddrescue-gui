@@ -340,8 +340,10 @@ class CustomTextCtrl(wx.TextCtrl):
         """
         A custom version of wx.TextCtrl.PositionToXY() that works on OS X
         (the built-in one isn't implemented on OS X).
+
+        Note: Still not implemented on OS X on wxPython 4 (random numbers).
         """
-        #TODO still needed?
+
         #Count the number and position of newline characters.
         text = self.GetRange(0, insertion_point)
 
@@ -387,7 +389,6 @@ class CustomTextCtrl(wx.TextCtrl):
         This is also helpful for LINUX because the built-in one has a quirk
         when you're at the end of the text and it always returns -1
         """
-        #TODO Still needed?
         #Count the number and position of newline characters.
         text = self.GetValue()
 
@@ -441,16 +442,7 @@ class CustomTextCtrl(wx.TextCtrl):
         """Handles '\x1b[A' (up one line) in output"""
         #Go up one line.
         #Get our column and line numbers.
-        #column, line = self.PositionToXY(self.GetInsertionPoint())
-
-        #Try stock PositionToXY.
-        if CLASSIC_WXPYTHON:
-            #On wx 2.8 & 3.0, this works as I thought it would.
-            column, line = wx.TextCtrl.PositionToXY(self, self.GetInsertionPoint())
-
-        else:
-            #On wx 4, this also returns a bool, which we will ignore.
-            column, line = wx.TextCtrl.PositionToXY(self, self.GetInsertionPoint())[1:3]
+        column, line = self.PositionToXY(self.GetInsertionPoint())
 
         #We go up one line, but stay in the same column, so find the integer position of the new
         #insertion point.
