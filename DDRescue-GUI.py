@@ -1321,7 +1321,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
     def set_map_file(self, event=None): #pylint: disable=unused-argument
         """Get the map file position/name and set a variable to the selected value"""
         logger.debug("MainWindow().SelectMapFile(): Calling File Choice Handler...")
-        self.file_choice_handler(_type="Log",
+        self.file_choice_handler(_type="Map",
                                  user_selection=self.map_choice_box.GetStringSelection(),
                                  default_dir=self.user_homedir, wildcard="Map Files (*.log)|*.log",
                                  style=wx.FD_SAVE)
