@@ -354,6 +354,7 @@ def start_process(cmd, return_output=False, privileged=False):
 
             while auth_dialog_open:
                 print("bob")
+                wx.Yield()
                 time.sleep(1)
 
             cmd = "sudo -SH "+cmd
