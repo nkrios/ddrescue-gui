@@ -65,69 +65,317 @@ elif "wxMac" in wx.PlatformInfo:
     LINUX = False
     PARTED_MAGIC = False
 
-    #Import mac auth dialog.
-    from . import runasroot_mac
-
 #Set up logging.
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-def get_helper(cmd):
-    #Figure out which helper script to use.
-    if LINUX:
-        helper = "/usr/share/ddrescue-gui/Tools/runasroot_linux.sh"
+#Begin Mac Authentication Window.
+class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
+    """
+    A simple authentication dialog that is used when elevated privileges are required.
+    Until version 2.0.0, this was used to start the GUI, but since that release, privileges
+    are only escalated when required to improve security.
 
-        if "run_getdevinfo.py" in cmd:
-            helper = "/usr/share/ddrescue-gui/Tools/helpers/runasroot_linux_getdevinfo.sh"
+    This is used to pre-authenticate on macOS if needed, before running a privileged
+    task with sudo.
+    """
 
-        elif "umount" in cmd:
-            helper = "/usr/share/ddrescue-gui/Tools/helpers/runasroot_linux_umount.sh"
+    def __init__(self):
+        """Inititalize AuthWindow"""
+        wx.Frame.__init__(self, None, title="DDRescue-GUI - Authenticate", size=(600, 400),
+                          style=(wx.DEFAULT_FRAME_STYLE | wx.STAY_ON_TOP) ^ (wx.RESIZE_BORDER | wx.MINIMIZE_BOX))
 
-        elif "mount" in cmd:
-            helper = "/usr/share/ddrescue-gui/Tools/helpers/runasroot_linux_mount.sh"
+        self.panel = wx.Panel(self)
 
-        elif "ddrescue" in cmd and "killall" not in cmd:
-            helper = "/usr/share/ddrescue-gui/Tools/helpers/runasroot_linux_ddrescue.sh"
+        #Set the frame's icon.
+        global APPICON
+        APPICON = wx.Icon(RESOURCEPATH+"/images/Logo.png", wx.BITMAP_TYPE_PNG)
+        wx.Frame.SetIcon(self, APPICON)
+
+        self.create_text()
+        self.create_buttons()
+        self.create_other_widgets()
+        self.setup_sizers()
+        self.bind_events()
+
+        #Call Layout() on self.panel() to ensure it displays properly.
+        self.panel.Layout()
+
+        #Give the password field focus, so the user can start typing immediately.
+        self.password_field.SetFocus()
+
+    def create_text(self):
+        """Create all text for AuthenticationWindow"""
+        self.title_text = wx.StaticText(self.panel, -1,
+                                        "DDRescue-GUI requires authentication.")
+        self.body_text = wx.StaticText(self.panel, -1, "DDRescue-GUI requires authentication "
+                                       + "to\nperform privileged actions.")
+
+        self.password_text = wx.StaticText(self.panel, -1, "Password:")
+
+        bold_font = self.title_text.GetFont()
+        bold_font.SetWeight(wx.BOLD)
+        self.password_text.SetFont(bold_font)
+
+    def create_buttons(self):
+        """Create all buttons for AuthenticationWindow"""
+        self.cancel_button = wx.Button(self.panel, -1, "Cancel")
+        self.auth_button = wx.Button(self.panel, -1, "Authenticate")
+
+    def create_other_widgets(self):
+        """Create all other widgets for AuthenticationWindow"""
+        #Create the image.
+        img = wx.Image(RESOURCEPATH+"/images/Logo.png", wx.BITMAP_TYPE_PNG)
+        self.program_logo = wx.StaticBitmap(self.panel, -1, wx.Bitmap(img))
+
+        #Create the password field.
+        self.password_field = wx.TextCtrl(self.panel, -1, "",
+                                          style=wx.TE_PASSWORD | wx.TE_PROCESS_ENTER)
+
+        self.password_field.SetBackgroundColour((255, 255, 255))
+
+        #Create the throbber.
+        self.busy = wx.adv.Animation(RESOURCEPATH+"/images/Throbber.gif")
+        self.green_pulse = wx.adv.Animation(RESOURCEPATH+"/images/GreenPulse.gif")
+        self.red_pulse = wx.adv.Animation(RESOURCEPATH+"/images/RedPulse.gif")
+
+        self.throbber = wx.adv.AnimationCtrl(self.panel, -1, self.green_pulse)
+        self.throbber.SetInactiveBitmap(wx.Bitmap(RESOURCEPATH+"/images/ThrobberRest.png",
+                                                  wx.BITMAP_TYPE_PNG))
+
+        self.throbber.SetClientSize(wx.Size(30, 30))
+
+    def setup_sizers(self):
+        """Setup sizers for AuthWindow"""
+        #Make the main boxsizer.
+        main_sizer = wx.BoxSizer(wx.VERTICAL)
+
+        #Make the top sizer.
+        top_sizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        #Make the top text sizer.
+        top_text_sizer = wx.BoxSizer(wx.VERTICAL)
+
+        #Add items to the top text sizer.
+        top_text_sizer.Add(self.title_text, 0, wx.ALIGN_LEFT|wx.EXPAND)
+        top_text_sizer.Add(self.body_text, 0, wx.TOP|wx.ALIGN_LEFT|wx.EXPAND, 10)
+
+        #Add items to the top sizer.
+        top_sizer.Add(self.program_logo, 0, wx.LEFT|wx.ALIGN_CENTER, 18)
+        top_sizer.Add(top_text_sizer, 1, wx.LEFT|wx.ALIGN_CENTER, 29)
+
+        #Make the password sizer.
+        password_sizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        #Add items to the password sizer.
+        password_sizer.Add(self.password_text, 0, wx.LEFT|wx.ALIGN_CENTER, 12)
+        password_sizer.Add(self.password_field, 1, wx.LEFT|wx.ALIGN_CENTER, 22)
+        password_sizer.Add(self.throbber, 0, wx.LEFT|wx.ALIGN_CENTER|wx.FIXED_MINSIZE, 10)
+
+        #Make the button sizer.
+        button_sizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        #Add items to the button sizer.
+        button_sizer.Add(self.cancel_button, 0, wx.ALIGN_CENTER|wx.EXPAND)
+        button_sizer.Add(self.auth_button, 1, wx.LEFT|wx.ALIGN_CENTER|wx.EXPAND, 10)
+
+        #Add items to the main sizer.
+        main_sizer.Add(top_sizer, 0, wx.ALL|wx.ALIGN_CENTER|wx.EXPAND, 10)
+        main_sizer.Add(password_sizer, 0, wx.BOTTOM|wx.LEFT|wx.RIGHT|wx.ALIGN_CENTER|wx.EXPAND, 10)
+        main_sizer.Add(button_sizer, 1, wx.BOTTOM|wx.LEFT|wx.RIGHT|wx.ALIGN_CENTER|wx.EXPAND, 10)
+
+        #Get the sizer set up for the frame.
+        self.panel.SetSizer(main_sizer)
+
+        #Call Layout() on self.panel() to ensure it displays properly.
+        self.panel.Layout()
+
+        main_sizer.SetSizeHints(self)
+
+    def bind_events(self):
+        """Bind all events for AuthenticationWindow"""
+        self.Bind(wx.EVT_TEXT_ENTER, self.on_auth_attempt, self.password_field)
+        self.Bind(wx.EVT_BUTTON, self.on_auth_attempt, self.auth_button)
+        self.Bind(wx.EVT_BUTTON, self.on_exit, self.cancel_button)
+
+    def on_auth_attempt(self, event=None): #pylint: disable=unused-argument
+        """
+        Check the password is correct,
+        then either warn the user or call self.start_ddrescuegui().
+        """
+
+        #Disable the auth button (stops you from trying twice in quick succession).
+        self.auth_button.Disable()
+
+        #Check the password is right.
+        password = self.password_field.GetLineText(0)
+        cmd = subprocess.Popen("LC_ALL=C sudo -S echo 'Authentication Succeeded'",
+                               stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE, shell=True)
+
+        #Send the password to sudo through stdin,
+        #to avoid showing the user's password in the system/activity monitor.
+        cmd.stdin.write(password.encode()+b"\n")
+        cmd.stdin.close()
+
+        self.throbber.SetAnimation(self.busy)
+        self.throbber.Play()
+
+        while cmd.poll() is None:
+            wx.Yield()
+            time.sleep(0.04)
+
+        output = cmd.stdout.read().decode("utf-8")
+
+        if "Authentication Succeeded" in output:
+            #Set the password field colour to green and disable the cancel button.
+            self.password_field.SetBackgroundColour((192, 255, 192))
+            self.password_field.SetValue("ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789!£$%^&*()_+")
+            self.cancel_button.Disable()
+
+            #Play the green pulse for one second.
+            self.throbber.SetAnimation(self.green_pulse)
+            self.throbber.Play()
+            wx.CallLater(1000, self.throbber.Stop)
+            wx.CallLater(1100, self.on_exit)
 
         else:
-            helper = "/usr/share/ddrescue-gui/Tools/runasroot_linux.sh"
+            #Re-enable auth button.
+            self.auth_button.Enable()
 
-        return "pkexec "+helper
+            #Shake the window
+            x_pos, y_pos = self.GetPosition()
+            count = 0
+
+            while count <= 6:
+                if count % 2 == 0:
+                    x_pos -= 10
+
+                else:
+                    x_pos += 10
+
+                time.sleep(0.02)
+                self.SetPosition((x_pos, y_pos))
+                wx.Yield()
+                count += 1
+
+            #Set the password field colour to pink, and select its text.
+            self.password_field.SetBackgroundColour((255, 192, 192))
+            self.password_field.SetSelection(0, -1)
+            self.password_field.SetFocus()
+
+            #Play the red pulse for one second.
+            self.throbber.SetAnimation(self.red_pulse)
+            self.throbber.Play()
+            wx.CallLater(1000, self.throbber.Stop)
+
+    def test_auth():
+        """
+        Check if we have cached authentication
+        If so, return True.
+        Otherwise return False.
+        """
+
+        #Check the password is right.
+        cmd = subprocess.Popen("LC_ALL=C sudo -S echo 'Authentication Succeeded'",
+                               stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE, shell=True)
+
+        #Send the password to sudo through stdin,
+        #to avoid showing the user's password in the system/activity monitor.
+        cmd.stdin.close()
+
+        while cmd.poll() is None:
+            time.sleep(0.04)
+
+        output = cmd.stdout.read().decode("utf-8")
+
+        if "Authentication Succeeded" in output:
+            return True
+
+        else:
+            return False
+
+    def run(): #FIXME later
+        #Use cached credentials rather than open the auth window if possible.
+        if AuthWindow.test_auth():
+            return
+
+        global dialog_open
+        dialog_open = True
+
+        auth_window = AuthWindow().Show()
+
+        #FIXME Stops dialog from opening - blocks thread.
+        while auth_window:
+            wx.Yield()
+            time.sleep(0.04)
+
+        return
+
+    def on_exit(self, event=None): #pylint: disable=unused-argument
+        """Close AuthWindow() and exit"""
+        global dialog_open
+        dialog_open = False
+
+        self.Destroy()
+
+#End Mac Authentication Window.
+
+def get_helper(cmd):
+    #Figure out which helper script to use.
+    helper = "/usr/share/ddrescue-gui/Tools/runasroot_linux.sh"
+
+    if "run_getdevinfo.py" in cmd:
+        helper = "/usr/share/ddrescue-gui/Tools/helpers/runasroot_linux_getdevinfo.sh"
+
+    elif "umount" in cmd:
+        helper = "/usr/share/ddrescue-gui/Tools/helpers/runasroot_linux_umount.sh"
+
+    elif "mount" in cmd:
+        helper = "/usr/share/ddrescue-gui/Tools/helpers/runasroot_linux_mount.sh"
+
+    elif "ddrescue" in cmd and "killall" not in cmd:
+        helper = "/usr/share/ddrescue-gui/Tools/helpers/runasroot_linux_ddrescue.sh"
 
     else:
-        return ""
+        helper = "/usr/share/ddrescue-gui/Tools/runasroot_linux.sh"
+
+    return "pkexec "+helper
 
 def start_process(cmd, return_output=False, privileged=False):
     """Start a given process, and return output and return value if needed"""
     #If this is to be a privileged process, add the helper script to the cmdline.
     if privileged:
-        helper = get_helper(cmd)
+        if LINUX:
+            helper = get_helper(cmd)
 
-        cmd = helper+" "+cmd
+            cmd = helper+" "+cmd
 
-    if LINUX or not privileged:
-        cmd = shlex.split(cmd)
+        else:
+            #Pre-authenticate with the auth dialog.
+            AuthWindow.run()
 
-        logger.debug("start_process(): Starting process: "+' '.join(cmd))
-        runcmd = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                                  stderr=subprocess.STDOUT, env=dict(os.environ, LC_ALL="C"),
-                                  shell=False)
+            cmd = "sudo -SH "+cmd
 
-        while runcmd.poll() is None:
-            time.sleep(0.25)
+    cmd = shlex.split(cmd)
 
-        #Save runcmd.stdout.readlines, and runcmd.returncode,
-        #as they tend to reset fairly quickly. Handle unicode properly.
-        output = []
+    logger.debug("start_process(): Starting process: "+' '.join(cmd))
+    runcmd = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                              stderr=subprocess.STDOUT, env=dict(os.environ, LC_ALL="C"),
+                              shell=False)
 
-        for line in runcmd.stdout.readlines():
-            output.append(line.decode("UTF-8", errors="ignore"))
+    while runcmd.poll() is None:
+        time.sleep(0.25)
 
-        retval = int(runcmd.returncode)
+    #Save runcmd.stdout.readlines, and runcmd.returncode,
+    #as they tend to reset fairly quickly. Handle unicode properly.
+    output = []
 
-    else:
-        logger.debug("start_process(): Starting process: "+cmd)
-        retval, output = runasroot_mac.run(cmd)
+    for line in runcmd.stdout.readlines():
+        output.append(line.decode("UTF-8", errors="ignore"))
+
+    retval = int(runcmd.returncode)
 
     #Log this info in a debug message.
     logger.debug("start_process(): Process: "+' '.join(cmd)+": Return Value: "
