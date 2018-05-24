@@ -304,8 +304,8 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         if AuthWindow.test_auth():
             return
 
-        global dialog_open
-        dialog_open = True
+        global auth_dialog_open
+        auth_dialog_open = True
 
         auth_window = AuthWindow().Show()
 
@@ -350,9 +350,6 @@ def start_process(cmd, return_output=False, privileged=False):
 
         else:
             #Pre-authenticate with the auth dialog.
-            global auth_dialog_open
-            auth_dialog_open = True
-
             AuthWindow.run()
 
             while auth_dialog_open:
