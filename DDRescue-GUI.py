@@ -3347,7 +3347,7 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
             exec_list = [RESOURCEPATH+"/Tools/runasroot.sh", "ddrescue", "-v"]
 
         else:
-            exec_list = ["sudo -SH", RESOURCEPATH+"/ddrescue", "-v"] #FIXME won't work if credentials have expired.
+            exec_list = ["sudo", "-SH", RESOURCEPATH+"/ddrescue", "-v"] #FIXME won't work if credentials have expired.
 
         for option in options_list:
             #Handle direct disk access on OS X.
