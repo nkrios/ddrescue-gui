@@ -441,7 +441,16 @@ class CustomTextCtrl(wx.TextCtrl):
         """Handles '\x1b[A' (up one line) in output"""
         #Go up one line.
         #Get our column and line numbers.
-        column, line = self.PositionToXY(self.GetInsertionPoint())
+        #column, line = self.PositionToXY(self.GetInsertionPoint())
+
+        #Try stock PositionToXY.
+        if CLASSIC_WXPYTHON:
+            #On wx 2.8 & 3.0, this works as I thought it would.
+            column, line = wx.TextCtrl.PositionToXY(self, self.GetInsertionPoint())
+
+        else:
+            #On wx 4, this also returns a bool, which we will ignore.
+            column, line = wx.TextCtrl.PositionToXY(self, self.GetInsertionPoint())[1:3]
 
         #We go up one line, but stay in the same column, so find the integer position of the new
         #insertion point.
