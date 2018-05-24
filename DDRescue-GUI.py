@@ -218,7 +218,7 @@ class GetDiskInformation(threading.Thread):
         #Use a module I've written to collect data about connected Disks, and return it.
         wx.CallAfter(self.parent.receive_diskinfo, self.get_info())
 
-    def get_info(self):
+    def get_info(self): #FIXME on macOS.
         """Uses the runasroot.sh script to get disk information as a privileged user"""
         retval, output = BackendTools.start_process(cmd=sys.executable+" "+RESOURCEPATH
                                    +"/Tools/run_getdevinfo.py",
@@ -3347,7 +3347,7 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
             exec_list = [RESOURCEPATH+"/Tools/runasroot.sh", "ddrescue", "-v"]
 
         else:
-            exec_list = [RESOURCEPATH+"/Tools/runasroot.sh", RESOURCEPATH+"/ddrescue", "-v"]
+            exec_list = ["sudo -SH", RESOURCEPATH+"/ddrescue", "-v"] #FIXME won't work if credentials have expired.
 
         for option in options_list:
             #Handle direct disk access on OS X.

@@ -349,13 +349,12 @@ def start_process(cmd, return_output=False, privileged=False):
             cmd = helper+" "+cmd
 
         else:
-            #Pre-authenticate with the auth dialog.
+            #Pre-authenticate with the auth dialog. FIXME won't work if not in main thread.
             AuthWindow.run()
 
             while auth_dialog_open:
-                print("bob")
                 wx.Yield()
-                time.sleep(0.5)
+                time.sleep(0.04)
 
             cmd = "sudo -SH "+cmd
 
