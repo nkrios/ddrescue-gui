@@ -30,6 +30,7 @@ from __future__ import unicode_literals
 import os
 import sys
 import subprocess
+import threading
 import shlex
 import logging
 import plistlib
@@ -350,7 +351,15 @@ def start_process(cmd, return_output=False, privileged=False):
 
         else:
             #Pre-authenticate with the auth dialog. FIXME won't work if not in main thread.
-            AuthWindow.run()
+            if threading.current_thread() == threading.main_thread():
+                AuthWindow.run()
+
+            else:
+                wx.CallAfter(AuthWindow.run)
+
+                #Prevent a race condition.
+                global auth_dialog_open
+                auth_dialog_open = True
 
             while auth_dialog_open:
                 wx.Yield()
