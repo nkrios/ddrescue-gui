@@ -84,7 +84,7 @@ if sys.version_info[0] == 3:
 
 #Define global variables.
 VERSION = "2.0.0"
-RELEASE_DATE = "24/5/2018"
+RELEASE_DATE = "30/5/2018"
 
 session_ending = False
 DDRESCUE_VERSION = "1.23" #Default to latest version.
@@ -1352,7 +1352,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                            "redistributed in accordance with the terms of the GPLv2 or newer," \
                            "and is \nbundled with the macOS version of DDRescue-GUI.\n\n" \
                            "Terminal-notifier is released under the MIT license (compatible " \
-                           "with the GPL), may be redistributed with GPL software, and is also " \
+                           "with the GPL),\nmay be redistributed with GPL software, and is also\n" \
                            "bundled with the macOS version of DDRescue-GUI.\n\n" \
                            "Please note: I am NOT\nthe author of GNU ddrescue, or of " \
                            "terminal-notifier.\n\nFor more " \
