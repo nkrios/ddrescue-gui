@@ -303,6 +303,8 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
     def run(): #FIXME later
         #Use cached credentials rather than open the auth window if possible.
         if AuthWindow.test_auth():
+            global auth_dialog_open
+            auth_dialog_open = False
             return
 
         global auth_dialog_open
