@@ -123,7 +123,6 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
 
     def create_buttons(self):
         """Create all buttons for AuthenticationWindow"""
-        self.cancel_button = wx.Button(self.panel, -1, "Cancel")
         self.auth_button = wx.Button(self.panel, -1, "Authenticate")
 
     def create_other_widgets(self):
@@ -180,7 +179,6 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         button_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
         #Add items to the button sizer.
-        button_sizer.Add(self.cancel_button, 0, wx.ALIGN_CENTER|wx.EXPAND)
         button_sizer.Add(self.auth_button, 1, wx.LEFT|wx.ALIGN_CENTER|wx.EXPAND, 10)
 
         #Add items to the main sizer.
@@ -200,7 +198,6 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         """Bind all events for AuthenticationWindow"""
         self.Bind(wx.EVT_TEXT_ENTER, self.on_auth_attempt, self.password_field)
         self.Bind(wx.EVT_BUTTON, self.on_auth_attempt, self.auth_button)
-        self.Bind(wx.EVT_BUTTON, self.on_exit, self.cancel_button)
 
     def on_auth_attempt(self, event=None): #pylint: disable=unused-argument
         """
@@ -235,7 +232,6 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
             #Set the password field colour to green and disable the cancel button.
             self.password_field.SetBackgroundColour((192, 255, 192))
             self.password_field.SetValue("ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789!£$%^&*()_+")
-            self.cancel_button.Disable()
 
             #Play the green pulse for one second.
             self.throbber.SetAnimation(self.green_pulse)
