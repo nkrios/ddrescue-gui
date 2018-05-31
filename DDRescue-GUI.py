@@ -84,7 +84,7 @@ if sys.version_info[0] == 3:
 
 #Define global variables.
 VERSION = "2.0.0"
-RELEASE_DATE = "30/5/2018"
+RELEASE_DATE = "31/5/2018"
 
 session_ending = False
 DDRESCUE_VERSION = "1.23" #Default to latest version.
