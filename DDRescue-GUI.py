@@ -1257,6 +1257,9 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                     #was a device.
                     SETTINGS["OverwriteOutputFile"] = ""
 
+                    #Call Layout() on self.panel() to ensure it displays properly.
+                    self.panel.Layout()
+
                     return True
 
                 dialog.Destroy()
