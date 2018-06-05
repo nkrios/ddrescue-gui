@@ -363,17 +363,21 @@ def start_process(cmd, return_output=False, privileged=False):
                 wx.Yield()
                 time.sleep(0.04)
 
-            cmd = "sudo -SH "+cmd
+            #Set up the environemt here - sudo will clear it if we do it the
+            #wrong way.
+            if "/Tools/run_getdevinfo.py" in cmd:
+                #Fix import paths on macOS.
+                #This is necessary because the support for running extra python processes
+                #in py2app is poor.
+                #FIXME later don't depend on being in /Applications.
+                environ = """LC_ALL="C" PYTHONHOME="/Applications/DDRescue-GUI.app/Contents/Resources" PYTHONPATH="/Applications/DDRescue-GUI.app/Contents/Resources/lib/python36.zip:/Applications/DDRescue-GUI.app/Contents/Resources/lib/python3.6:/Applications/DDRescue-GUI.app/Contents/Resources/lib/python3.6/lib-dynload:/Applications/DDRescue-GUI.app/Contents/Resources/lib/python3.6/site-packages.zip:/Applications/DDRescue-GUI.app/Contents/Resources/lib/python3.6/site-packages" """
 
-    if "/Tools/run_getdevinfo.py" in cmd:
-        #Fix import paths on macOS.
-        #This is necessary because the support for running extra python processes
-        #in py2app is poor.
-        #FIXME later don't depend on being in /Applications.
-        environ = dict(os.environ, LC_ALL="C", PYTHONHOME="/Applications/DDRescue-GUI.app/Contents/Resources", PYTHONPATH="/Applications/DDRescue-GUI.app/Contents/Resources/lib/python36.zip:/Applications/DDRescue-GUI.app/Contents/Resources/lib/python3.6:/Applications/DDRescue-GUI.app/Contents/Resources/lib/python3.6/lib-dynload:/Applications/DDRescue-GUI.app/Contents/Resources/lib/python3.6/site-packages.zip:/Applications/DDRescue-GUI.app/Contents/Resources/lib/python3.6/site-packages")
+            else:
+                environ = """LC_ALL="C" """
 
-    else:
-        environ = dict(os.environ, LC_ALL="C")
+            cmd = "sudo -SH "+environ+cmd
+
+    environ = dict(os.environ, LC_ALL="C")
 
     cmd = shlex.split(cmd)
 
