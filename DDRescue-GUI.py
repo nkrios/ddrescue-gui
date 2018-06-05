@@ -547,7 +547,14 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         #Call Layout() on self.panel() to ensure it displays properly.
         self.panel.Layout()
 
-        APP.MacReopenApp()
+        #Raise the window to the top on macOS - otherwise it starts in the background.
+        if not LINUX:
+            subprocess.Popen(['osascript', '-e', '''\
+                              tell application "System Events"
+                              set procName to name of first process whose unix id is %s
+                              end tell
+                              tell application procName to activate
+                              ''' % os.getpid()])
 
         logger.info("MainWindow().__init__(): Ready. Waiting for events...")
 
