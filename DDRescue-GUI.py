@@ -218,8 +218,8 @@ class GetDiskInformation(threading.Thread):
         #Use a module I've written to collect data about connected Disks, and return it.
         wx.CallAfter(self.parent.receive_diskinfo, self.get_info())
 
-    def get_info(self): #FIXME on macOS.
-        """Uses the runasroot.sh script to get disk information as a privileged user"""
+    def get_info(self):
+        """Get disk information as a privileged user"""
         retval, output = BackendTools.start_process(cmd=sys.executable+" "+RESOURCEPATH
                                    +"/Tools/run_getdevinfo.py",
                                    return_output=True,
@@ -548,6 +548,8 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.panel.Layout()
 
         #Raise the window to the top on macOS - otherwise it starts in the background.
+        #This is a bit ugly, but it works. Yay for Stack Overflow.
+        #https://stackoverflow.com/questions/10901067/getting-a-window-to-the-top-in-wxpython-for-mac
         if not LINUX:
             subprocess.Popen(['osascript', '-e', '''\
                               tell application "System Events"
@@ -3356,7 +3358,7 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
                         SETTINGS["InputFile"], SETTINGS["OutputFile"], SETTINGS["MapFile"]]
 
         if LINUX:
-            exec_list = [RESOURCEPATH+"/Tools/runasroot.sh", "ddrescue", "-v"]
+            exec_list = ["pkexec", RESOURCEPATH+"/Tools/helpers/runasroot_linux_ddrescue.sh", "ddrescue", "-v"]
 
         else:
             exec_list = ["sudo", "-SH", RESOURCEPATH+"/ddrescue", "-v"] #FIXME won't work if credentials have expired.
