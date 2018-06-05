@@ -12,8 +12,8 @@
     <description>DDRescue-GUI requires authentication to collect device information</description>
     <message>DDRescue-GUI requires authentication to collect device information.</message>
     <defaults>
-      <allow_any>auth_admin_keep</allow_any>
-      <allow_inactive>auth_admin_keep</allow_inactive>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
       <allow_active>auth_admin_keep</allow_active>
     </defaults>
     <annotate key="org.freedesktop.policykit.exec.path">/usr/share/ddrescue-gui/Tools/helpers/runasroot_linux_getdevinfo.sh</annotate>
@@ -25,7 +25,7 @@
     <defaults>
       <allow_any>no</allow_any>
       <allow_inactive>no</allow_inactive>
-      <allow_active>auth_admin</allow_active>
+      <allow_active>auth_admin_keep</allow_active>
     </defaults>
     <annotate key="org.freedesktop.policykit.exec.path">/usr/share/ddrescue-gui/Tools/helpers/runasroot_linux_mount.sh</annotate>
   </action>
@@ -52,7 +52,7 @@
     <annotate key="org.freedesktop.policykit.exec.path">/usr/share/ddrescue-gui/Tools/helpers/runasroot_linux_ddrescue.sh</annotate>
   </action>
 
-  <action id="org.hamishmb..DDRescue-GUI.generic">
+  <action id="org.hamishmb.DDRescue-GUI.generic">
     <description>DDRescue-GUI requires authentication to perform privileged actions</description>
     <message>DDRescue-GUI requires authentication to perform privileged actions.</message>
     <defaults>
