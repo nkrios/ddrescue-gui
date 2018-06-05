@@ -24,21 +24,6 @@ from __future__ import unicode_literals
 
 #Must be run as root to work (at least on Linux)!
 import sys
-import platform
-
-#NB: Will this work if there's no system python install?
-if not ("Linux" in platform.system()):
-    #Fix import paths on macOS.
-    #This is necessary because the support for running extra python processes
-    #in py2app is poor.
-    #FIXME later don't depend on being in /Applications.
-    sys.prefix = "/Applications/DDRescue-GUI.app/Contents/Resources"
-
-    sys.path = ['/Applications/DDRescue-GUI.app/Contents/Resources/lib/python36.zip',
-                '/Applications/DDRescue-GUI.app/Contents/Resources/lib/python3.6',
-                '/Applications/DDRescue-GUI.app/Contents/Resources/lib/python3.6/lib-dynload',
-                '/Applications/DDRescue-GUI.app/Contents/Resources/lib/python3.6/site-packages.zip',
-                '/Applications/DDRescue-GUI.app/Contents/Resources/lib/python3.6/site-packages']
 
 import getdevinfo
 
