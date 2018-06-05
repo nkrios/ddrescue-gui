@@ -319,7 +319,7 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
 
 def get_helper(cmd):
     #Figure out which helper script to use.
-    helper = "/usr/share/ddrescue-gui/Tools/runasroot_linux.sh"
+    helper = "/usr/share/ddrescue-gui/Tools/helpers/runasroot_linux.sh"
 
     if "run_getdevinfo.py" in cmd:
         helper = "/usr/share/ddrescue-gui/Tools/helpers/runasroot_linux_getdevinfo.sh"
@@ -334,7 +334,7 @@ def get_helper(cmd):
         helper = "/usr/share/ddrescue-gui/Tools/helpers/runasroot_linux_ddrescue.sh"
 
     else:
-        helper = "/usr/share/ddrescue-gui/Tools/runasroot_linux.sh"
+        helper = "/usr/share/ddrescue-gui/Tools/helpers/runasroot_linux.sh"
 
     return "pkexec "+helper
 
