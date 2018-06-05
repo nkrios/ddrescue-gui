@@ -87,7 +87,7 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
     def __init__(self):
         """Inititalize AuthWindow"""
         wx.Frame.__init__(self, None, title="DDRescue-GUI - Authenticate", size=(600, 400),
-                          style=(wx.DEFAULT_FRAME_STYLE) ^ (wx.RESIZE_BORDER | wx.MINIMIZE_BOX))
+                          style=(wx.DEFAULT_FRAME_STYLE | wx.STAY_ON_TOP) ^ (wx.RESIZE_BORDER | wx.MINIMIZE_BOX))
 
         self.panel = wx.Panel(self)
 

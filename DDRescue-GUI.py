@@ -547,6 +547,8 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         #Call Layout() on self.panel() to ensure it displays properly.
         self.panel.Layout()
 
+        APP.MacReopenApp()
+
         logger.info("MainWindow().__init__(): Ready. Waiting for events...")
 
     def set_vars(self):
