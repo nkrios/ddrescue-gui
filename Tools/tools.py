@@ -410,7 +410,7 @@ def read(cmd, Testing=False):
     """Read the cmd's output char by char, but do as little processing as possible to improve startup performance"""
     #Get ready to run the command(s). Read up to 100 empty "" characters after the process finishes to make sure we get all the output.
     Counter = 0
-    Line = str("")
+    Line = str(b"")
     LineList = []
 
     while cmd.poll() == None or Counter < 100:
@@ -433,7 +433,7 @@ def read(cmd, Testing=False):
                 LineList.append(Line.replace("\n", "").replace("\r", ""))
 
             #Reset Line.
-            Line = str("")
+            Line = str(b"")
 
     #Catch it if there's not a newline at the end. TODO Note fix for WxFixBoot.
     if Line != "":
