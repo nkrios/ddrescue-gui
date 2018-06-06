@@ -324,10 +324,11 @@ def get_helper(cmd):
     if "run_getdevinfo.py" in cmd:
         helper = "/usr/share/ddrescue-gui/Tools/helpers/runasroot_linux_getdevinfo.sh"
 
-    elif "umount" in cmd:
+    elif "umount" in cmd or "kpartx -d" in cmd:
         helper = "/usr/share/ddrescue-gui/Tools/helpers/runasroot_linux_umount.sh"
 
-    elif "mount" in cmd:
+    elif "mount" in cmd or "kpartx -l" in cmd or "kpartx -a" in cmd or "lsblk" in cmd:
+        #Note: These are only used in the process of mounting files.
         helper = "/usr/share/ddrescue-gui/Tools/helpers/runasroot_linux_mount.sh"
 
     elif "ddrescue" in cmd and "killall" not in cmd:
@@ -340,7 +341,7 @@ def get_helper(cmd):
 
 def start_process(cmd, return_output=False, privileged=False):
     """Start a given process, and return output and return value if needed"""
-    #If this is to be a privileged process, add the helper script to the cmdline.
+    #If this is to be a privileged process, add the helper script to the cmdline. FIXME this can deadlock if there's too much output. See wxfixboot coretools Read() method and perhaps do that instead.
     if privileged:
         if LINUX:
             helper = get_helper(cmd)
@@ -386,21 +387,15 @@ def start_process(cmd, return_output=False, privileged=False):
                               stderr=subprocess.STDOUT, env=environ,
                               shell=False)
 
-    while runcmd.poll() is None:
-        time.sleep(0.25)
-
-    #Save runcmd.stdout.readlines, and runcmd.returncode,
+    #Save the output, and runcmd.returncode,
     #as they tend to reset fairly quickly. Handle unicode properly.
-    output = []
-
-    for line in runcmd.stdout.readlines():
-        output.append(line.decode("UTF-8", errors="ignore"))
+    output = read(runcmd)
 
     retval = int(runcmd.returncode)
 
     #Log this info in a debug message.
     logger.debug("start_process(): Process: "+' '.join(cmd)+": Return Value: "
-                 +unicode(retval)+", output: \"\n\n"+''.join(output)+"\"\n")
+                 +unicode(retval)+", output: \"\n\n"+'\n'.join(output)+"\"\n")
 
     if not return_output:
         #Return the return code back to whichever function ran this process, so it handles errors.
@@ -408,7 +403,46 @@ def start_process(cmd, return_output=False, privileged=False):
 
     else:
         #Return the return code, as well as the output.
-        return retval, ''.join(output)
+        return retval, '\n'.join(output)
+
+def read(cmd, Testing=False):
+    """Read the cmd's output char by char, but do as little processing as possible to improve startup performance"""
+    #Get ready to run the command(s). Read up to 100 empty "" characters after the process finishes to make sure we get all the output.
+    Counter = 0
+    Line = str("")
+    LineList = []
+
+    while cmd.poll() == None or Counter < 100:
+        Char = cmd.stdout.read(1)
+
+        if Char == "":
+            Counter += 1
+            continue
+
+        Line += Char
+
+        if Char in ("\n", "\r"):
+            #Interpret as Unicode and remove "NULL" characters.
+            Line = Line.decode("UTF-8", errors="ignore").replace("\x00", "")
+
+            if Testing:
+                LineList.append(Line)
+
+            else:
+                LineList.append(Line.replace("\n", "").replace("\r", ""))
+
+            #Reset Line.
+            Line = str("")
+
+    #Catch it if there's not a newline at the end. TODO Note fix for WxFixBoot.
+    if Line != "":
+        if Testing:
+            LineList.append(Line)
+
+        else:
+            LineList.append(Line.replace("\n", "").replace("\r", ""))
+
+    return LineList
 
 def determine_ddrescue_version():
     """
@@ -615,7 +649,7 @@ def mac_run_hdiutil(options):
         logger.warning("mac_run_hdiutil(): Attempting to fix hdiutil resource error...")
         #Fix by detaching all disks - certain disks eg system disk will fail, but it should fix
         #our problem. On OS X >= 10.11 can check for "(disk image)", but cos we support 10.9 &
-        #10.10, we have to just detach all possible disks and ignore failures. No need for
+        #10.10, we have to just detach all possible disks and ignore failures. No need for another
         #try-except cos start_process doesn't throw errors.
         for line in start_process(cmd="diskutil list", return_output=True)[1].split("\n"):
             try:

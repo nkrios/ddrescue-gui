@@ -3072,7 +3072,7 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
                                            + SETTINGS["OutputFile"],
                                            return_output=False, privileged=True)
 
-                #Get some Disk information.
+                #Get some Disk information. TODO Use JSON format?
                 lsblk_output = BackendTools.start_process(cmd="lsblk -r -o NAME,FSTYPE,SIZE",
                                                           return_output=True,
                                                           privileged=True)[1].split('\n')
