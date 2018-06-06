@@ -416,7 +416,7 @@ def read(cmd, Testing=False):
     while cmd.poll() == None or Counter < 100:
         Char = cmd.stdout.read(1)
 
-        if Char == "":
+        if Char == b"":
             Counter += 1
             continue
 
@@ -437,6 +437,9 @@ def read(cmd, Testing=False):
 
     #Catch it if there's not a newline at the end. TODO Note fix for WxFixBoot.
     if Line != b"":
+        #Interpret as Unicode and remove "NULL" characters.
+        Line = Line.decode("UTF-8", errors="ignore").replace("\x00", "")
+
         if Testing:
             LineList.append(Line)
 
