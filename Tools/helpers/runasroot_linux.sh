@@ -14,14 +14,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with DDRescue-GUI.  If not, see <http://www.gnu.org/licenses/>.
-
-#Only do anything if DDRescue-GUI is running.
-case $(ps aux | grep DDRescue-GUI.py) in
-    *python*DDRescue-GUI.py*)
-        #Keep processes' stderr by redirecting it to stdout.
-        $@ 2>&1
-        exit $?
-        ;;
-esac
-
-exit 1
+#Keep processes' stderr by redirecting it to stdout.
+$@ 2>&1
+exit $?

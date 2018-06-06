@@ -104,6 +104,7 @@ for o, a in OPTIONS:
         assert False, "unhandled option"
 
 #Set up the logger (silence all except critical logging messages).
+#FIXME Set up logger level in sub-modules.
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s: %(message)s',
                     datefmt='%d/%m/%Y %I:%M:%S %p', level=LOGGER_LEVEL)
 

@@ -37,18 +37,18 @@ def return_fake_commands():
     """Returns some fake commands to test the start_process function against to make sure it isn't losing output."""
 
     dictionary = {}
-    dictionary["echo 'This is a test of the fire alarm system'"] = {}
-    dictionary["echo 'This is a test of the fire alarm system'"]["Output"] = "This is a test of the fire alarm system\n"
-    dictionary["echo 'This is a test of the fire alarm system'"]["Retval"] = 0
-    dictionary["echo 'This returns 2'; exit 2"] = {}
-    dictionary["echo 'This returns 2'; exit 2"]["Output"] = "This returns 2\n"
-    dictionary["echo 'This returns 2'; exit 2"]["Retval"] = 2
-    dictionary["TIMES=1; while [ $TIMES -lt 6 ]; do echo 'Slow task'; sleep 2; TIMES=$(( $TIMES + 1 )); done"] = {}
-    dictionary["TIMES=1; while [ $TIMES -lt 6 ]; do echo 'Slow task'; sleep 2; TIMES=$(( $TIMES + 1 )); done"]["Output"] = "Slow task\n"*5
-    dictionary["TIMES=1; while [ $TIMES -lt 6 ]; do echo 'Slow task'; sleep 2; TIMES=$(( $TIMES + 1 )); done"]["Retval"] = 0
-    dictionary["TIMES=1; while [ $TIMES -lt 6000 ]; do echo 'Fast Task'; sleep 0.001; TIMES=$(( $TIMES + 1 )); done"] = {}
-    dictionary["TIMES=1; while [ $TIMES -lt 6000 ]; do echo 'Fast Task'; sleep 0.001; TIMES=$(( $TIMES + 1 )); done"]["Output"] = "Fast Task\n"*5999
-    dictionary["TIMES=1; while [ $TIMES -lt 6000 ]; do echo 'Fast Task'; sleep 0.001; TIMES=$(( $TIMES + 1 )); done"]["Retval"] = 0
+    dictionary[""" sh -c "echo 'This is a test of the fire alarm system'" """] = {}
+    dictionary[""" sh -c "echo 'This is a test of the fire alarm system'" """]["Output"] = "This is a test of the fire alarm system"
+    dictionary[""" sh -c "echo 'This is a test of the fire alarm system'" """]["Retval"] = 0
+    dictionary[""" sh -c "echo 'This returns 2'; exit 2" """] = {}
+    dictionary[""" sh -c "echo 'This returns 2'; exit 2" """]["Output"] = "This returns 2"
+    dictionary[""" sh -c "echo 'This returns 2'; exit 2" """]["Retval"] = 2
+    dictionary[""" sh -c "TIMES=1; while [ $TIMES -lt 6 ]; do echo 'Slow task'; sleep 2; TIMES=$(( $TIMES + 1 )); done" """] = {}
+    dictionary[""" sh -c "TIMES=1; while [ $TIMES -lt 6 ]; do echo 'Slow task'; sleep 2; TIMES=$(( $TIMES + 1 )); done" """]["Output"] = "Slow task\n"*4 + "Slow task"
+    dictionary[""" sh -c "TIMES=1; while [ $TIMES -lt 6 ]; do echo 'Slow task'; sleep 2; TIMES=$(( $TIMES + 1 )); done" """]["Retval"] = 0
+    dictionary[""" sh -c "TIMES=1; while [ $TIMES -lt 6000 ]; do echo 'Fast Task'; sleep 0.001; TIMES=$(( $TIMES + 1 )); done" """] = {}
+    dictionary[""" sh -c "TIMES=1; while [ $TIMES -lt 6000 ]; do echo 'Fast Task'; sleep 0.001; TIMES=$(( $TIMES + 1 )); done" """]["Output"] = "Fast Task\n"*5998 + "Fast Task"
+    dictionary[""" sh -c "TIMES=1; while [ $TIMES -lt 6000 ]; do echo 'Fast Task'; sleep 0.001; TIMES=$(( $TIMES + 1 )); done" """]["Retval"] = 0
 
     return dictionary
 
