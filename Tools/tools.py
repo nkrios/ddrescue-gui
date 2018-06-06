@@ -40,6 +40,7 @@ import wx
 #Make unicode an alias for str in Python 3.
 if sys.version_info[0] == 3:
     unicode = str
+    str = bytes
 
     #Plist hack for Python 3.
     plistlib.readPlistFromString = plistlib.loads
