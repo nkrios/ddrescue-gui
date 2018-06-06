@@ -422,7 +422,7 @@ def read(cmd, Testing=False):
 
         Line += Char
 
-        if Char in ("\n", "\r"):
+        if Char in (b"\n", b"\r"):
             #Interpret as Unicode and remove "NULL" characters.
             Line = Line.decode("UTF-8", errors="ignore").replace("\x00", "")
 
@@ -436,7 +436,7 @@ def read(cmd, Testing=False):
             Line = str(b"")
 
     #Catch it if there's not a newline at the end. TODO Note fix for WxFixBoot.
-    if Line != "":
+    if Line != b"":
         if Testing:
             LineList.append(Line)
 
