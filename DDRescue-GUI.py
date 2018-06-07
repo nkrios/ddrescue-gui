@@ -84,7 +84,7 @@ if sys.version_info[0] == 3:
 
 #Define global variables.
 VERSION = "2.0.0"
-RELEASE_DATE = "6/6/2018"
+RELEASE_DATE = "7/6/2018"
 
 session_ending = False
 DDRESCUE_VERSION = "1.23" #Default to latest version.
@@ -146,59 +146,60 @@ if LINUX:
 else:
     import getdevinfo.macos #pylint: disable=wrong-import-position
 
-#Check all cmdline options are valid.
-try:
-    opts = getopt.getopt(sys.argv[1:], "hqvdt", ["help", "quiet", "verbose", "debug",
-                                                 "tests"])[0]
+if __name__ == "__main__":
+    #Check all cmdline options are valid.
+    try:
+        opts = getopt.getopt(sys.argv[1:], "hqvdt", ["help", "quiet", "verbose", "debug",
+                                                     "tests"])[0]
 
-except getopt.GetoptError as err:
-    #Invalid option. Show the help message and then exit.
-    #Show the error.
-    print(unicode(err))
-    usage()
-    sys.exit(2)
-
-#Determine the option(s) given, and change the level of logging based on cmdline options.
-LOGGER_LEVEL = logging.DEBUG
-
-for o, a in opts:
-    if o in ["-q", "--quiet"]:
-        LOGGER_LEVEL = logging.WARNING
-    elif o in ["-v", "--verbose"]:
-        LOGGER_LEVEL = logging.INFO
-    elif o in ["-d", "--debug"]:
-        LOGGER_LEVEL = logging.DEBUG
-    elif o in ["-t", "--tests"]:
-        #Run unit tests. TODO must we use exec()?
-        with open(RESOURCEPATH+"/Tests.py", encoding="utf-8") as File:
-            code = compile(File.read(), RESOURCEPATH+"/Tests.py", "exec")
-            exec(code)
-
-        sys.exit()
-
-    elif o in ["-h", "--help"]:
+    except getopt.GetoptError as err:
+        #Invalid option. Show the help message and then exit.
+        #Show the error.
+        print(unicode(err))
         usage()
-        sys.exit()
+        sys.exit(2)
+
+    #Determine the option(s) given, and change the level of logging based on cmdline options.
+    LOGGER_LEVEL = logging.DEBUG
+
+    for o, a in opts:
+        if o in ["-q", "--quiet"]:
+            LOGGER_LEVEL = logging.WARNING
+        elif o in ["-v", "--verbose"]:
+            LOGGER_LEVEL = logging.INFO
+        elif o in ["-d", "--debug"]:
+            LOGGER_LEVEL = logging.DEBUG
+        elif o in ["-t", "--tests"]:
+            #Run unit tests. TODO must we use exec()?
+            with open(RESOURCEPATH+"/Tests.py", encoding="utf-8") as File:
+                code = compile(File.read(), RESOURCEPATH+"/Tests.py", "exec")
+                exec(code)
+
+            sys.exit()
+
+        elif o in ["-h", "--help"]:
+            usage()
+            sys.exit()
+        else:
+            assert False, "unhandled option"
+
+    #Set up logging with default logging mode as debug.
+    logger = logging.getLogger('DDRescue-GUI '+VERSION)
+    logging.basicConfig(filename='/tmp/ddrescue-gui.log',
+                        format='%(asctime)s - %(name)s - %(levelname)s: %(message)s',
+                        datefmt='%d/%m/%Y %I:%M:%S %p')
+
+    logger.setLevel(LOGGER_LEVEL)
+
+    #Log which OS we're running on (helpful for debugging).
+    if LINUX:
+        logger.debug("Detected LINUX...")
+
+        if PARTED_MAGIC:
+            logger.debug("Detected Parted Magic...")
+
     else:
-        assert False, "unhandled option"
-
-#Set up logging with default logging mode as debug.
-logger = logging.getLogger('DDRescue-GUI '+VERSION)
-logging.basicConfig(filename='/tmp/ddrescue-gui.log',
-                    format='%(asctime)s - %(name)s - %(levelname)s: %(message)s',
-                    datefmt='%d/%m/%Y %I:%M:%S %p')
-
-logger.setLevel(LOGGER_LEVEL)
-
-#Log which OS we're running on (helpful for debugging).
-if LINUX:
-    logger.debug("Detected LINUX...")
-
-    if PARTED_MAGIC:
-        logger.debug("Detected Parted Magic...")
-
-else:
-    logger.debug("Detected Mac OS X...")
+        logger.debug("Detected Mac OS X...")
 
 #Begin Disk Information Handler thread.
 class GetDiskInformation(threading.Thread):

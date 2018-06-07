@@ -1,0 +1,5 @@
+Documentation for the main executable file (DDRescue-GUI.py)
+************************************************************
+
+.. automodule:: ddrescue-gui.DDRescue-GUI
+    :members:

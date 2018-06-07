@@ -1,0 +1,22 @@
+.. DDRescue-GUI documentation master file, created by
+   sphinx-quickstart on Thu Jun  7 14:41:47 2018.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
+Welcome to DDRescue-GUI's API/Developer documentation!
+======================================================
+
+Contents:
+
+.. toctree::
+    :maxdepth: 2
+
+    main_file
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
+
