@@ -16,6 +16,6 @@
 # along with DDRescue-GUI.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import absolute_import
 from . import DDRescue_GUI
-#from . import setup
+from . import setup
 from . import Tests
 from . import Tools

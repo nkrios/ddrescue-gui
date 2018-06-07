@@ -1,0 +1,8 @@
+Documentation for the backend tools module in the tools package (Tools/tools.py)
+********************************************************************************
+
+.. important::
+    Currently not working.
+
+.. automodule:: ddrescue_gui.Tools.tools
+    :members:

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# DDRescue-GUI documentation build configuration file, created by
+# DDRescue-GUI Developer Documentation build configuration file, created by
 # sphinx-quickstart on Thu Jun  7 14:41:47 2018.
 #
 # This file is execfile()d with the current directory set to its
@@ -228,7 +228,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'DDRescue-GUI.tex', 'DDRescue-GUI Documentation',
+    (master_doc, 'DDRescue-GUI.tex', 'DDRescue-GUI Developer Documentation',
      'Hamish McIntyre-Bhatty', 'manual'),
 ]
 
@@ -258,7 +258,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'ddrescue-gui', 'DDRescue-GUI Documentation',
+    (master_doc, 'ddrescue-gui', 'DDRescue-GUI Developer Documentation',
      [author], 1)
 ]
 
@@ -272,7 +272,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'DDRescue-GUI', 'DDRescue-GUI Documentation',
+    (master_doc, 'DDRescue-GUI', 'DDRescue-GUI Deveoper Documentation',
      author, 'DDRescue-GUI', 'One line description of project.',
      'Miscellaneous'),
 ]

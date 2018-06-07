@@ -16,3 +16,7 @@
 # along with DDRescue-GUI.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import absolute_import
 from . import tools
+
+"""
+This is the Tools package.
+"""

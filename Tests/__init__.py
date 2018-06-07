@@ -17,3 +17,7 @@
 from __future__ import absolute_import
 from . import BackendToolsTests
 from . import BackendToolsTestData
+
+"""
+This is the Tests package.
+"""
