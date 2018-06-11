@@ -342,7 +342,11 @@ def get_helper(cmd):
 
 def start_process(cmd, return_output=False, privileged=False):
     """Start a given process, and return output and return value if needed"""
-    #If this is to be a privileged process, add the helper script to the cmdline. FIXME this can deadlock if there's too much output. See wxfixboot coretools Read() method and perhaps do that instead.
+    #Save the command as it was passed, in case we need
+    #to call recursively (pkexec auth failure/dismissal).
+    origcmd = cmd
+
+    #If this is to be a privileged process, add the helper script to the cmdline.
     if privileged:
         if LINUX:
             helper = get_helper(cmd)
@@ -397,6 +401,12 @@ def start_process(cmd, return_output=False, privileged=False):
     #Log this info in a debug message.
     logger.debug("start_process(): Process: "+' '.join(cmd)+": Return Value: "
                  +unicode(retval)+", output: \"\n\n"+'\n'.join(output)+"\"\n")
+
+    if privileged and (retval == 126 or retval == 127):
+        #Try again, auth dismissed / bad password 3 times.
+        #A lot of recursion is allowed (~1000 times), so this shouldn't be a problem.
+        logger.debug("start_process(): Bad auth or dismissed by user. Trying again...")
+        return start_process(cmd=origcmd, return_output=return_output, privileged=privileged)
 
     if not return_output:
         #Return the return code back to whichever function ran this process, so it handles errors.
