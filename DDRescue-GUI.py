@@ -47,6 +47,7 @@ import sys
 import plistlib
 import traceback
 import ast
+import json
 
 import wx
 
@@ -3073,10 +3074,13 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
                                            + SETTINGS["OutputFile"],
                                            return_output=False, privileged=True)
 
-                #Get some Disk information. TODO Use JSON format?
-                lsblk_output = BackendTools.start_process(cmd="lsblk -r -o NAME,FSTYPE,SIZE",
+                #Get some Disk information.
+                lsblk_output = BackendTools.start_process(cmd="lsblk -J -o NAME,FSTYPE,SIZE",
                                                           return_output=True,
-                                                          privileged=True)[1].split('\n')
+                                                          privileged=True)[1]
+
+                #Parse into a dictionary w/ json. TODO Error checking. FIXME Randomly doesn't work on Py2
+                lsblk_output = json.loads(lsblk_output)
 
             else:
                 hdiutil_imageinfo_output = output
@@ -3089,22 +3093,30 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
             #Create a nice list of Partitions for the user.
             choices = []
 
-            for partition in output:
-                #Skip non-partition things and any "partitions" that don't have numbers (OS X).
-                if (LINUX and (partition[0:12] == "loop deleted" or "/dev/" not in partition)) \
-                    or (not LINUX and ("partition-number" not in partition)):
-                    continue
+            #Linux: Get the name of the loop devide and construct the choices.
+            if LINUX:
+                loop_device = "loop"+output[0].split()[0][4]
 
-                if LINUX:
-                    #Get the info related to this partition.
-                    for line in lsblk_output:
-                        if partition.split()[0] in line:
+                #Get the info related to this partition.
+                for device in lsblk_output["blockdevices"]:
+                    if device["name"] == loop_device:
+                        for disk in device["children"]:
                             #Add stuff, trying to keep it human-readable.
-                            choices.append("Partition "+partition.split()[0].split("p")[-1]
-                                           + ", Filesystem: "+line.split()[-2]
-                                           + ", Size: "+line.split()[-1])
+                            print(disk)
 
-                else:
+                            if disk["fstype"] is None:
+                                disk["fstype"] = "None"
+
+                            choices.append("Partition "+disk["name"]
+                                           + ", Filesystem: "+disk["fstype"]
+                                           + ", Size: "+disk["size"])
+
+            else:
+                for partition in output:
+                    #Skip any "partitions" that don't have numbers (OS X).
+                    if not LINUX and ("partition-number" not in partition):
+                        continue
+
                     choices.append("Partition "+unicode(partition["partition-number"])
                                    + ", with size "+unicode((partition["partition-length"] \
                                                              * blocksize) // 1000000)
@@ -3144,12 +3156,12 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
                 self.unmount_output_file()
                 return False
 
-            #Get selected partition's number.
-            selected_partition_number = dlg.GetStringSelection().split()[1].replace(",", "")
+            #Get selected partition's name.
+            selected_partition = dlg.GetStringSelection().split()[1].replace(",", "")
 
             #Notify user of mount attempt.
             logger.info("FinishedWindow().mount_disk(): Mounting partition "
-                        + selected_partition_number+" of "+SETTINGS["OutputFile"]+"...")
+                        + selected_partition+" of "+SETTINGS["OutputFile"]+"...")
 
             wx.CallAfter(self.parent.update_status_bar, "Mounting output file. "
                          "This may take a few moments...")
@@ -3157,9 +3169,7 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
             wx.Yield()
 
             if LINUX:
-				#Get the partition to mount by combining the partition number the user selected
-                #with the loop device name from the partitions list.
-                partition_to_mount = "/dev/mapper/"+output[0][0:6]+selected_partition_number
+                partition_to_mount = "/dev/mapper/"+selected_partition
                 self.output_file_mount_point = "/mnt"+partition_to_mount
 
                 #Attempt to mount the disk.
@@ -3212,7 +3222,7 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
             for partition in disks:
                 disk = partition["dev-entry"]
 
-                if disk.split("s")[-1] == selected_partition_number:
+                if disk.split("s")[-1] == selected_partition:
                     #Check if the partition we want was mounted (hdiutil mounts all mountable
                     #partitions in the image automatically).
                     if "mount-point" in partition:
