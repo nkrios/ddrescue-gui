@@ -847,7 +847,7 @@ def is_partition(disk, disk_info):
     else:
         result = ("s" in disk.split("disk")[1])
 
-    logger.info("is_partition(): result: "+str(result)+"...")
+    logger.info("is_partition(): result: "+unicode(result)+"...")
 
     return result
 

@@ -85,7 +85,7 @@ if sys.version_info[0] == 3:
 
 #Define global variables.
 VERSION = "2.0.0"
-RELEASE_DATE = "7/6/2018"
+RELEASE_DATE = "11/6/2018"
 
 session_ending = False
 DDRESCUE_VERSION = "1.23" #Default to latest version.
@@ -3077,9 +3077,18 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
                 #Get some Disk information.
                 lsblk_output = BackendTools.start_process(cmd="lsblk -J -o NAME,FSTYPE,SIZE",
                                                           return_output=True,
-                                                          privileged=True)[1]
+                                                          privileged=True)[1].split("\n")
 
-                #Parse into a dictionary w/ json. TODO Error checking. FIXME Randomly doesn't work on Py2
+                #Remove any errors from lsblk in the output.
+                cleaned_lsblk_output = []
+
+                for line in lsblk_output:
+                    if "lsblk:" not in line:
+                        cleaned_lsblk_output.append(line)
+
+                lsblk_output = '\n'.join(cleaned_lsblk_output)
+
+                #Parse into a dictionary w/ json. TODO Error checking. FIXME Sometimes lsblk bugs out and can't detect all the disks.
                 lsblk_output = json.loads(lsblk_output)
 
             else:
@@ -3102,8 +3111,6 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
                     if device["name"] == loop_device:
                         for disk in device["children"]:
                             #Add stuff, trying to keep it human-readable.
-                            print(disk)
-
                             if disk["fstype"] is None:
                                 disk["fstype"] = "None"
 
