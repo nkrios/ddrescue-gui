@@ -36,6 +36,8 @@ from __future__ import unicode_literals
 from io import open
 
 #Import other modules
+from distutils.version import LooseVersion
+
 import threading
 import getopt
 import logging
@@ -48,6 +50,7 @@ import plistlib
 import traceback
 import ast
 import json
+import requests
 
 import wx
 
@@ -85,7 +88,8 @@ if sys.version_info[0] == 3:
 
 #Define global variables.
 VERSION = "2.0.0"
-RELEASE_DATE = "11/6/2018"
+RELEASE_DATE = "12/6/2018"
+RELEASE_TYPE = "Stable"
 
 session_ending = False
 DDRESCUE_VERSION = "1.23" #Default to latest version.
@@ -560,6 +564,9 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                               tell application procName to activate
                               ''' % os.getpid()])
 
+        #Check for updates.
+        self.check_for_updates(starting_up=True)
+
         logger.info("MainWindow().__init__(): Ready. Waiting for events...")
 
     def set_vars(self):
@@ -831,6 +838,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
         #Add Menu Items.
         self.menu_exit = file_menu.Append(wx.ID_EXIT, "&Quit", "Close DDRescue-GUI")
+
         self.menu_settings = edit_menu.Append(wx.ID_ANY, "&Settings", "Recovery Settings")
         self.menu_disk_info = view_menu.Append(wx.ID_ANY, "&Disk Information",
                                                "Information about all detected Disks")
@@ -840,6 +848,9 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
         self.menu_docs = help_menu.Append(wx.ID_ANY, "&User Guide",
                                           "View DDRescue-GUI's User Guide")
+
+        self.menu_updates = help_menu.Append(wx.ID_ANY, "&Check for Updates",
+                                             "Check for updates to DDRescue-GUI")
 
         self.menu_about = help_menu.Append(wx.ID_ABOUT, "&About DDRescue-GUI",
                                            "Information about DDRescue-GUI")
@@ -859,6 +870,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
     def bind_events(self):
         """Bind all events for MainWindow"""
         #Menus.
+        self.Bind(wx.EVT_MENU, self.check_for_updates, self.menu_updates)
         self.Bind(wx.EVT_MENU, self.show_settings, self.menu_settings)
         self.Bind(wx.EVT_MENU, self.show_userguide, self.menu_docs)
         self.Bind(wx.EVT_MENU, self.on_about, self.menu_about)
@@ -1402,6 +1414,117 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
     def show_privacy_policy(self, event=None): #pylint: disable=unused-argument
         """Show PrivPolWindow"""
         PrivPolWindow(self).Show()
+
+    def check_for_updates(self, event=None, starting_up=False): #pylint: disable=unused-argument
+        """
+        Check for updates using the plist-formatted update file
+        on my website. If some startup, only display info to the
+        user if there was an update. Otherwise (aka requested by user),
+        always display the information.
+        """
+        logger.info("MainWindow().check_for_updates(): Checking for updates...")
+
+        BackendTools.send_notification("Checking for updates...")
+
+        try:
+            updateinfo = requests.get("https://www.hamishmb.com/files/updateinfo/ddrescue-gui.plist", timeout=5)
+
+            #Raise an error if our status code was bad.
+            updateinfo.raise_for_status()
+
+        except requests.exceptions.RequestException:
+            #Flag to user.
+            BackendTools.send_notification("Failed to check for updates!")
+
+            #Also send a message dialog.
+            if not starting_up:
+                wx.MessageDialog(self.panel, "Couldn't check for updates!\n"
+                             + "Are you connected to the internet?",
+                             "DDRescue-GUI - Update Check Failure",
+                             wx.OK | wx.ICON_ERROR | wx.STAY_ON_TOP,
+                             pos=wx.DefaultPosition).ShowModal()
+            return
+
+        #Process the update info.
+        infotext = ""
+        update_recommended = False
+
+        updateinfo = plistlib.readPlistFromString(updateinfo.text.encode())
+
+        #Determine the latest version for our kind of release.
+        if RELEASE_TYPE == "Stable":
+            #Compare your stable version to the current stable version.
+            versions = [VERSION, updateinfo["CurrentStableVersion"]]
+
+        elif RELEASE_TYPE == "Development":
+            #Compare your version to both dev and stable versions.
+            #This is in case a stable release has superseeded your dev release.
+            versions = [VERSION, updateinfo["CurrentStableVersion"], updateinfo["CurrentDevVersion"]]
+
+        #Order the list so the last entry has the latest version number.
+        versions = sorted(versions, key=LooseVersion)
+
+        #Compare the versions.
+        if versions[-1] == VERSION and RELEASE_TYPE == "Stable":
+            #We have the latest stable version.
+            infotext += "You are running the latest version of DDRescue-GUI.\n"
+
+        elif versions[-1] == VERSION and RELEASE_TYPE == "Development":
+            #We have the latest dev version.
+            infotext += "You are running the latest development version of DDRescue-GUI.\n"
+
+        elif VERSION == updateinfo["CurrentStableVersion"] and RELEASE_TYPE == "Stable":
+            #We are running the latest stable version, but there is a dev version
+            #that is newer.
+            infotext += "You are running the latest version of DDRescue-GUI.\n"
+
+        elif VERSION == updateinfo["CurrentDevVersion"] and RELEASE_TYPE == "Development":
+            #We are running a development version, but it has been superseeded by a
+            #new stable release. We should update.
+            update_recommended = True
+
+            infotext += "You are running an old development version of DDRescue-GUI.\n"
+            infotext += "You should update to the newer, stable version "+updateinfo["CurrentStableVersion"]+".\n"
+
+        elif RELEASE_TYPE == "Development":
+            #We are running an old dev build. We should update.
+            update_recommended = True
+
+            infotext += "You are running an old development version of DDRescue-GUI.\n"
+            infotext += "You could update to the latest stable version "+updateinfo["CurrentStableVersion"]+",\n"
+            infotext += "or the latest development version "+updateinfo["CurrentDevVersion"]+".\n"
+
+        elif RELEASE_TYPE == "Stable":
+            #We are running an old stable build. We should update.
+            update_recommended = True
+
+            infotext += "You are running an old stable version of DDRescue-GUI.\n"
+            infotext += "You should update to the latest stable version "+updateinfo["CurrentStableVersion"]+".\n"
+
+        #Note if the release date doesn't match for the latest stable build.
+        if (RELEASE_TYPE == "Stable" and VERSION == updateinfo["CurrentStableVersion"]
+            and RELEASE_DATE != updateinfo["CurrentStableReleaseDate"]):
+
+            infotext += "\nYour release date doesn't match that of the current stable version.\n"
+            infotext += "Are you running a git build?"
+
+        #Send a notification about the update status.
+        if update_recommended:
+            logger.warning("MainWindow().check_for_updates(): Update is recommended. Sending notiication...")
+            BackendTools.send_notification("Updates are available")
+
+        else:
+            logger.warning("MainWindow().check_for_updates(): No update required. Sending notiication...")
+            BackendTools.send_notification("Up to date")
+
+        #If asked by the user, show the update status.
+        if (not starting_up or update_recommended):
+            logger.debug("MainWindow().check_for_updates(): Showing the user the update info...")
+
+            wx.MessageDialog(self.panel, infotext, "DDRescue-GUI - Update Status",
+                             wx.OK | wx.ICON_INFORMATION | wx.STAY_ON_TOP,
+                             pos=wx.DefaultPosition).ShowModal()
+
 
     def on_control_button(self, event=None): #pylint: disable=unused-argument
         """
