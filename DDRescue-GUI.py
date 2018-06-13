@@ -1430,7 +1430,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             #Ubuntu 14.04 fix (Python 2.7.6 has no proper TLS support).
             if tuple(sys.version_info)[0:3] == (2, 7, 6):
                 #Use wget to download instead, cos the server doesn't allow SSL.
-                updateinfo, retval = BackendTools.start_process(cmd="wget https://www.hamishmb.com/files/updateinfo/ddrescue-gui.plist -q -O -", return_output=True)
+                retval, updateinfo = BackendTools.start_process(cmd="wget https://www.hamishmb.com/files/updateinfo/ddrescue-gui.plist -q -O -", return_output=True)
 
                 if retval != 0:
                     raise requests.exceptions.RequestException()
