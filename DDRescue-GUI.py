@@ -3322,6 +3322,10 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
             #Get selected partition's name.
             selected_partition = dlg.GetStringSelection().split()[1].replace(",", "")
 
+            #Fix for Ubuntu 14.04.
+            if LINUX and not LSBLK_JSON_SUPPORTED:
+                selected_partition = "loop"+output[0].split()[0][4:-2]+selected_partition
+
             #Notify user of mount attempt.
             logger.info("FinishedWindow().mount_disk(): Mounting partition "
                         + selected_partition+" of "+SETTINGS["OutputFile"]+"...")
