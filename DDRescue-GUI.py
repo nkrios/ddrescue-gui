@@ -3215,7 +3215,7 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
 
                 lsblk_output = '\n'.join(cleaned_lsblk_output)
 
-                #Parse into a dictionary w/ json. TODO Error checking. FIXME Sometimes lsblk bugs out and can't detect all the disks.
+                #Parse into a dictionary w/ json. TODO Error checking.
                 lsblk_output = json.loads(lsblk_output)
 
             else:
@@ -3275,6 +3275,9 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
 
                 return False
 
+
+            #Sort the list alphabetically (it can sometimes be out of order).
+            choices.sort()
 
             #Ask the user which partition to mount.
             logger.debug("FinishedWindow().mount_disk(): Asking user which partition to mount...")
