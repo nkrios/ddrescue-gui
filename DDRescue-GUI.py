@@ -3229,9 +3229,9 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
 
                 else:
                     #Do things the older, less reliable way from previous versions of ddrescue-gui.
-                    lsblk_output = BackendTools.start_process(Command="lsblk -r -o NAME,FSTYPE,SIZE",
-                                                              ReturnOutput=True,
-                                                              privleged=True)[1].split('\n')
+                    lsblk_output = BackendTools.start_process(cmd="lsblk -r -o NAME,FSTYPE,SIZE",
+                                                              return_uutput=True,
+                                                              privileged=True)[1].split('\n')
 
             else:
                 hdiutil_imageinfo_output = output
