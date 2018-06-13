@@ -1525,12 +1525,22 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             logger.warning("MainWindow().check_for_updates(): Update is recommended. Sending notiication...")
             BackendTools.send_notification("Updates are available")
 
+            #Add info about where to download updates.
+            infotext += "\nThe latest version of DDRescue-GUI can be downloaded from:\n"
+            infotext += "https://www.hamishmb.com/html/downloads.php?program_name=ddrescue-gui"
+
+            #Note for pmagic users.
+            if PARTED_MAGIC:
+                infotext += "\n\nThere is probably a newer version of Parted Magic that "
+                infotext += "provides an update to this program."
+
         else:
             logger.warning("MainWindow().check_for_updates(): No update required. Sending notiication...")
             BackendTools.send_notification("Up to date")
 
-        #If asked by the user, show the update status.
-        if (not starting_up or update_recommended):
+        #If asked by the user, or if there's an update and we aren't on pmagic,
+        #show the update status.
+        if (not starting_up or (update_recommended and not PARTED_MAGIC)):
             logger.debug("MainWindow().check_for_updates(): Showing the user the update info...")
 
             wx.MessageDialog(self.panel, infotext, "DDRescue-GUI - Update Status",
