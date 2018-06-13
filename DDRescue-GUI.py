@@ -3201,22 +3201,37 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
                 BackendTools.start_process(cmd="partprobe", return_output=False,
                                            privileged=True)
 
-                #Get some Disk information.
-                lsblk_output = BackendTools.start_process(cmd="lsblk -J -o NAME,FSTYPE,SIZE",
+                #Check if out version of lsblk has the -J option, for JSON output.
+                #This check is here because Ubuntu 14.04 doesn't have this capabiity.
+                LSBLK_JSON_SUPPORTED = ("-J, --json" in BackendTools.start_process(cmd="lsblk -h",
                                                           return_output=True,
-                                                          privileged=True)[1].split("\n")
+                                                          privileged=True)[1])
 
-                #Remove any errors from lsblk in the output.
-                cleaned_lsblk_output = []
+                if (LSBLK_JSON_SUPPORTED):
 
-                for line in lsblk_output:
-                    if "lsblk:" not in line:
-                        cleaned_lsblk_output.append(line)
+                    #We can do things a more modern, more reliable way.
+                    #Get some Disk information.
+                    lsblk_output = BackendTools.start_process(cmd="lsblk -J -o NAME,FSTYPE,SIZE",
+                                                              return_output=True,
+                                                              privileged=True)[1].split("\n")
 
-                lsblk_output = '\n'.join(cleaned_lsblk_output)
+                    #Remove any errors from lsblk in the output.
+                    cleaned_lsblk_output = []
 
-                #Parse into a dictionary w/ json. TODO Error checking.
-                lsblk_output = json.loads(lsblk_output)
+                    for line in lsblk_output:
+                        if "lsblk:" not in line:
+                            cleaned_lsblk_output.append(line)
+
+                    lsblk_output = '\n'.join(cleaned_lsblk_output)
+
+                    #Parse into a dictionary w/ json. TODO Error checking.
+                    lsblk_output = json.loads(lsblk_output)
+
+                else:
+                    #Do things the older, less reliable way from previous versions of ddrescue-gui.
+                    lsblk_output = BackendTools.start_process(Command="lsblk -r -o NAME,FSTYPE,SIZE",
+                                                              ReturnOutput=True,
+                                                              privleged=True)[1].split('\n')
 
             else:
                 hdiutil_imageinfo_output = output
@@ -3229,8 +3244,8 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
             #Create a nice list of Partitions for the user.
             choices = []
 
-            #Linux: Get the name of the loop devide and construct the choices.
-            if LINUX:
+            #Linux: Get the name of the loop device and construct the choices.
+            if LINUX and LSBLK_JSON_SUPPORTED:
                 loop_device = "loop"+output[0].split()[0][4:-2]
 
                 #Get the info related to this partition.
@@ -3245,16 +3260,27 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
                                            + ", Filesystem: "+disk["fstype"]
                                            + ", Size: "+disk["size"])
 
+            #macOS and Ubuntu 14.04.
             else:
                 for partition in output:
-                    #Skip any "partitions" that don't have numbers (OS X).
-                    if not LINUX and ("partition-number" not in partition):
+                    #Skip non-partition things and any "partitions" that don't have numbers (OS X).
+                    if (LINUX and (partition[0:12] == "loop deleted" or "/dev/" not in partition)
+                        or (not LINUX and ("partition-number" not in partition))):
                         continue
 
-                    choices.append("Partition "+unicode(partition["partition-number"])
-                                   + ", with size "+unicode((partition["partition-length"] \
-                                                             * blocksize) // 1000000)
-                                   +" MB") #TODO Round to best size using Unitlist etc?
+                    if LINUX:
+                        #Older stuff for Ubuntu 14.04 support.
+                        #Get the info related to this partition.
+                        for line in lsblk_output:
+                            if partition.split()[0] in line:
+                                #Add stuff, trying to keep it human-readable.
+                                choices.append("Partition "+partition.split()[0].split("p")[-1]+", Filesystem: "+line.split()[-2]+", Size: "+line.split()[-1])
+
+                    else:
+                        choices.append("Partition "+unicode(partition["partition-number"])
+                                       + ", with size "+unicode((partition["partition-length"] \
+                                                                 * blocksize) // 1000000)
+                                       +" MB") #TODO Round to best size using Unitlist etc?
 
             #Check that this list isn't empty.
             if len(choices) == 0:
