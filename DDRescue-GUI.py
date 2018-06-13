@@ -88,7 +88,7 @@ if sys.version_info[0] == 3:
 
 #Define global variables.
 VERSION = "2.0.0"
-RELEASE_DATE = "12/6/2018"
+RELEASE_DATE = "13/6/2018"
 RELEASE_TYPE = "Stable"
 
 session_ending = False
@@ -1432,7 +1432,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             #Raise an error if our status code was bad.
             updateinfo.raise_for_status()
 
-        except requests.exceptions.RequestException:
+        except requests.exceptions.RequestException: #FIXME doesn't seem to catch all exceptions.
             #Flag to user.
             BackendTools.send_notification("Failed to check for updates!")
 
@@ -3196,6 +3196,10 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
                 BackendTools.start_process(cmd="kpartx -a "
                                            + SETTINGS["OutputFile"],
                                            return_output=False, privileged=True)
+
+                #Do a part probe to make sure the loop device has been searched.
+                BackendTools.start_process(cmd="partprobe", return_output=False,
+                                           privileged=True)
 
                 #Get some Disk information.
                 lsblk_output = BackendTools.start_process(cmd="lsblk -J -o NAME,FSTYPE,SIZE",

@@ -328,7 +328,8 @@ def get_helper(cmd):
     elif "umount" in cmd or "kpartx -d" in cmd:
         helper = "/usr/share/ddrescue-gui/Tools/helpers/runasroot_linux_umount.sh"
 
-    elif "mount" in cmd or "kpartx -l" in cmd or "kpartx -a" in cmd or "lsblk" in cmd:
+    elif ("mount" in cmd or "kpartx -l" in cmd or "kpartx -a" in cmd or "lsblk" in cmd
+          or "partprobe" in cmd):
         #Note: These are only used in the process of mounting files.
         helper = "/usr/share/ddrescue-gui/Tools/helpers/runasroot_linux_mount.sh"
 
@@ -354,7 +355,8 @@ def start_process(cmd, return_output=False, privileged=False):
             cmd = helper+" "+cmd
 
         else:
-            #Pre-authenticate with the auth dialog. FIXME won't work if not in main thread.
+            #Pre-authenticate with the auth dialog. Not py2 compatible, but only used
+            #on OS X builds, which are py3-only anyway.
             if threading.current_thread() == threading.main_thread():
                 AuthWindow.run()
 
