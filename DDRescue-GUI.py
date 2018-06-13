@@ -1442,6 +1442,8 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                 #Raise an error if our status code was bad.
                 updateinfo.raise_for_status()
 
+                updateinfo = updateinfo.text
+
         except requests.exceptions.RequestException:
             #Flag to user.
             BackendTools.send_notification("Failed to check for updates!")
@@ -1459,7 +1461,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         infotext = ""
         update_recommended = False
 
-        updateinfo = plistlib.readPlistFromString(updateinfo.text.encode())
+        updateinfo = plistlib.readPlistFromString(updateinfo.encode())
 
         #Determine the latest version for our kind of release.
         if RELEASE_TYPE == "Stable":
