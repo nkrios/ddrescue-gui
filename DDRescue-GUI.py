@@ -3231,7 +3231,7 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
 
             #Linux: Get the name of the loop devide and construct the choices.
             if LINUX:
-                loop_device = "loop"+output[0].split()[0][4]
+                loop_device = "loop"+output[0].split()[0][4:-2]
 
                 #Get the info related to this partition.
                 for device in lsblk_output["blockdevices"]:
