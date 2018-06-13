@@ -565,7 +565,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                               ''' % os.getpid()])
 
         #Check for updates.
-        self.check_for_updates(starting_up=True)
+        wx.CallLater(10000, self.check_for_updates, starting_up=True)
 
         logger.info("MainWindow().__init__(): Ready. Waiting for events...")
 
