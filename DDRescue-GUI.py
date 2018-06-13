@@ -3324,7 +3324,7 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
 
             #Fix for Ubuntu 14.04.
             if LINUX and not LSBLK_JSON_SUPPORTED:
-                selected_partition = "loop"+output[0].split()[0][4:-2]+selected_partition
+                selected_partition = "loop"+output[0].split()[0][4:-2]+"p"+selected_partition
 
             #Notify user of mount attempt.
             logger.info("FinishedWindow().mount_disk(): Mounting partition "
