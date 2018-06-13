@@ -3230,7 +3230,7 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
                 else:
                     #Do things the older, less reliable way from previous versions of ddrescue-gui.
                     lsblk_output = BackendTools.start_process(cmd="lsblk -r -o NAME,FSTYPE,SIZE",
-                                                              return_uutput=True,
+                                                              return_output=True,
                                                               privileged=True)[1].split('\n')
 
             else:
