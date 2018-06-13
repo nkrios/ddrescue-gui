@@ -1427,12 +1427,22 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         BackendTools.send_notification("Checking for updates...")
 
         try:
-            updateinfo = requests.get("https://www.hamishmb.com/files/updateinfo/ddrescue-gui.plist", timeout=5)
+            #Ubuntu 14.04 fix (Python 2.7.6 has no proper TLS support).
+            if tuple(sys.version_info)[0:3] == (2, 7, 6):
+                #Use wget to download instead, cos the server doesn't allow SSL.
+                updateinfo, retval = BackendTools.start_process(cmd="wget https://www.hamishmb.com/files/updateinfo/ddrescue-gui.plist -q -O -", return_output=True)
 
-            #Raise an error if our status code was bad.
-            updateinfo.raise_for_status()
+                if retval != 0:
+                    raise requests.exceptions.RequestException()
 
-        except requests.exceptions.RequestException: #FIXME doesn't seem to catch all exceptions.
+            else:
+                #Do it the better way w/ requests.
+                updateinfo = requests.get("https://www.hamishmb.com/files/updateinfo/ddrescue-gui.plist", timeout=5)
+
+                #Raise an error if our status code was bad.
+                updateinfo.raise_for_status()
+
+        except requests.exceptions.RequestException:
             #Flag to user.
             BackendTools.send_notification("Failed to check for updates!")
 
