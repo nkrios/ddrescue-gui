@@ -297,7 +297,7 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         else:
             return False
 
-    def run(): #FIXME later
+    def run():
         global auth_dialog_open
 
         #Use cached credentials rather than open the auth window if possible.
@@ -377,6 +377,7 @@ def start_process(cmd, return_output=False, privileged=False):
                 #Fix import paths on macOS.
                 #This is necessary because the support for running extra python processes
                 #in py2app is poor.
+                #NOTE: Will proably need to change w/ new major version of Py 3 eg 3.7, 3.8.
                 #FIXME later don't depend on being in /Applications.
                 environ = """LC_ALL="C" PYTHONHOME="/Applications/DDRescue-GUI.app/Contents/Resources" PYTHONPATH="/Applications/DDRescue-GUI.app/Contents/Resources/lib/python36.zip:/Applications/DDRescue-GUI.app/Contents/Resources/lib/python3.6:/Applications/DDRescue-GUI.app/Contents/Resources/lib/python3.6/lib-dynload:/Applications/DDRescue-GUI.app/Contents/Resources/lib/python3.6/site-packages.zip:/Applications/DDRescue-GUI.app/Contents/Resources/lib/python3.6/site-packages" """
 

@@ -1527,7 +1527,11 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
             #Add info about where to download updates.
             infotext += "\nThe latest version of DDRescue-GUI can be downloaded from:\n"
-            infotext += "https://www.hamishmb.com/html/downloads.php?program_name=ddrescue-gui"
+            infotext += "https://www.hamishmb.com/html/downloads.php?program_name=ddrescue-gui\n"
+
+            #Add info about new release.
+            infotext += "\nDetails of the new release:\n\n"
+            infotext += updateinfo["CurrentStableVersionDetails"]
 
             #Note for pmagic users.
             if PARTED_MAGIC:
