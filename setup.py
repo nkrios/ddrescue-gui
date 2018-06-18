@@ -12,7 +12,14 @@ APP = ['./DDRescue-GUI.py']
 
 DATA_FILES = ['./LICENSE', './Tests.py', './ddrescue', './Tools', './images', './other']
 
-OPTIONS = {'arch': 'x86_64', 'argv_emulation': True, 'no_strip': True, 'iconfile': './images/Logo.icns', 'includes': 'wx,wx.animate,wx.lib.stattext,wx.lib.statbmp,threading,getopt,logging,time,subprocess,re,os,sys,plistlib,BeautifulSoup,traceback,unittest,getdevinfo', 'packages': 'Tools,Tests'}
+OPTIONS = {'arch': 'x86_64',
+           'argv_emulation': True,
+           'no_strip': True,
+           'iconfile': './images/Logo.icns',
+           'includes': 'wx,wx.animate,wx.lib.stattext,wx.lib.statbmp,threading,getopt,logging,'
+                       + 'time,subprocess,re,os,sys,plistlib,BeautifulSoup,traceback,'
+                       + 'unittest,getdevinfo',
+           'packages': 'Tools,Tests'}
 
 if __name__ == "__main__":
     setup(

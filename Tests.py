@@ -35,15 +35,15 @@ import sys
 import wx
 
 #Custom tools module.
-import Tools
-from Tools import tools as BackendTools
+import Tools #pylint: disable=import-error
+from Tools import tools as BackendTools #pylint: disable=import-error
 
 #Import test modules.
-from Tests import BackendToolsTests
+from Tests import BackendToolsTests #pylint: disable=import-error
 
 #Make unicode an alias for str in Python 3.
 if sys.version_info[0] == 3:
-    unicode = str
+    unicode = str #pylint: disable=redefined-builtin,invalid-name
 
 #Global vars.
 VERSION = "2.0.0"
@@ -53,7 +53,7 @@ def usage():
     print("\nUsage: Tests.py [OPTION]\n\n")
     print("Options:\n")
     print("       -h, --help:                   Display this help text.")
-    print("       -d, --debug:                  Set logging level to debug, to show all logging messages.")
+    print("       -d, --debug:                  Set logging level to debug; show all messages.")
     print("                                     Default: show only critical logging messages.\n")
     print("       -b, --backendtools:           Run tests for BackendTools module.")
     print("       -m, --main:                   Run tests for main file (DDRescue-GUI.py).")
@@ -137,6 +137,7 @@ BackendToolsTests.BackendTools = BackendTools
 BackendToolsTests.Tools = Tools
 
 if __name__ == "__main__":
-    for SuiteModule in TEST_SUITES:
-        print("\n\n---------------------------- Tests for "+unicode(SuiteModule)+" ----------------------------\n\n")
-        unittest.TextTestRunner(verbosity=2).run(unittest.TestLoader().loadTestsFromModule(SuiteModule))
+    for module in TEST_SUITES:
+        print("\n\n---------------------------- Tests for "
+              + unicode(module)+" ----------------------------\n\n")
+        unittest.TextTestRunner(verbosity=2).run(unittest.TestLoader().loadTestsFromModule(module))
