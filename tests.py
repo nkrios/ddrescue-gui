@@ -62,21 +62,22 @@ def usage():
     print("DDRescue-GUI "+VERSION+" is released under the GNU GPL VERSION 3")
     print("Copyright (C) Hamish McIntyre-Bhatty 2013-2018")
 
-#Exit if not running as root.
-if os.geteuid() != 0:
-    sys.exit("You must run the tests as root! Exiting...")
+if __name__ == "__main__":
+    #Exit if not running as root.
+    if os.geteuid() != 0:
+        sys.exit("You must run the tests as root! Exiting...")
 
-#Check all cmdline options are valid.
-try:
-    OPTIONS, ARGUMENTS = getopt.getopt(sys.argv[1:], "hdbmat", ["help", "debug", "backendtools",
-                                                                "main", "all", "tests"])
+    #Check all cmdline options are valid.
+    try:
+        OPTIONS, ARGUMENTS = getopt.getopt(sys.argv[1:], "hdbmat", ["help", "debug", "backendtools",
+                                                                    "main", "all", "tests"])
 
-except getopt.GetoptError as err:
-    #Invalid option. Show the help message and then exit.
-    #Show the error.
-    print(unicode(err))
-    usage()
-    sys.exit(2)
+    except getopt.GetoptError as err:
+        #Invalid option. Show the help message and then exit.
+        #Show the error.
+        print(unicode(err))
+        usage()
+        sys.exit(2)
 
 #Set up which tests to run based on options given.
 TEST_SUITES = [BackendToolsTests] #*** Set up full defaults when finished ***
@@ -84,24 +85,25 @@ TEST_SUITES = [BackendToolsTests] #*** Set up full defaults when finished ***
 #Log only critical message by default.
 LOGGER_LEVEL = logging.CRITICAL
 
-for o, a in OPTIONS:
-    if o in ["-b", "--backendtools"]:
-        TEST_SUITES = [BackendToolsTests]
-    elif o in ["-m", "--main"]:
-        #TEST_SUITES = [MainTests]
-        assert False, "Not implemented yet"
-    elif o in ["-a", "--all"]:
-        TEST_SUITES = [BackendToolsTests]
-        #TEST_SUITES.append(MainTests)
-    elif o in ["-t", "--tests"]:
-        pass
-    elif o in ["-d", "--debug"]:
-        LOGGER_LEVEL = logging.DEBUG
-    elif o in ["-h", "--help"]:
-        usage()
-        sys.exit()
-    else:
-        assert False, "unhandled option"
+if __name__ == "__main__":
+    for o, a in OPTIONS:
+        if o in ["-b", "--backendtools"]:
+            TEST_SUITES = [BackendToolsTests]
+        elif o in ["-m", "--main"]:
+            #TEST_SUITES = [MainTests]
+            assert False, "Not implemented yet"
+        elif o in ["-a", "--all"]:
+            TEST_SUITES = [BackendToolsTests]
+            #TEST_SUITES.append(MainTests)
+        elif o in ["-t", "--tests"]:
+            pass
+        elif o in ["-d", "--debug"]:
+            LOGGER_LEVEL = logging.DEBUG
+        elif o in ["-h", "--help"]:
+            usage()
+            sys.exit()
+        else:
+            assert False, "unhandled option"
 
 #Set up the logger (silence all except critical logging messages).
 #FIXME Set up logger level in sub-modules.
