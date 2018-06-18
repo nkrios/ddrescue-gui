@@ -32,10 +32,10 @@ from . import decorators
 
 #Make unicode an alias for str in Python 3.
 if sys.version_info[0] == 3:
-    unicode = str
+    unicode = str #pylint: disable=redefined-builtin,invalid-name
 
 @decorators.define_versions
-def get_inputpos_numerrors_averagereadrate(split_line):
+def get_inputpos_numerrors_averagereadrate(split_line): #pylint: disable=invalid-name
     """
     Get Input Position, Number of Errors, and Average Read Rate.
     Works with ddrescue versions: 1.14,1.15,1.16,1.17,1.18,1.19,1.20
@@ -45,7 +45,7 @@ def get_inputpos_numerrors_averagereadrate(split_line):
             split_line[4].replace(",", ""), split_line[7], split_line[8])
 
 @decorators.define_versions
-def get_outputpos_time_since_last_read(split_line):
+def get_outputpos_time_since_last_read(split_line): #pylint: disable=invalid-name
     """
     Get Output Position and Time Since Last Successful Read.
     Works with ddrescue versions: 1.14,1.15,1.16,1.17
@@ -54,7 +54,7 @@ def get_outputpos_time_since_last_read(split_line):
     return (' '.join(split_line[1:3]).replace(",", ""), ' '.join(split_line[-2:]))
 
 @decorators.define_versions
-def get_current_rate_error_size_recovered_data(split_line):
+def get_current_rate_error_size_recovered_data(split_line): #pylint: disable=invalid-name
     """
     Get Current Read Rate, Error Size, and Recovered Data.
     Works with ddrescue versions: 1.14,1.15,1.16,1.17,1.18,1.19,1.20

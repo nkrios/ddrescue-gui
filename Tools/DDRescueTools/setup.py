@@ -41,9 +41,9 @@ from . import one_point_twenty_two
 
 #Make unicode an alias for str in Python 3.
 if sys.version_info[0] == 3:
-    unicode = str
+    unicode = str #pylint: disable=redefined-builtin,invalid-name
 
-#Get a list of FUNCTIONS in all of our ddrescue tools modules.
+#Get a list of functions in all of our ddrescue tools modules.
 FUNCTIONS = []
 
 for Module in (allversions, one_point_forteen, one_point_eighteen, one_point_twenty,

@@ -32,7 +32,7 @@ from . import decorators
 
 #Make unicode an alias for str in Python 3.
 if sys.version_info[0] == 3:
-    unicode = str
+    unicode = str #pylint: disable=redefined-builtin,invalid-name
 
 @decorators.define_versions
 def get_time_since_last_read(split_line):

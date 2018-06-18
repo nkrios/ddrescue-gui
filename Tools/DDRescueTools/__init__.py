@@ -14,6 +14,11 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with DDRescue-GUI.  If not, see <http://www.gnu.org/licenses/>.
+
+"""
+These are the ddrescue tools.
+"""
+
 from __future__ import absolute_import
 from . import setup
 from . import decorators
@@ -22,7 +27,3 @@ from . import one_point_forteen
 from . import one_point_eighteen
 from . import one_point_twenty
 from . import one_point_twenty_one
-
-"""
-These are the ddrescue tools.
-"""

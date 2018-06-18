@@ -30,7 +30,7 @@ import sys
 
 #Make unicode an alias for str in Python 3.
 if sys.version_info[0] == 3:
-    unicode = str
+    unicode = str #pylint: disable=redefined-builtin,invalid-name
 
 def define_versions(function):
     """
