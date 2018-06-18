@@ -6,9 +6,3 @@ Documentation for the tools package (Tools)
 
 .. automodule:: ddrescue_gui.Tools
     :members:
-
-.. toctree::
-    :maxdepth: 2
-
-    tools_backendtools
-    tools_ddrescuetools

@@ -179,8 +179,8 @@ if __name__ == "__main__":
             LOGGER_LEVEL = logging.DEBUG
         elif o in ["-t", "--tests"]:
             #Run unit tests. TODO must we use exec()?
-            with open(RESOURCEPATH+"/Tests.py", encoding="utf-8") as File:
-                code = compile(File.read(), RESOURCEPATH+"/Tests.py", "exec")
+            with open(RESOURCEPATH+"/tests.py", encoding="utf-8") as File:
+                code = compile(File.read(), RESOURCEPATH+"/tests.py", "exec")
                 exec(code)
 
             sys.exit()

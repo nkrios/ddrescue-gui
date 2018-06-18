@@ -1,8 +1,5 @@
-Documentation for the unit tests runner file (Tests.py)
+Documentation for the unit tests runner file (tests.py)
 *******************************************************
 
-.. important::
-    Currently not working.
-
-.. automodule:: ddrescue_gui.Tests
+.. automodule:: ddrescue_gui.tests
     :members:

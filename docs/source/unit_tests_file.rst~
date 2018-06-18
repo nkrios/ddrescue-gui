@@ -1,8 +1,8 @@
-Documentation for the unit tests runner file (Tests.py)
+Documentation for the unit tests runner file (tests.py)
 *******************************************************
 
-.. fixme::
-    Currently not working.
+.. important::
+    Pointing to pkg rather than module.
 
-.. automodule:: ddrescue_gui.Tests
+.. automodule:: ddrescue_gui.tests
     :members:
