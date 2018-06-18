@@ -15,6 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with DDRescue-GUI.  If not, see <http://www.gnu.org/licenses/>.
 
+# pylint: disable=no-member
+#
+#Reason (no-member): False positives, API changes.
+
 """
 This is the tools package for DDRescue-GUI.
 """
@@ -39,11 +43,11 @@ import wx
 
 #Make unicode an alias for str in Python 3.
 if sys.version_info[0] == 3:
-    unicode = str
-    str = bytes
+    unicode = str #pylint: disable=redefined-builtin,invalid-name
+    str = bytes #pylint: disable=redefined-builtin,invalid-name
 
     #Plist hack for Python 3.
-    plistlib.readPlistFromString = plistlib.loads
+    plistlib.readPlistFromString = plistlib.loads #pylint: disable=no-member
 
 #Determine if running on Linux or Mac.
 if "wxGTK" in wx.PlatformInfo:
@@ -67,8 +71,8 @@ elif "wxMac" in wx.PlatformInfo:
     LINUX = False
     PARTED_MAGIC = False
 
-global auth_dialog_open
-auth_dialog_open = False
+AUTH_DIALOG_OPEN = False
+APPICON = None
 
 #Set up logging.
 logger = logging.getLogger(__name__)
@@ -88,7 +92,8 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
     def __init__(self):
         """Inititalize AuthWindow"""
         wx.Frame.__init__(self, None, title="DDRescue-GUI - Authenticate", size=(600, 400),
-                          style=(wx.DEFAULT_FRAME_STYLE | wx.STAY_ON_TOP) ^ (wx.RESIZE_BORDER | wx.MINIMIZE_BOX))
+                          style=(wx.DEFAULT_FRAME_STYLE | wx.STAY_ON_TOP)
+                          ^ (wx.RESIZE_BORDER | wx.MINIMIZE_BOX))
 
         self.panel = wx.Panel(self)
 
@@ -270,7 +275,7 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
             self.throbber.Play()
             wx.CallLater(1000, self.throbber.Stop)
 
-    def test_auth():
+    def test_auth(): #pylint: disable=no-method-argument
         """
         Check if we have cached authentication
         If so, return True.
@@ -291,35 +296,35 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
 
         output = cmd.stdout.read().decode("utf-8")
 
-        if "Authentication Succeeded" in output:
-            return True
+        return "Authentication Succeeded" in output
 
-        else:
-            return False
+    def run(): #pylint: disable=no-method-argument
+        """
+        Preauthenticates macOS users with the auth dialog.
+        """
 
-    def run():
-        global auth_dialog_open
+        global AUTH_DIALOG_OPEN
 
         #Use cached credentials rather than open the auth window if possible.
         if AuthWindow.test_auth():
-            auth_dialog_open = False
+            AUTH_DIALOG_OPEN = False
             return
 
-        auth_dialog_open = True
+        AUTH_DIALOG_OPEN = True
 
-        auth_window = AuthWindow().Show()
+        AuthWindow().Show()
 
     def on_exit(self, event=None): #pylint: disable=unused-argument
         """Close AuthWindow() and exit"""
-        global auth_dialog_open
-        auth_dialog_open = False
+        global AUTH_DIALOG_OPEN
+        AUTH_DIALOG_OPEN = False
 
         self.Destroy()
 
 #End Mac Authentication Window.
 
 def get_helper(cmd):
-    #Figure out which helper script to use.
+    """Figure out which helper script to use."""
     helper = "/usr/share/ddrescue-gui/Tools/helpers/runasroot_linux.sh"
 
     if "run_getdevinfo.py" in cmd:
@@ -364,10 +369,10 @@ def start_process(cmd, return_output=False, privileged=False):
                 wx.CallAfter(AuthWindow.run)
 
                 #Prevent a race condition.
-                global auth_dialog_open
-                auth_dialog_open = True
+                global AUTH_DIALOG_OPEN
+                AUTH_DIALOG_OPEN = True
 
-            while auth_dialog_open:
+            while AUTH_DIALOG_OPEN:
                 wx.Yield()
                 time.sleep(0.04)
 
@@ -386,7 +391,7 @@ def start_process(cmd, return_output=False, privileged=False):
 
             cmd = "sudo -SH "+environ+cmd
 
-    environ = dict(os.environ, LC_ALL="C")
+    environ = dict(os.environ, LC_ALL="C") #pylint: disable=redefined-variable-type
 
     cmd = shlex.split(cmd)
 
@@ -419,47 +424,53 @@ def start_process(cmd, return_output=False, privileged=False):
         #Return the return code, as well as the output.
         return retval, '\n'.join(output)
 
-def read(cmd, Testing=False):
-    """Read the cmd's output char by char, but do as little processing as possible to improve startup performance"""
-    #Get ready to run the command(s). Read up to 100 empty "" characters after the process finishes to make sure we get all the output.
-    Counter = 0
-    Line = str(b"")
-    LineList = []
+def read(cmd, testing=False): #pylint: disable=redefined-variable-type
+    """
+    Read the cmd's output char by char, but do as little processing as
+    possible to improve startup performance
+    """
 
-    while cmd.poll() == None or Counter < 100:
-        Char = cmd.stdout.read(1)
+    #Get ready to run the command(s).
+    #Read up to 100 empty "" characters after the process finishes to
+    #make sure we get all the output.
+    counter = 0
+    line = str(b"")
+    line_list = []
 
-        if Char == b"":
-            Counter += 1
+    while cmd.poll() is None or counter < 100:
+        char = cmd.stdout.read(1)
+
+        if char == b"":
+            counter += 1
             continue
 
-        Line += Char
+        line += char
 
-        if Char in (b"\n", b"\r"):
+        if char in (b"\n", b"\r"):
             #Interpret as Unicode and remove "NULL" characters.
-            Line = Line.decode("UTF-8", errors="ignore").replace("\x00", "")
+            line = line.decode("UTF-8", errors="ignore").replace("\x00", "")
 
-            if Testing:
-                LineList.append(Line)
+            if testing:
+                line_list.append(line)
 
             else:
-                LineList.append(Line.replace("\n", "").replace("\r", ""))
+                line_list.append(line.replace("\n", "").replace("\r", ""))
 
-            #Reset Line.
-            Line = str(b"")
+            #Reset line.
+            line = str(b"")
 
     #Catch it if there's not a newline at the end. TODO Note fix for WxFixBoot.
-    if Line != b"":
+    if line != b"":
         #Interpret as Unicode and remove "NULL" characters.
-        Line = Line.decode("UTF-8", errors="ignore").replace("\x00", "")
+        line = line.decode("UTF-8", errors="ignore").replace("\x00", "")
 
-        if Testing:
-            LineList.append(Line)
+        if testing:
+            line_list.append(line)
 
         else:
-            LineList.append(Line.replace("\n", "").replace("\r", ""))
+            line_list.append(line.replace("\n", "").replace("\r", ""))
 
-    return LineList
+    return line_list
 
 def determine_ddrescue_version():
     """
@@ -590,7 +601,7 @@ def send_notification(msg):
                       +"""-group \"DDRescue-GUI\"""",
                       return_output=False)
 
-def determine_output_file_type(SETTINGS, disk_info):
+def determine_output_file_type(SETTINGS, disk_info): #pylint: disable=invalid-name
     """Determines output File Type (partition or Device)"""
     if SETTINGS["InputFile"] in disk_info:
 		#Read from disk_info if possible (OutputFile type = InputFile type)
@@ -672,7 +683,9 @@ def mac_run_hdiutil(options):
             try:
                 if line.split()[0].split("/")[1] == "dev":
                     #This is a line with a device name on it.
-                    logger.warning("mac_run_hdiutil(): Attempting to detach "+line.split()[0]+"...")
+                    logger.warning("mac_run_hdiutil(): Attempting to detach "
+                                   + line.split()[0]+"...")
+
                     start_process(cmd="hdiutil detach "+line.split()[0], privileged=True)
 
             except IndexError:
@@ -845,7 +858,8 @@ def is_partition(disk, disk_info):
     logger.debug("is_partition(): Checking if disk: "+disk+" is a partition...")
 
     if LINUX:
-        result = (disk[0:7] not in ["/dev/sr", "/dev/fd"] and disk[-1].isdigit() and disk[0:8] in disk_info.keys())
+        result = (disk[0:7] not in ["/dev/sr", "/dev/fd"] and disk[-1].isdigit()
+                  and disk[0:8] in disk_info.keys())
 
     else:
         result = ("s" in disk.split("disk")[1])
