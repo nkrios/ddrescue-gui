@@ -8,7 +8,7 @@ Usage:
 
 from setuptools import setup
 
-APP = ['./DDRescue-GUI.py']
+APP = ['./DDRescue_GUI.py']
 
 DATA_FILES = ['./LICENSE', './Tests.py', './ddrescue', './Tools', './images', './other']
 
