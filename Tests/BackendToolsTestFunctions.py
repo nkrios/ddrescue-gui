@@ -36,7 +36,7 @@ import wx
 
 #Make unicode an alias for str in Python 3.
 if sys.version_info[0] == 3:
-    unicode = str
+    unicode = str #pylint: disable=redefined-builtin,invalid-name
 
 #Determine if running on LINUX or Mac.
 if "wxGTK" in wx.PlatformInfo:
@@ -67,7 +67,8 @@ def start_process(cmd, return_output=False):
     retval = int(runcmd.returncode)
 
     if return_output is False:
-        #Return the return code back to whichever function ran this process, so it can handle any errors.
+        #Return the return code back to whichever function ran this process,
+        #so it can handle any errors.
         return retval
 
     else:
@@ -77,9 +78,12 @@ def start_process(cmd, return_output=False):
 def is_mounted(partition, mount_point=None):
     """Checks if the given partition is mounted.
     partition is the given partition to check.
-    If mount_point is specified, check if the partition is mounted there, rather than just if it's mounted.
+    If mount_point is specified, check if the partition is mounted there,
+    rather than just if it's mounted.
+
     Return boolean True/False.
     """
+
     if mount_point is None:
         mount_info = start_process("mount", return_output=True)[1]
 
