@@ -15,11 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with DDRescue-GUI.  If not, see <http://www.gnu.org/licenses/>.
 
-# pylint: disable=too-many-lines,global-statement
+# pylint: disable=too-many-lines,global-statement,import-error,no-name-in-module,wrong-import-order
+# pylint: disable=ungrouped-imports
 #
 # Reason (too-many-lines): Not a module
 # Reason (global-statement): Need to use global at times.
-#
+# Reason (import-error): Lots of false positives, some libs not present in older wx builds.
+# Reason (no-name-in-module): As above.
+# Reason (wrong-import-order): False positives.
+# Reason (ungrouped-imports): Can't group wx imports due to module changes.
 
 """
 This is the main script that you use to start DDRescue-GUI.
@@ -33,7 +37,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 #open fix for python 2.
-from io import open
+from io import open #pylint: disable=redefined-builtin
 
 #Import other modules
 from distutils.version import LooseVersion
@@ -44,7 +48,6 @@ import logging
 import time
 import subprocess
 import os
-import shlex
 import sys
 import plistlib
 import traceback
@@ -81,10 +84,10 @@ import getdevinfo
 
 #Make unicode an alias for str in Python 3.
 if sys.version_info[0] == 3:
-    unicode = str
+    unicode = str #pylint: disable=redefined-builtin,invalid-name
 
     #Plist hack for Python 3.
-    plistlib.readPlistFromString = plistlib.loads
+    plistlib.readPlistFromString = plistlib.loads #pylint: disable=no-member
 
 #Define global variables.
 VERSION = "2.0.0"
@@ -154,7 +157,7 @@ else:
 if __name__ == "__main__":
     #Check all cmdline options are valid.
     try:
-        opts = getopt.getopt(sys.argv[1:], "hqvdt", ["help", "quiet", "verbose", "debug",
+        OPTS = getopt.getopt(sys.argv[1:], "hqvdt", ["help", "quiet", "verbose", "debug",
                                                      "tests"])[0]
 
     except getopt.GetoptError as err:
@@ -167,7 +170,7 @@ if __name__ == "__main__":
     #Determine the option(s) given, and change the level of logging based on cmdline options.
     LOGGER_LEVEL = logging.DEBUG
 
-    for o, a in opts:
+    for o, a in OPTS:
         if o in ["-q", "--quiet"]:
             LOGGER_LEVEL = logging.WARNING
         elif o in ["-v", "--verbose"]:
@@ -224,12 +227,12 @@ class GetDiskInformation(threading.Thread):
         #Use a module I've written to collect data about connected Disks, and return it.
         wx.CallAfter(self.parent.receive_diskinfo, self.get_info())
 
-    def get_info(self):
+    def get_info(self): #pylint: disable=no-self-use
         """Get disk information as a privileged user"""
-        retval, output = BackendTools.start_process(cmd=sys.executable+" "+RESOURCEPATH
-                                   +"/Tools/run_getdevinfo.py",
-                                   return_output=True,
-                                   privileged=True)
+        output = BackendTools.start_process(cmd=sys.executable+" "+RESOURCEPATH
+                                            +"/Tools/run_getdevinfo.py",
+                                            return_output=True,
+                                            privileged=True)[1]
 
         #Success! Now use ast to convert the returned string to a dictionary.
         #TODO exception handling.
@@ -262,7 +265,7 @@ class MyApp(wx.App):
 
 #End Starter Class
 #Begin splash screen
-class ShowSplash(wxSplashScreen): #pylint: disable=too-few-public-methods
+class ShowSplash(wxSplashScreen): #pylint: disable=too-few-public-methods,no-member
     """
     A simple class used to display the splash screen on startup.
     After that, it starts the rest of the application.
@@ -324,7 +327,7 @@ class CustomTextCtrl(wx.TextCtrl):
         """Initialise the custom wx.TextCtrl"""
         wx.TextCtrl.__init__(self, parent, wx_id, value=value, style=style)
 
-    def PositionToXY(self, insertion_point): #pylint: disable=invalid-name
+    def PositionToXY(self, insertion_point): #pylint: disable=invalid-name,arguments-differ
         """
         A custom version of wx.TextCtrl.PositionToXY() that works on OS X
         (the built-in one isn't implemented on OS X).
@@ -369,7 +372,7 @@ class CustomTextCtrl(wx.TextCtrl):
 
         return column, row
 
-    def XYToPosition(self, column, row): #pylint: disable=invalid-name
+    def XYToPosition(self, column, row): #pylint: disable=invalid-name,arguments-differ
         """
         A custom version of wx.TextCtrl.XYToPosition() that works on OS X
         (the built-in one isn't implemented on OS X).
@@ -555,7 +558,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
         #Raise the window to the top on macOS - otherwise it starts in the background.
         #This is a bit ugly, but it works. Yay for Stack Overflow.
-        #https://stackoverflow.com/questions/10901067/getting-a-window-to-the-top-in-wxpython-for-mac
+        #stackoverflow.com/questions/10901067/getting-a-window-to-the-top-in-wxpython-for-mac
         if not LINUX:
             subprocess.Popen(['osascript', '-e', '''\
                               tell application "System Events"
@@ -1430,14 +1433,17 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             #Ubuntu 14.04 fix (Python 2.7.6 has no proper TLS support).
             if tuple(sys.version_info)[0:3] == (2, 7, 6):
                 #Use wget to download instead, cos the server doesn't allow SSL.
-                retval, updateinfo = BackendTools.start_process(cmd="wget https://www.hamishmb.com/files/updateinfo/ddrescue-gui.plist -q -O -", return_output=True)
+                retval, updateinfo = \
+                BackendTools.start_process(cmd="wget https://www.hamishmb.com/files/updateinfo/ddrescue-gui.plist -q -O -", return_output=True)
 
                 if retval != 0:
                     raise requests.exceptions.RequestException()
 
             else:
                 #Do it the better way w/ requests.
-                updateinfo = requests.get("https://www.hamishmb.com/files/updateinfo/ddrescue-gui.plist", timeout=5)
+                updateinfo = \
+                requests.get("https://www.hamishmb.com/files/updateinfo/ddrescue-gui.plist",
+                             timeout=5)
 
                 #Raise an error if our status code was bad.
                 updateinfo.raise_for_status()
@@ -1451,10 +1457,10 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             #Also send a message dialog.
             if not starting_up:
                 wx.MessageDialog(self.panel, "Couldn't check for updates!\n"
-                             + "Are you connected to the internet?",
-                             "DDRescue-GUI - Update Check Failure",
-                             wx.OK | wx.ICON_ERROR | wx.STAY_ON_TOP,
-                             pos=wx.DefaultPosition).ShowModal()
+                                 + "Are you connected to the internet?",
+                                 "DDRescue-GUI - Update Check Failure",
+                                 wx.OK | wx.ICON_ERROR | wx.STAY_ON_TOP,
+                                 pos=wx.DefaultPosition).ShowModal()
             return
 
         #Process the update info.
@@ -1471,7 +1477,8 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         elif RELEASE_TYPE == "Development":
             #Compare your version to both dev and stable versions.
             #This is in case a stable release has superseeded your dev release.
-            versions = [VERSION, updateinfo["CurrentStableVersion"], updateinfo["CurrentDevVersion"]]
+            versions = [VERSION, updateinfo["CurrentStableVersion"],
+                        updateinfo["CurrentDevVersion"]]
 
         #Order the list so the last entry has the latest version number.
         versions = sorted(versions, key=LooseVersion)
@@ -1496,14 +1503,16 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             update_recommended = True
 
             infotext += "You are running an old development version of DDRescue-GUI.\n"
-            infotext += "You should update to the newer, stable version "+updateinfo["CurrentStableVersion"]+".\n"
+            infotext += "You should update to the newer, stable version "
+            infotext += updateinfo["CurrentStableVersion"]+".\n"
 
         elif RELEASE_TYPE == "Development":
             #We are running an old dev build. We should update.
             update_recommended = True
 
             infotext += "You are running an old development version of DDRescue-GUI.\n"
-            infotext += "You could update to the latest stable version "+updateinfo["CurrentStableVersion"]+",\n"
+            infotext += "You could update to the latest stable version "
+            infotext += updateinfo["CurrentStableVersion"]+",\n"
             infotext += "or the latest development version "+updateinfo["CurrentDevVersion"]+".\n"
 
         elif RELEASE_TYPE == "Stable":
@@ -1511,18 +1520,21 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             update_recommended = True
 
             infotext += "You are running an old stable version of DDRescue-GUI.\n"
-            infotext += "You should update to the latest stable version "+updateinfo["CurrentStableVersion"]+".\n"
+            infotext += "You should update to the latest stable version "
+            infotext += updateinfo["CurrentStableVersion"]+".\n"
 
         #Note if the release date doesn't match for the latest stable build.
         if (RELEASE_TYPE == "Stable" and VERSION == updateinfo["CurrentStableVersion"]
-            and RELEASE_DATE != updateinfo["CurrentStableReleaseDate"]):
+                and RELEASE_DATE != updateinfo["CurrentStableReleaseDate"]):
 
             infotext += "\nYour release date doesn't match that of the current stable version.\n"
             infotext += "Are you running a git build?"
 
         #Send a notification about the update status.
         if update_recommended:
-            logger.warning("MainWindow().check_for_updates(): Update is recommended. Sending notiication...")
+            logger.warning("MainWindow().check_for_updates(): Update is recommended. "
+                           "Sending notification...")
+
             BackendTools.send_notification("Updates are available")
 
             #Add info about where to download updates.
@@ -1535,16 +1547,18 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
             #Note for pmagic users.
             if PARTED_MAGIC:
-                infotext += "\n\nThere is probably a newer version of Parted Magic that "
+                infotext += "\nThere is probably a newer version of Parted Magic that "
                 infotext += "provides an update to this program."
 
         else:
-            logger.warning("MainWindow().check_for_updates(): No update required. Sending notiication...")
+            logger.warning("MainWindow().check_for_updates(): No update required."
+                           "Sending notification...")
+
             BackendTools.send_notification("Up to date")
 
         #If asked by the user, or if there's an update and we aren't on pmagic,
         #show the update status.
-        if (not starting_up or (update_recommended and not PARTED_MAGIC)):
+        if not starting_up or (update_recommended and not PARTED_MAGIC):
             logger.debug("MainWindow().check_for_updates(): Showing the user the update info...")
 
             wx.MessageDialog(self.panel, infotext, "DDRescue-GUI - Update Status",
@@ -3229,11 +3243,12 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
 
                 #Check if out version of lsblk has the -J option, for JSON output.
                 #This check is here because Ubuntu 14.04 doesn't have this capabiity.
-                LSBLK_JSON_SUPPORTED = ("-J, --json" in BackendTools.start_process(cmd="lsblk -h",
-                                                          return_output=True,
-                                                          privileged=True)[1])
+                LSBLK_JSON_SUPPORTED = \
+                ("-J, --json" in BackendTools.start_process(cmd="lsblk -h",
+                                                            return_output=True,
+                                                            privileged=True)[1])
 
-                if (LSBLK_JSON_SUPPORTED):
+                if LSBLK_JSON_SUPPORTED:
 
                     #We can do things a more modern, more reliable way.
                     #Get some Disk information.
@@ -3291,7 +3306,7 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
                 for partition in output:
                     #Skip non-partition things and any "partitions" that don't have numbers (OS X).
                     if (LINUX and (partition[0:12] == "loop deleted" or "/dev/" not in partition)
-                        or (not LINUX and ("partition-number" not in partition))):
+                            or (not LINUX and ("partition-number" not in partition))):
                         continue
 
                     if LINUX:
@@ -3300,7 +3315,9 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
                         for line in lsblk_output:
                             if partition.split()[0] in line:
                                 #Add stuff, trying to keep it human-readable.
-                                choices.append("Partition "+partition.split()[0].split("p")[-1]+", Filesystem: "+line.split()[-2]+", Size: "+line.split()[-1])
+                                choices.append("Partition "+partition.split()[0].split("p")[-1]
+                                               + ", Filesystem: "+line.split()[-2]
+                                               + ", Size: "+line.split()[-1])
 
                     else:
                         choices.append("Partition "+unicode(partition["partition-number"])
@@ -3318,7 +3335,7 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
 
                 dlg = wx.MessageDialog(self.panel, "Couldn't find any partitions to mount! "
                                        "This could indicate a bug in the GUI, or a problem "
-                                       "with your recovered image. It's possible that the data you "
+                                       "with your recovered image. It's possible the data you "
                                        "recovered is partially corrupted, and you need to use "
                                        "another tool to extract meaningful data from it.",
                                        "DDRescue-GUI - Error", style=wx.OK | wx.ICON_ERROR)
@@ -3562,7 +3579,8 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
                         SETTINGS["InputFile"], SETTINGS["OutputFile"], SETTINGS["MapFile"]]
 
         if LINUX:
-            exec_list = ["pkexec", RESOURCEPATH+"/Tools/helpers/runasroot_linux_ddrescue.sh", "ddrescue", "-v"]
+            exec_list = ["pkexec", RESOURCEPATH+"/Tools/helpers/runasroot_linux_ddrescue.sh",
+                         "ddrescue", "-v"]
 
         else:
             exec_list = ["sudo", "-SH", RESOURCEPATH+"/ddrescue", "-v"] #FIXME won't work if credentials have expired.
